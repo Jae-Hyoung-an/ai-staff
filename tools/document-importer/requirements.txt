@@ -1,0 +1,16 @@
+# Document Importer Dependencies
+# Python 3.10+ required
+
+# PDF 처리
+pdfplumber>=0.10.0      # PDF 텍스트 추출 (표, 레이아웃 보존)
+pdf2image>=1.16.0       # PDF → 이미지 변환 (poppler 필요)
+
+# PowerPoint 처리
+python-pptx>=0.6.21     # PPTX 텍스트 추출
+comtypes>=1.2.0         # Windows COM 인터페이스 (PPT→이미지)
+
+# 이미지 처리
+Pillow>=10.0.0          # 이미지 처리 및 저장
+
+# 유틸리티
+pathlib2>=2.3.0         # 경로 처리 (Python 3.4+ 내장이지만 호환성용)

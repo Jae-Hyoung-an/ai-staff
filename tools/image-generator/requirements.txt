@@ -1,0 +1,12 @@
+# Image Generator Tool Dependencies
+# Google Gemini API (새로운 패키지)
+google-genai>=1.0.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Image processing
+Pillow>=10.0.0
+
+# CLI support
+click>=8.1.0

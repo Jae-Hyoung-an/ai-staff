@@ -16,6 +16,7 @@
 *.tmp
 *.temp
 
-# 민감한 정보 (필요시 주석 해제)
-# .env
-# secrets/
+# 민감한 정보
+.env
+.env.*
+secrets/
