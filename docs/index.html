@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Staff - Documents</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; 
+            background: #0d1117; 
+            color: #e6edf3; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        h1 { 
+            font-size: 2rem; 
+            color: #fff; 
+            margin-bottom: 10px; 
+        }
+        .subtitle {
+            color: #8b949e;
+            margin-bottom: 40px;
+        }
+        .doc-list {
+            list-style: none;
+            width: 100%;
+            max-width: 600px;
+        }
+        .doc-item {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: border-color 0.2s;
+        }
+        .doc-item:hover {
+            border-color: #58a6ff;
+        }
+        .doc-item a {
+            display: block;
+            padding: 20px;
+            color: #e6edf3;
+            text-decoration: none;
+        }
+        .doc-title {
+            font-size: 1.1rem;
+            color: #58a6ff;
+            margin-bottom: 5px;
+        }
+        .doc-desc {
+            font-size: 0.9rem;
+            color: #8b949e;
+        }
+        .doc-meta {
+            font-size: 0.8rem;
+            color: #6e7681;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Staff Documents</h1>
+    <p class="subtitle">Product 실 공유 문서</p>
+    
+    <ul class="doc-list">
+        <li class="doc-item">
+            <a href="b_zone_workflow.html">
+                <div class="doc-title">B존 TF 워크플로우</div>
+                <div class="doc-desc">B Zone 구축을 위한 워크플로우 및 SOP (타게팅 → 초기 영업 → 관리)</div>
+                <div class="doc-meta">v0.4 | 2026.02.06 | Product 실 안재형 PO</div>
+            </a>
+        </li>
+    </ul>
+</body>
+</html>
