@@ -12,6 +12,10 @@
 # 로그 파일
 *.log
 
+# Python
+__pycache__/
+*.pyc
+
 # 임시 파일
 *.tmp
 *.temp

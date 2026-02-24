@@ -110,6 +110,10 @@
 
 ### 워크플로우
 
+- **HTML 파일 열기**: 항상 Chrome 브라우저로 열기
+  - 명령어: `& "C:\Program Files\Google\Chrome\Application\chrome.exe" "{파일경로}"`
+  - 파일명에 한글이 포함된 경우 영문으로 변경 후 열기
+
 - **PDF/PPT 분석 요청 시**: document-importer 도구 활용
   1. 스크립트 실행: `python tools/document-importer/main.py` (inbox/ 자동 스캔)
   2. 이미지 분석하여 다이어그램, 표, 차트 내용 파악
