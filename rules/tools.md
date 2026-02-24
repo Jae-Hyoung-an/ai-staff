@@ -70,6 +70,27 @@
 
 ---
 
+## analyze-orders
+
+- **목적**: 지점 오더 CSV 데이터를 분석하여 요일/시간대별 트렌드, 기사 생산성, 투입 인력을 산출
+- **트리거**:
+  - "오더 데이터 분석해줘"
+  - "시간대별 오더 트렌드 파악해줘"
+  - "테스트베드 인력 몇 명 필요할까?"
+  - 오더 CSV 파일이 제공되었을 때
+- **사용법**: `python tools/analyze_orders.py <CSV경로> --branch <지점키워드> --days <요일> --hours <시간범위>`
+- **위치**: `tools/analyze_orders.py`
+- **예시**:
+  ```powershell
+  # 기본 실행 (화/수, 10-22시, 2시간 슬롯)
+  python tools/analyze_orders.py orders.csv --branch 중랑직영
+  
+  # 디렉토리 검색으로 실행 (한글 파일명 우회)
+  $env:PYTHONUTF8=1; python tools/analyze_orders.py --search-dir ~/Downloads --search-keyword "중랑,오더" --branch 중랑직영
+  ```
+
+---
+
 <!-- 예시: 아래 형식으로 도구를 등록합니다
 
 ## pdf-converter
@@ -111,4 +132,5 @@
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
+| 1.1 | 2026-02-24 | analyze-orders 도구 등록 |
 | 1.0 | 2026-01-06 | 초기 버전 |
