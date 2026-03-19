@@ -110,7 +110,7 @@
               <div class="tab" onclick="ztab(this,'zc-zone')">연결 zone</div>
             </div>
             <div id="zc-vol" class="ztp">
-              <div class="notice">시간 정합성: 시작&lt;종료 · 순서 정렬 · 오버랩 금지 · 5구간 빈틈 없이 연속</div>
+              <div class="notice">시간 정합성: 시작&lt;종료 · 순서 정렬 · 오버랩 금지 · 입력된 구간 내 5구간 연속 (24시간 전체 커버 불필요)</div>
               <table><thead><tr><th>요일</th>
                 <th><div class="th-time"><span>시간대 1</span><input class="time" value="07:00">~<input class="time" value="11:00"></div></th>
                 <th><div class="th-time"><span>시간대 2</span><input class="time" value="11:00">~<input class="time" value="14:00"></div></th>
@@ -136,6 +136,7 @@
             <div id="zc-zone" class="ztp hidden">
               <div class="sl">연결 zone</div>
               <div class="row"><button class="btn ghost">zone 검색</button></div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:6px;">연결 zone은 최초 0개로도 저장 가능합니다.</div>
               <div class="zone-list"><div class="zone-chip">강북A <span class="x">×</span></div><div class="zone-chip">강북B <span class="x">×</span></div></div>
               <div class="err-box" style="margin-top:12px;">저장 실패 예시: zone '마포C'은(는) 관리정책 '주말_통합_운영정책'에 이미 연결되어 있어 저장할 수 없습니다.</div>
             </div>
@@ -162,7 +163,7 @@
               <div class="tab" onclick="ztab(this,'zd-hist')">변경 이력</div>
             </div>
             <div id="zd-vol" class="ztp">
-              <div class="notice">시간 정합성: 시작&lt;종료 · 순서 정렬 · 오버랩 금지 · 5구간 빈틈 없이 연속</div>
+              <div class="notice">시간 정합성: 시작&lt;종료 · 순서 정렬 · 오버랩 금지 · 입력된 구간 내 5구간 연속 (24시간 전체 커버 불필요)</div>
               <table><thead><tr><th>요일</th>
                 <th><div class="th-time"><span>시간대 1</span><input class="time" value="07:00">~<input class="time" value="11:00"></div></th>
                 <th><div class="th-time"><span>시간대 2</span><input class="time" value="11:00">~<input class="time" value="14:00"></div></th>
@@ -252,7 +253,9 @@
                 <tr><td>B벤더</td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
                 <tr><td>C벤더</td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
               </tbody></table>
+              <div style="font-size:11px;color:#64748b;margin-top:6px;">연결 벤더 삭제 시 다른 벤더의 세트 분배값은 유지됩니다.</div>
               <div style="margin-top:10px;"><div class="row"><input type="text" placeholder="벤더명 검색"><button class="btn ghost">벤더 검색</button></div></div>
+              <div style="font-size:11px;color:#64748b;margin-top:6px;">검색 범위: 전체 벤더</div>
               <div class="err-box">저장 실패 예시: 벤더 'D벤더'는 Zone '송파D'에 이미 연결되어 있어 저장할 수 없습니다.</div>
             </div>
             <div id="ss" class="stp hidden">
@@ -263,7 +266,7 @@
                 <tr><td>B벤더</td><td><input class="set-input" type="number" value="4" min="0"></td></tr>
                 <tr><td>C벤더</td><td><input class="set-input" type="number" value="3" min="0"></td></tr>
               </tbody></table>
-              <div style="font-size:11px;color:#64748b;margin-top:6px;">저장 이력 없는 벤더는 기본 0개 · 음수/빈칸 입력 시 저장 불가</div>
+              <div style="font-size:11px;color:#64748b;margin-top:6px;">저장 이력 없는 벤더는 기본 0개 · 음수/빈칸 입력 시 저장 불가 · 세트 수 상한 없음</div>
             </div>
           </div>
           <div class="footer">
