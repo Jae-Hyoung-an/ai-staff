@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>벤더관리 인트라 목업 — 권역관리 + 세트분배 관리</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Noto Sans KR", Arial, sans-serif; background: #f4f6f8; color: #1f2a37; font-size: 13px; }
+    .layout { display: grid; grid-template-columns: 200px 1fr; min-height: 100vh; }
+    .gnb { background: #202a36; color: #d0d8e4; padding: 14px 0; position: sticky; top: 0; height: 100vh; }
+    .gnb h1 { margin: 0 14px 16px; font-size: 13px; font-weight: 700; color: #fff; letter-spacing: .5px; }
+    .gnb .item { padding: 9px 14px; font-size: 12px; cursor: pointer; }
+    .gnb .item:hover { background: #2a3545; }
+    .gnb .item.active { background: #2d3a48; border-left: 3px solid #4da3ff; font-weight: 600; color: #fff; }
+    .main { padding: 20px 24px; overflow-y: auto; }
+    .bc { font-size: 11px; color: #64748b; margin-bottom: 12px; }
+    .bc a { color: #64748b; text-decoration: underline; cursor: pointer; }
+    .card { background: #fff; border: 1px solid #dce1e8; border-radius: 8px; margin-bottom: 14px; }
+    .card-head { padding: 12px 16px; border-bottom: 1px solid #e8ecf1; font-size: 14px; font-weight: 700; }
+    .card-body { padding: 14px 16px; }
+    .row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    input[type=text], input[type=number] { border: 1px solid #c7d0db; border-radius: 5px; padding: 7px 10px; font-size: 12px; width: 160px; }
+    input.wide { width: 260px; }
+    input.time { width: 70px; text-align: center; }
+    input.cell { width: 56px; text-align: center; }
+    input.set-input { width: 80px; text-align: center; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #c7d0db; border-radius: 5px; padding: 7px 12px; font-size: 12px; cursor: pointer; background: #fff; }
+    .btn.primary { background: #2e6ff2; border-color: #2e6ff2; color: #fff; }
+    .btn.ghost { background: #f8fafc; }
+    .btn.danger { background: #fff; border-color: #ef4444; color: #ef4444; }
+    .btn.sm { padding: 4px 8px; font-size: 11px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #d9dee5; padding: 7px 8px; text-align: left; }
+    th { background: #f8fafc; font-weight: 600; }
+    tr.clickable:hover { background: #f0f5ff; cursor: pointer; }
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid #e8ecf1; margin-bottom: 14px; }
+    .tab { padding: 9px 14px; font-size: 12px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+    .tab.active { border-bottom-color: #2e6ff2; color: #2e6ff2; font-weight: 700; }
+    .tab:hover:not(.active) { background: #f8fafc; }
+    .sl { font-size: 12px; font-weight: 700; margin: 12px 0 6px; color: #334155; }
+    .notice { font-size: 11px; color: #c2410c; margin-bottom: 6px; }
+    .err-box { border: 1px solid #fca5a5; background: #fef2f2; color: #b91c1c; padding: 8px 10px; border-radius: 5px; font-size: 12px; margin-top: 10px; }
+    .footer { border-top: 1px solid #e8ecf1; padding: 10px 16px; display: flex; justify-content: flex-end; gap: 8px; background: #fff; border-radius: 0 0 8px 8px; }
+    .hidden { display: none; }
+    .fr { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+    .fr label { min-width: 120px; font-size: 12px; }
+    .zone-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .zone-chip { background: #e8f0fe; border: 1px solid #b6d4fe; border-radius: 4px; padding: 4px 8px; font-size: 11px; display: flex; align-items: center; gap: 4px; }
+    .zone-chip .x { cursor: pointer; color: #64748b; font-weight: 700; }
+    .th-time { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .th-time span { font-size: 10px; color: #64748b; }
+    .history-row td { font-size: 11px; }
+    .page { display: none; }
+    .page.visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+
+    <!-- ============ GNB ============ -->
+    <aside class="gnb">
+      <h1>VROONG Intra</h1>
+      <div class="item" id="gnb-vendor">벤더 관리</div>
+      <div class="item active" id="gnb-zone" onclick="goModule('zone')">권역관리</div>
+      <div class="item" id="gnb-set" onclick="goModule('set')">세트분배 관리</div>
+      <div class="item">정산 관리</div>
+    </aside>
+
+    <main class="main">
+
+      <!-- ======================================================= -->
+      <!--           MODULE A: 권역관리                              -->
+      <!-- ======================================================= -->
+
+      <!-- A-1 목록 -->
+      <div class="page visible" id="z-list">
+        <div class="bc">인트라 > 권역관리</div>
+        <div class="card">
+          <div class="card-head">관리정책 목록</div>
+          <div class="card-body">
+            <div class="row">
+              <input type="text" class="wide" placeholder="관리정책명 검색">
+              <button class="btn ghost">검색</button>
+            </div>
+            <table>
+              <thead><tr><th>관리정책명</th><th>생성일</th><th>마지막 수정일</th></tr></thead>
+              <tbody>
+                <tr class="clickable" onclick="go('z-detail')"><td>강북_평일_기본정책</td><td>2026-03-01</td><td>2026-03-18</td></tr>
+                <tr class="clickable" onclick="go('z-detail')"><td>강남_피크강화_정책</td><td>2026-03-04</td><td>2026-03-19</td></tr>
+                <tr class="clickable" onclick="go('z-detail')"><td>주말_통합_운영정책</td><td>2026-03-10</td><td>2026-03-19</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="footer"><button class="btn primary" onclick="go('z-create')">관리정책 생성</button></div>
+        </div>
+      </div>
+
+      <!-- A-2 생성 -->
+      <div class="page" id="z-create">
+        <div class="bc"><a onclick="go('z-list')">인트라 > 권역관리</a> > 관리정책 생성</div>
+        <div class="card">
+          <div class="card-head">관리정책 생성</div>
+          <div class="card-body">
+            <div class="fr"><label>관리정책명 *</label><input type="text" class="wide" placeholder="정책명 입력 (중복 불가)"></div>
+            <div class="tabs" id="ztabs-c">
+              <div class="tab active" onclick="ztab(this,'zc-vol')">세트 물량 구성</div>
+              <div class="tab" onclick="ztab(this,'zc-rwd')">보상기준</div>
+              <div class="tab" onclick="ztab(this,'zc-cost')">기사 원가 요금제</div>
+              <div class="tab" onclick="ztab(this,'zc-zone')">연결 zone</div>
+            </div>
+            <div id="zc-vol" class="ztp">
+              <div class="notice">시간 정합성: 시작&lt;종료 · 순서 정렬 · 오버랩 금지 · 5구간 빈틈 없이 연속</div>
+              <table><thead><tr><th>요일</th>
+                <th><div class="th-time"><span>시간대 1</span><input class="time" value="07:00">~<input class="time" value="11:00"></div></th>
+                <th><div class="th-time"><span>시간대 2</span><input class="time" value="11:00">~<input class="time" value="14:00"></div></th>
+                <th><div class="th-time"><span>시간대 3</span><input class="time" value="14:00">~<input class="time" value="17:00"></div></th>
+                <th><div class="th-time"><span>시간대 4</span><input class="time" value="17:00">~<input class="time" value="20:00"></div></th>
+                <th><div class="th-time"><span>시간대 5</span><input class="time" value="20:00">~<input class="time" value="23:00"></div></th>
+              </tr></thead><tbody id="matrix-create"></tbody></table>
+            </div>
+            <div id="zc-rwd" class="ztp hidden">
+              <div class="sl">보상 조건</div>
+              <div class="fr"><label>수락률 (0~100%)</label><input type="number" value="0" style="width:80px"> %</div>
+              <div class="fr"><label>성공 슬롯 수 (0~35)</label><input type="number" value="0" style="width:80px"> 개</div>
+              <div class="sl" style="margin-top:16px;">보상 금액</div>
+              <div class="fr"><label>세트당 보상 금액</label><input type="number" value="0" style="width:120px"> 원</div>
+            </div>
+            <div id="zc-cost" class="ztp hidden">
+              <div class="sl">기사 원가 요금제</div>
+              <div class="notice">모든 항목 0원 미만 입력 시 저장 불가</div>
+              <div class="fr"><label>50미터 당 금액</label><input type="number" value="0" style="width:120px"> 원</div>
+              <div class="fr"><label>픽업비용</label><input type="number" value="0" style="width:120px"> 원</div>
+              <div class="fr"><label>배송완료 비용</label><input type="number" value="0" style="width:120px"> 원</div>
+            </div>
+            <div id="zc-zone" class="ztp hidden">
+              <div class="sl">연결 zone</div>
+              <div class="row"><button class="btn ghost">zone 검색</button></div>
+              <div class="zone-list"><div class="zone-chip">강북A <span class="x">×</span></div><div class="zone-chip">강북B <span class="x">×</span></div></div>
+              <div class="err-box" style="margin-top:12px;">저장 실패 예시: zone '마포C'은(는) 관리정책 '주말_통합_운영정책'에 이미 연결되어 있어 저장할 수 없습니다.</div>
+            </div>
+          </div>
+          <div class="footer">
+            <button class="btn ghost" onclick="go('z-list')">취소</button>
+            <button class="btn primary" onclick="alert('저장 성공! 목록으로 이동합니다.');go('z-list');">관리 정책 저장</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- A-3 상세 -->
+      <div class="page" id="z-detail">
+        <div class="bc"><a onclick="go('z-list')">인트라 > 권역관리</a> > 강북_평일_기본정책</div>
+        <div class="card">
+          <div class="card-head">관리정책 상세 — 강북_평일_기본정책</div>
+          <div class="card-body">
+            <div class="fr"><label>관리정책명</label><input type="text" class="wide" value="강북_평일_기본정책"></div>
+            <div class="tabs" id="ztabs-d">
+              <div class="tab active" onclick="ztab(this,'zd-vol')">세트 물량 구성</div>
+              <div class="tab" onclick="ztab(this,'zd-rwd')">보상기준</div>
+              <div class="tab" onclick="ztab(this,'zd-cost')">기사 원가 요금제</div>
+              <div class="tab" onclick="ztab(this,'zd-zone')">연결 zone</div>
+              <div class="tab" onclick="ztab(this,'zd-hist')">변경 이력</div>
+            </div>
+            <div id="zd-vol" class="ztp">
+              <div class="notice">시간 정합성: 시작&lt;종료 · 순서 정렬 · 오버랩 금지 · 5구간 빈틈 없이 연속</div>
+              <table><thead><tr><th>요일</th>
+                <th><div class="th-time"><span>시간대 1</span><input class="time" value="07:00">~<input class="time" value="11:00"></div></th>
+                <th><div class="th-time"><span>시간대 2</span><input class="time" value="11:00">~<input class="time" value="14:00"></div></th>
+                <th><div class="th-time"><span>시간대 3</span><input class="time" value="14:00">~<input class="time" value="17:00"></div></th>
+                <th><div class="th-time"><span>시간대 4</span><input class="time" value="17:00">~<input class="time" value="20:00"></div></th>
+                <th><div class="th-time"><span>시간대 5</span><input class="time" value="20:00">~<input class="time" value="23:00"></div></th>
+              </tr></thead><tbody id="matrix-detail"></tbody></table>
+            </div>
+            <div id="zd-rwd" class="ztp hidden">
+              <div class="sl">보상 조건</div>
+              <div class="fr"><label>수락률 (0~100%)</label><input type="number" value="92" style="width:80px"> %</div>
+              <div class="fr"><label>성공 슬롯 수 (0~35)</label><input type="number" value="28" style="width:80px"> 개</div>
+              <div class="sl" style="margin-top:16px;">보상 금액</div>
+              <div class="fr"><label>세트당 보상 금액</label><input type="number" value="150000" style="width:120px"> 원</div>
+            </div>
+            <div id="zd-cost" class="ztp hidden">
+              <div class="sl">기사 원가 요금제</div>
+              <div class="fr"><label>50미터 당 금액</label><input type="number" value="100" style="width:120px"> 원</div>
+              <div class="fr"><label>픽업비용</label><input type="number" value="500" style="width:120px"> 원</div>
+              <div class="fr"><label>배송완료 비용</label><input type="number" value="700" style="width:120px"> 원</div>
+            </div>
+            <div id="zd-zone" class="ztp hidden">
+              <div class="sl">연결 zone</div>
+              <div class="row"><button class="btn ghost">zone 검색</button></div>
+              <div class="zone-list"><div class="zone-chip">강북A <span class="x">×</span></div><div class="zone-chip">강북B <span class="x">×</span></div></div>
+            </div>
+            <div id="zd-hist" class="ztp hidden">
+              <div class="sl">변경 이력</div>
+              <table><thead><tr><th>변경 일시</th><th>변경자</th><th>변경 항목</th><th>변경 전</th><th>변경 후</th></tr></thead>
+              <tbody>
+                <tr class="history-row"><td>2026-03-19 14:22</td><td>김재형</td><td>보상 조건 > 수락률</td><td>85%</td><td>92%</td></tr>
+                <tr class="history-row"><td>2026-03-18 10:05</td><td>김재형</td><td>물량 구성 > 금요일 저녁피크</td><td>72건</td><td>80건</td></tr>
+                <tr class="history-row"><td>2026-03-15 09:30</td><td>이희연</td><td>연결 zone</td><td>강북A</td><td>강북A, 강북B</td></tr>
+                <tr class="history-row"><td>2026-03-01 11:00</td><td>이희연</td><td>정책 생성</td><td>-</td><td>초기 생성</td></tr>
+              </tbody></table>
+            </div>
+          </div>
+          <div class="footer">
+            <button class="btn ghost" onclick="go('z-list')">목록으로</button>
+            <button class="btn primary" onclick="alert('저장 성공!')">관리 정책 저장</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!--           MODULE B: 세트분배 관리                          -->
+      <!-- ======================================================= -->
+
+      <!-- B-1 Zone 목록 -->
+      <div class="page" id="s-list">
+        <div class="bc">인트라 > 세트분배 관리</div>
+        <div class="card">
+          <div class="card-head">세트분배 관리</div>
+          <div class="card-body">
+            <div class="row">
+              <input type="text" class="wide" placeholder="Zone 이름 검색">
+              <button class="btn ghost">검색</button>
+            </div>
+            <table>
+              <thead><tr><th>Zone 이름</th><th>연결 벤더 수</th><th>수행 세트 수</th></tr></thead>
+              <tbody>
+                <tr class="clickable" onclick="go('s-detail')"><td>강북A</td><td>3개</td><td>12개</td></tr>
+                <tr class="clickable" onclick="go('s-detail')"><td>강남B</td><td>2개</td><td>8개</td></tr>
+                <tr class="clickable" onclick="go('s-detail')"><td>마포C</td><td>4개</td><td>18개</td></tr>
+                <tr class="clickable" onclick="go('s-detail')"><td>송파D</td><td>1개</td><td>5개</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- B-2 Zone 상세 -->
+      <div class="page" id="s-detail">
+        <div class="bc"><a onclick="go('s-list')">인트라 > 세트분배 관리</a> > 강북A</div>
+        <div class="card">
+          <div class="card-head">강북A — 세트분배 관리</div>
+          <div class="card-body">
+            <div class="tabs" id="stabs">
+              <div class="tab active" onclick="stab(this,'sv')">연결 벤더</div>
+              <div class="tab" onclick="stab(this,'ss')">벤더별 세트 분배</div>
+            </div>
+            <div id="sv" class="stp">
+              <div class="sl">현재 연결된 벤더 목록</div>
+              <table><thead><tr><th>벤더명</th><th style="width:80px;text-align:center;">삭제</th></tr></thead>
+              <tbody>
+                <tr><td>A벤더</td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+                <tr><td>B벤더</td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+                <tr><td>C벤더</td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+              </tbody></table>
+              <div style="margin-top:10px;"><div class="row"><input type="text" placeholder="벤더명 검색"><button class="btn ghost">벤더 검색</button></div></div>
+              <div class="err-box">저장 실패 예시: 벤더 'D벤더'는 Zone '송파D'에 이미 연결되어 있어 저장할 수 없습니다.</div>
+            </div>
+            <div id="ss" class="stp hidden">
+              <div class="sl">벤더별 세트 수 입력</div>
+              <table><thead><tr><th>벤더명</th><th style="width:140px;">세트 수</th></tr></thead>
+              <tbody>
+                <tr><td>A벤더</td><td><input class="set-input" type="number" value="5" min="0"></td></tr>
+                <tr><td>B벤더</td><td><input class="set-input" type="number" value="4" min="0"></td></tr>
+                <tr><td>C벤더</td><td><input class="set-input" type="number" value="3" min="0"></td></tr>
+              </tbody></table>
+              <div style="font-size:11px;color:#64748b;margin-top:6px;">저장 이력 없는 벤더는 기본 0개 · 음수/빈칸 입력 시 저장 불가</div>
+            </div>
+          </div>
+          <div class="footer">
+            <button class="btn ghost" onclick="go('s-list')">목록으로</button>
+            <button class="btn primary" id="s-save" onclick="alert('저장 성공!')">연결 벤더 목록 저장</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    var days = ['월','화','수','목','금','토','일'];
+    var detailVals = [[32,65,41,72,35],[30,62,39,70,34],[31,64,40,71,35],[33,67,42,74,37],[36,72,45,80,42],[38,78,49,86,47],[35,73,46,82,44]];
+    function buildMatrix(tbodyId, vals) {
+      var tb = document.getElementById(tbodyId);
+      days.forEach(function(d,i) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>'+d+'</td>';
+        for (var j=0;j<5;j++) tr.innerHTML += '<td><input class="cell" type="number" value="'+(vals?vals[i][j]:0)+'"></td>';
+        tb.appendChild(tr);
+      });
+    }
+    buildMatrix('matrix-create', null);
+    buildMatrix('matrix-detail', detailVals);
+
+    var allPages = document.querySelectorAll('.page');
+    function go(id) {
+      allPages.forEach(function(p){p.classList.remove('visible');});
+      document.getElementById(id).classList.add('visible');
+    }
+    function goModule(m) {
+      document.querySelectorAll('.gnb .item').forEach(function(i){i.classList.remove('active');});
+      if (m==='zone') { document.getElementById('gnb-zone').classList.add('active'); go('z-list'); }
+      if (m==='set')  { document.getElementById('gnb-set').classList.add('active'); go('s-list'); }
+    }
+    function ztab(el, panelId) {
+      el.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+      el.classList.add('active');
+      el.closest('.card-body').querySelectorAll('.ztp').forEach(function(p){p.classList.add('hidden');});
+      document.getElementById(panelId).classList.remove('hidden');
+    }
+    function stab(el, panelId) {
+      el.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+      el.classList.add('active');
+      el.closest('.card-body').querySelectorAll('.stp').forEach(function(p){p.classList.add('hidden');});
+      document.getElementById(panelId).classList.remove('hidden');
+      document.getElementById('s-save').textContent = panelId==='sv' ? '연결 벤더 목록 저장' : '세트 분배 저장';
+    }
+  </script>
+</body>
+</html>
