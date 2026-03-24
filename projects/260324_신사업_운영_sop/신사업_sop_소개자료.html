@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1200">
+<title>신사업 분기 기획 SOP 소개</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#0d1117;color:#c9d1d9;font-size:14px;line-height:1.5}
+.slide{min-height:100vh;padding:48px 64px;border-bottom:1px solid #21262d;display:flex;flex-direction:column;justify-content:center}
+
+:root{
+  --plan:#a78bfa;--plan-bg:rgba(167,139,250,.12);--plan-border:#7c3aed;
+  --sales:#f87171;--sales-bg:rgba(248,113,113,.12);--sales-border:#dc2626;
+  --ops:#60a5fa;--ops-bg:rgba(96,165,250,.12);--ops-border:#2563eb;
+  --accent:#fbbf24;--green:#34d399;--muted:#6b7280;
+  --card:#161b22;--card-border:#30363d;
+}
+
+h1{font-size:2.6rem;color:#fff;font-weight:800;letter-spacing:-.5px}
+h2{font-size:1.7rem;color:#fff;font-weight:700;margin-bottom:20px}
+h3{font-size:1.05rem;color:#e5e7eb;font-weight:600;margin-bottom:8px}
+.sl{font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+.tag-plan{background:var(--plan-bg);color:var(--plan);border:1px solid var(--plan-border)}
+.tag-sales{background:var(--sales-bg);color:var(--sales);border:1px solid var(--sales-border)}
+.tag-ops{background:var(--ops-bg);color:var(--ops);border:1px solid var(--ops-border)}
+.tag-sm{font-size:.65rem;padding:2px 8px}
+
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:20px 24px}
+.card ul{margin-left:18px;color:#9ca3af;font-size:.85rem;line-height:1.7}
+.card ul li strong{color:#e5e7eb}
+
+.role{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:600;margin:6px 0}
+.role-lead{border:2px solid var(--accent);color:var(--accent);background:rgba(251,191,36,.08)}
+.role-lead::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.role-review{border:1px solid #4b5563;color:#9ca3af;background:rgba(75,85,99,.15)}
+.role-approve{border:1px solid var(--green);color:var(--green);background:rgba(52,211,153,.08)}
+.role-approve::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th,td{padding:8px 12px;text-align:left;border:1px solid var(--card-border)}
+th{background:#161b22;color:var(--accent);font-weight:600;font-size:.75rem}
+
+.output{display:inline-block;padding:3px 10px;border-radius:6px;font-size:.73rem;font-weight:600;background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.3);margin:2px}
+.sys{display:inline-block;padding:3px 10px;border-radius:6px;font-size:.73rem;font-weight:600;background:rgba(167,139,250,.12);color:var(--plan);border:1px solid rgba(167,139,250,.3);margin:2px}
+
+.note{background:rgba(251,191,36,.08);border-left:3px solid var(--accent);padding:10px 16px;border-radius:0 8px 8px 0;font-size:.82rem;color:#d1d5db;margin:12px 0}
+
+.ratio-bar{display:flex;height:28px;border-radius:6px;overflow:hidden;font-size:.75rem;font-weight:600;margin:6px 0}
+.ratio-v{background:var(--plan);color:#fff;display:flex;align-items:center;justify-content:center}
+.ratio-f{background:var(--sales);color:#fff;display:flex;align-items:center;justify-content:center}
+
+/* ── Flow pipeline ── */
+.pipeline{display:flex;align-items:stretch;gap:0;margin:24px 0}
+.pipe{flex:1;position:relative;padding-right:28px}
+.pipe:last-child{padding-right:0}
+.pipe-box{border-radius:12px;padding:16px 16px 14px;height:100%;display:flex;flex-direction:column}
+.pipe-num{font-size:.65rem;font-weight:700;letter-spacing:1px;opacity:.6;margin-bottom:2px}
+.pipe-title{font-size:.92rem;font-weight:700;color:#fff;margin-bottom:4px}
+.pipe-sub{font-size:.68rem;color:var(--muted)}
+.pipe-tags{margin-top:auto;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);display:flex;gap:4px;flex-wrap:wrap}
+
+.pipe-arrow{position:absolute;right:4px;top:0;bottom:0;width:24px;display:flex;align-items:center;justify-content:center}
+.pipe-arrow svg{width:20px;height:20px}
+
+.s1 .pipe-box{background:linear-gradient(135deg,rgba(167,139,250,.2),rgba(167,139,250,.06));border:1px solid rgba(167,139,250,.3)}
+.s2 .pipe-box{background:linear-gradient(135deg,rgba(248,113,113,.2),rgba(248,113,113,.06));border:1px solid rgba(248,113,113,.3)}
+.s3 .pipe-box{background:linear-gradient(135deg,rgba(251,191,36,.2),rgba(251,191,36,.06));border:1px solid rgba(251,191,36,.3)}
+.s4 .pipe-box{background:linear-gradient(135deg,rgba(96,165,250,.2),rgba(96,165,250,.06));border:1px solid rgba(96,165,250,.3)}
+.s5 .pipe-box{background:linear-gradient(135deg,rgba(52,211,153,.2),rgba(52,211,153,.06));border:1px solid rgba(52,211,153,.3)}
+
+/* ── Concept diagram ── */
+.concept-row{display:flex;align-items:center;gap:16px;margin:8px 0}
+.concept-box{border-radius:10px;padding:14px 18px;flex:1;text-align:center}
+.concept-label{font-size:.7rem;font-weight:700;letter-spacing:.5px;opacity:.7;margin-bottom:4px}
+.concept-value{font-size:1rem;font-weight:700;color:#fff}
+.concept-desc{font-size:.75rem;color:var(--muted);margin-top:4px}
+.concept-arrow{color:var(--accent);font-size:1.2rem;font-weight:900;flex-shrink:0}
+
+/* ── Price visual ── */
+.price-bar{border-radius:8px;padding:10px 16px;font-size:.82rem;margin:3px 0;display:flex;justify-content:space-between;align-items:center}
+.pb-total{background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);color:var(--sales);font-weight:700}
+.pb-margin{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);color:var(--accent);font-weight:600;margin-left:20px}
+.pb-cost{background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.25);color:var(--ops);margin-left:20px}
+.pb-detail{background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.15);color:var(--ops);opacity:.8;font-size:.75rem;margin-left:40px}
+
+/* ── System flow ── */
+.sys-flow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
+.sys-node{background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:10px 16px;text-align:center}
+.sys-node-title{font-size:.7rem;font-weight:700;color:var(--accent);margin-bottom:2px}
+.sys-node-desc{font-size:.78rem;color:#e5e7eb}
+.sys-arrow{color:var(--accent);font-size:1.1rem;font-weight:900}
+
+/* ── Timeline bar ── */
+.tl-bar{display:flex;margin:20px 0;position:relative;height:80px;align-items:center}
+.tl-track{position:absolute;top:50%;left:0;right:0;height:4px;background:#21262d;border-radius:2px;transform:translateY(-50%)}
+.tl-segment{position:absolute;height:4px;border-radius:2px;top:50%;transform:translateY(-50%)}
+.tl-node{position:absolute;top:50%;transform:translate(-50%,-50%);text-align:center;z-index:2}
+.tl-dot{width:16px;height:16px;border-radius:50%;border:3px solid;margin:0 auto 6px}
+.tl-label{font-size:.73rem;font-weight:600;color:#e5e7eb;white-space:nowrap}
+.tl-desc{font-size:.65rem;color:var(--muted);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<!-- ═══ SLIDE 1: COVER ═══ -->
+<div class="slide" style="align-items:center;text-align:center;background:linear-gradient(160deg,#0d1117 0%,#161b22 50%,#1a1040 100%)">
+    <div class="sl">Operations SOP | 신규 조직 온보딩</div>
+    <h1 style="margin-bottom:8px">신사업 분기 기획<br>운영 프로세스</h1>
+    <p style="color:var(--muted);font-size:1.05rem;margin-top:12px">권역/세트분배 기능을 활용하는 신규 사업의<br>분기 단위 기획 프로세스 (4주)</p>
+    <div style="display:flex;gap:12px;margin-top:32px;justify-content:center">
+        <span class="tag tag-plan">기획조직 — 조율/승인</span>
+        <span class="tag tag-sales">영업조직 — 기획 주도</span>
+        <span class="tag tag-ops">운영조직 — 공급 실현</span>
+    </div>
+    <p style="color:#4b5563;font-size:.8rem;margin-top:40px">v0.2 | 2026.03.24</p>
+</div>
+
+<!-- ═══ SLIDE 2: KEY CONCEPTS ═══ -->
+<div class="slide">
+    <div class="sl">먼저 알아야 할 것</div>
+    <h2>핵심 개념: 배송 공급 구조</h2>
+
+    <div class="grid-2">
+        <div>
+            <div class="card" style="border-top:3px solid var(--plan)">
+                <h3 style="color:var(--plan)">벤더 (위탁 업체)</h3>
+                <p style="font-size:.88rem;color:#e5e7eb;margin:8px 0">5명 내외의 배송 기사를 보유한 <strong>계약 위탁 업체</strong></p>
+                <ul>
+                    <li><strong>권역(Zone) 단위</strong>로 계약하여 안정적 배송 수행</li>
+                    <li><strong>세트</strong> 단위로 물량을 분배받아 의무 수행</li>
+                    <li>신규 지역 진입 시 <strong>70% 비중</strong>으로 품질 확보</li>
+                </ul>
+            </div>
+            <div class="card" style="border-top:3px solid var(--sales);margin-top:12px">
+                <h3 style="color:var(--sales)">프렌즈 (크라우드소싱)</h3>
+                <p style="font-size:.88rem;color:#e5e7eb;margin:8px 0">자유롭게 참여하는 <strong>개인 배송 기사</strong></p>
+                <ul>
+                    <li>물량 변동에 <strong>유연하게 증감</strong> 가능한 버퍼 역할</li>
+                    <li>AI 배차 엔진이 자동으로 오더 배정</li>
+                    <li>안정기에는 <strong>50% 비중</strong>까지 확대하여 비용 최적화</li>
+                </ul>
+            </div>
+        </div>
+        <div>
+            <div class="card" style="min-height:100%">
+                <h3>핵심 용어 한눈에</h3>
+                <div style="margin-top:12px">
+                    <div class="concept-row">
+                        <div class="concept-box" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25)">
+                            <div class="concept-label" style="color:var(--sales)">권역 (Zone)</div>
+                            <div class="concept-value">배달 구역</div>
+                            <div class="concept-desc">상점-벤더-기사를 연결하는 지역 단위</div>
+                        </div>
+                    </div>
+                    <div style="text-align:center;color:var(--muted);font-size:.75rem;margin:4px 0">Zone 안에서 ↓</div>
+                    <div class="concept-row">
+                        <div class="concept-box" style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25)">
+                            <div class="concept-label" style="color:var(--plan)">세트</div>
+                            <div class="concept-value">벤더 물량 단위</div>
+                            <div class="concept-desc">요일x시간대별 목표 오더 수 묶음</div>
+                        </div>
+                        <div class="concept-box" style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25)">
+                            <div class="concept-label" style="color:var(--ops)">슬롯</div>
+                            <div class="concept-value">7일 x 5시간대</div>
+                            <div class="concept-desc">= 35칸 운영 매트릭스</div>
+                        </div>
+                    </div>
+                    <div style="text-align:center;color:var(--muted);font-size:.75rem;margin:4px 0">이 모든 설정을 묶는 ↓</div>
+                    <div class="concept-row">
+                        <div class="concept-box" style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25)">
+                            <div class="concept-label" style="color:var(--accent)">관리정책</div>
+                            <div class="concept-value">세트물량 + 보상기준 + 원가요금제 + Zone연결</div>
+                            <div class="concept-desc">인트라 권역관리 시스템의 핵심 관리 단위</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 3: 3 TEAMS ═══ -->
+<div class="slide">
+    <div class="sl">참여 조직</div>
+    <h2>3개 조직이 함께 만드는 분기 기획</h2>
+
+    <div class="grid-3" style="margin-top:8px">
+        <div class="card" style="border-left:3px solid var(--plan-border)">
+            <span class="tag tag-plan" style="margin-bottom:12px">기획조직</span>
+            <h3 style="color:var(--plan)">조율 & 승인</h3>
+            <ul>
+                <li>전체 기획 사이클 <strong>오케스트레이션</strong></li>
+                <li>각 단계 산출물 <strong>리뷰 및 최종 승인</strong></li>
+                <li>분기 목표 <strong>확정 및 하달</strong></li>
+            </ul>
+        </div>
+        <div class="card" style="border-left:3px solid var(--sales-border)">
+            <span class="tag tag-sales" style="margin-bottom:12px">영업조직</span>
+            <h3 style="color:var(--sales)">기획 주도 (Sales First)</h3>
+            <ul>
+                <li><strong>권역(Zone) 기획</strong> 주도</li>
+                <li>경쟁사 분석 기반 <strong>판가 설정</strong></li>
+                <li>주차별 <strong>영업 목표물량</strong> 수립</li>
+            </ul>
+        </div>
+        <div class="card" style="border-left:3px solid var(--ops-border)">
+            <span class="tag tag-ops" style="margin-bottom:12px">운영조직</span>
+            <h3 style="color:var(--ops)">공급 실현 & 검토</h3>
+            <ul>
+                <li>영업 제안 Zone의 <strong>협력사 확보 가능성 검토</strong></li>
+                <li><strong>기사 원가</strong> 설계</li>
+                <li>벤더/프렌즈 <strong>공급 목표 산출</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="note" style="margin-top:20px">
+        <strong>이후 각 단계 슬라이드에서 조직 역할을 이렇게 표시합니다:</strong>
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
+            <div class="role role-lead" style="margin:0;font-size:.75rem">주도 — 업무를 이끄는 조직</div>
+            <div class="role role-review" style="margin:0;font-size:.75rem">검토 — 피드백하는 조직</div>
+            <div class="role role-approve" style="margin:0;font-size:.75rem">승인 — 최종 확정하는 조직</div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 4: FULL FLOW + TIMELINE ═══ -->
+<div class="slide">
+    <div class="sl">전체 프로세스</div>
+    <h2>분기 개시 4주 전, 5단계로 기획 완료</h2>
+
+    <div class="pipeline">
+        <div class="pipe s1">
+            <div class="pipe-box">
+                <div class="pipe-num">STEP 1</div>
+                <div class="pipe-title">목표지역 확정</div>
+                <div class="pipe-sub">킥오프 당일 확정</div>
+                <div class="pipe-tags"><span class="tag tag-plan tag-sm">기획 주도</span></div>
+            </div>
+            <div class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="pipe s2">
+            <div class="pipe-box">
+                <div class="pipe-num">STEP 2</div>
+                <div class="pipe-title">권역 기획</div>
+                <div class="pipe-sub">Q-4주 ~ Q-3주 (1주)</div>
+                <div class="pipe-tags"><span class="tag tag-sales tag-sm">영업 주도</span> <span class="tag tag-ops tag-sm">운영 검토</span></div>
+            </div>
+            <div class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="pipe s3">
+            <div class="pipe-box">
+                <div class="pipe-num">STEP 3</div>
+                <div class="pipe-title">원/판가 기획</div>
+                <div class="pipe-sub">Q-3주 ~ Q-2.5주</div>
+                <div class="pipe-tags"><span class="tag tag-sales tag-sm">영업=판가</span> <span class="tag tag-ops tag-sm">운영=원가</span></div>
+            </div>
+            <div class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="pipe s4">
+            <div class="pipe-box">
+                <div class="pipe-num">STEP 4</div>
+                <div class="pipe-title">영업 목표물량</div>
+                <div class="pipe-sub">Q-2.5주 ~ Q-2주</div>
+                <div class="pipe-tags"><span class="tag tag-sales tag-sm">영업 주도</span></div>
+            </div>
+            <div class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="pipe s5">
+            <div class="pipe-box">
+                <div class="pipe-num">STEP 5</div>
+                <div class="pipe-title">기사 공급목표</div>
+                <div class="pipe-sub">Q-2주 ~ Q-1주 (1주)</div>
+                <div class="pipe-tags"><span class="tag tag-ops tag-sm">운영 주도</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Horizontal timeline -->
+    <div class="tl-bar">
+        <div class="tl-track"></div>
+        <div class="tl-segment" style="left:0;width:25%;background:var(--plan);opacity:.5"></div>
+        <div class="tl-segment" style="left:25%;width:25%;background:var(--sales);opacity:.5"></div>
+        <div class="tl-segment" style="left:50%;width:25%;background:var(--ops);opacity:.5"></div>
+        <div class="tl-segment" style="left:75%;width:25%;background:var(--green);opacity:.5"></div>
+
+        <div class="tl-node" style="left:0%"><div class="tl-dot" style="border-color:var(--plan);background:var(--plan)"></div><div class="tl-label">Q-4주</div><div class="tl-desc">킥오프 + 지역 확정</div></div>
+        <div class="tl-node" style="left:25%"><div class="tl-dot" style="border-color:var(--sales);background:var(--sales)"></div><div class="tl-label">Q-3주</div><div class="tl-desc">Zone 확정 / 원판가</div></div>
+        <div class="tl-node" style="left:50%"><div class="tl-dot" style="border-color:var(--ops);background:var(--ops)"></div><div class="tl-label">Q-2주</div><div class="tl-desc">목표물량 확정</div></div>
+        <div class="tl-node" style="left:75%"><div class="tl-dot" style="border-color:var(--green);background:var(--green)"></div><div class="tl-label">Q-1주</div><div class="tl-desc">전체 확정</div></div>
+        <div class="tl-node" style="left:100%"><div class="tl-dot" style="border-color:#fff;background:#fff"></div><div class="tl-label" style="color:var(--accent)">Q 시작</div><div class="tl-desc" style="color:var(--accent)">분기 운영 개시</div></div>
+    </div>
+
+    <div style="text-align:center;margin-top:8px;font-size:.78rem;color:var(--muted)">
+        <span style="color:var(--plan)">기획</span> = 모든 단계의 최종 승인 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <span style="color:var(--sales)">영업</span> = Step 2~4 기획 주도 (Sales First) &nbsp;&nbsp;|&nbsp;&nbsp;
+        <span style="color:var(--ops)">운영</span> = 공급 실현성 검토 + Step 5 주도
+    </div>
+</div>
+
+<!-- ═══ SLIDE 5: STEP 2 — Zone 기획 ═══ -->
+<div class="slide">
+    <div class="sl">Step 2 — Sales First</div>
+    <h2>권역 기획 <span style="font-size:.9rem;color:var(--muted);font-weight:400">Q-4주 ~ Q-3주 (1주)</span></h2>
+
+    <div class="grid-2" style="margin-top:4px">
+        <div>
+            <div class="card">
+                <div class="role role-lead"><span class="tag tag-sales tag-sm" style="border:0;padding:0">영업</span> 경쟁사 분석 기반 Zone 설계 (주도)</div>
+                <ul style="margin-top:8px">
+                    <li>경쟁사 대비 <strong>동등 이상의 배달 커버리지</strong> 확보 목표</li>
+                    <li>상점 밀집도, 상권 특성 반영한 Zone 경계 설정</li>
+                </ul>
+
+                <div class="role role-review" style="margin-top:14px"><span class="tag tag-ops tag-sm" style="border:0;padding:0">운영</span> 협력사 확보 가능성 검토</div>
+                <ul style="margin-top:8px">
+                    <li>제안된 Zone에 <strong>벤더 확보가 가능한지</strong> 검증</li>
+                    <li>배송 동선 효율, 지리적 제약에 대한 피드백</li>
+                </ul>
+
+                <div class="role role-approve" style="margin-top:14px"><span class="tag tag-plan tag-sm" style="border:0;padding:0">기획</span> Zone 확정 의사결정 (최종 승인)</div>
+            </div>
+        </div>
+        <div>
+            <div class="card">
+                <h3>예시: 서울시 동대문구</h3>
+                <table style="margin-top:8px">
+                    <tr><th>Zone</th><th>커버 지역</th><th>특성</th><th>예상 일 오더</th></tr>
+                    <tr><td style="color:var(--sales);font-weight:700">Zone A</td><td>동대문시장 ~ 청량리역</td><td>상업 밀집</td><td>~200건</td></tr>
+                    <tr><td style="color:var(--sales);font-weight:700">Zone B</td><td>전농동 ~ 답십리</td><td>주거 밀집</td><td>~150건</td></tr>
+                    <tr><td style="color:var(--sales);font-weight:700">Zone C</td><td>회기동 ~ 이문동</td><td>대학가</td><td>~120건</td></tr>
+                </table>
+                <div style="margin-top:14px;font-size:.78rem;color:var(--muted)">
+                    <strong style="color:#e5e7eb">Zone 설계 기준:</strong> 반경 1~3km, 상점 100~300개, 일 100~500건, 편도 3km 이내
+                </div>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+                <span class="output">권역 구획 맵</span>
+                <span class="output">Zone 목록표</span>
+                <span class="sys">인트라: 관리정책 생성 + Zone 연결</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 6: STEP 3 — 원/판가 ═══ -->
+<div class="slide">
+    <div class="sl">Step 3</div>
+    <h2>원/판가 기획 <span style="font-size:.9rem;color:var(--muted);font-weight:400">Q-3주 ~ Q-2.5주</span></h2>
+
+    <div class="grid-2" style="margin-top:4px">
+        <div>
+            <div class="card">
+                <h3>가격 구조</h3>
+                <div style="margin:12px 0">
+                    <div class="price-bar pb-total">상점 판가 (건당) <span style="font-size:.72rem;opacity:.7">영업조직이 설정</span></div>
+                    <div class="price-bar pb-margin">영업이익 마진</div>
+                    <div class="price-bar pb-cost">기사 원가 <span style="font-size:.72rem;opacity:.7">운영조직이 설정</span></div>
+                    <div class="price-bar pb-detail">50m당 금액 x 거리</div>
+                    <div class="price-bar pb-detail">픽업비용 (건당 고정)</div>
+                    <div class="price-bar pb-detail">배송완료 비용 (건당 고정)</div>
+                </div>
+
+                <div class="role role-lead"><span class="tag tag-sales tag-sm" style="border:0;padding:0">영업</span> 판가 설정 주도</div>
+                <div class="role role-lead"><span class="tag tag-ops tag-sm" style="border:0;padding:0">운영</span> 원가 설계 주도</div>
+                <div class="role role-approve"><span class="tag tag-plan tag-sm" style="border:0;padding:0">기획</span> P&L 검증 후 승인</div>
+            </div>
+        </div>
+        <div>
+            <div class="card">
+                <h3>예시: 동대문구 원/판가</h3>
+                <table style="margin-top:8px">
+                    <tr><th>Zone</th><th>판가</th><th>기사 원가 구성</th><th>마진</th></tr>
+                    <tr><td>Zone A</td><td style="color:var(--sales);font-weight:600">4,200원</td><td style="color:var(--ops)">50m당 50원 + 픽업 1,000원 + 완료 500원</td><td>~30%</td></tr>
+                    <tr><td>Zone B</td><td style="color:var(--sales);font-weight:600">3,800원</td><td style="color:var(--ops)">50m당 45원 + 픽업 900원 + 완료 500원</td><td>~28%</td></tr>
+                    <tr><td>Zone C</td><td style="color:var(--sales);font-weight:600">3,500원</td><td style="color:var(--ops)">50m당 40원 + 픽업 800원 + 완료 500원</td><td>~25%</td></tr>
+                </table>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+                <span class="output">권역별 원/판가표</span>
+                <span class="output">수익성 시뮬레이션</span>
+                <span class="sys">인트라: 원가 요금제 + 보상기준</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 7: STEP 4+5 — 목표물량 → 공급목표 ═══ -->
+<div class="slide">
+    <div class="sl">Step 4 + 5</div>
+    <h2>영업 목표물량 <span style="font-size:.85rem;color:var(--muted);font-weight:400">그리고</span> 기사 공급목표</h2>
+    <p style="color:var(--muted);font-size:.88rem;margin:-12px 0 16px">Step 4에서 "얼마나 팔 것인가"를 정하고, Step 5에서 "누가 배달할 것인가"를 산출합니다</p>
+
+    <div class="grid-2">
+        <!-- STEP 4 -->
+        <div class="card" style="border-top:3px solid var(--ops)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div><span style="font-size:.7rem;font-weight:700;color:var(--ops)">STEP 4</span><span style="font-size:1rem;font-weight:700;color:#fff;margin-left:8px">영업 목표물량</span></div>
+                <span style="font-size:.7rem;color:var(--muted)">Q-2.5주 ~ Q-2주</span>
+            </div>
+
+            <div class="role role-lead"><span class="tag tag-sales tag-sm" style="border:0;padding:0">영업</span> 주차별 목표 오더 수립 (주도)</div>
+            <div class="role role-review"><span class="tag tag-ops tag-sm" style="border:0;padding:0">운영</span> Capa 검증 + 분배율 제안</div>
+            <div class="role role-approve"><span class="tag tag-plan tag-sm" style="border:0;padding:0">기획</span> 목표 + 분배율 확정 하달</div>
+
+            <h3 style="margin-top:16px">벤더 : 프렌즈 분배율</h3>
+            <div style="margin-top:4px">
+                <div style="font-size:.72rem;color:#9ca3af;margin-bottom:2px"><strong>초기</strong> (1~2주차)</div>
+                <div class="ratio-bar" style="height:22px"><div class="ratio-v" style="width:70%;font-size:.7rem">벤더 70%</div><div class="ratio-f" style="width:30%;font-size:.7rem">프렌즈 30%</div></div>
+            </div>
+            <div style="margin-top:6px">
+                <div style="font-size:.72rem;color:#9ca3af;margin-bottom:2px"><strong>성장기</strong> (3~6주차)</div>
+                <div class="ratio-bar" style="height:22px"><div class="ratio-v" style="width:60%;font-size:.7rem">60%</div><div class="ratio-f" style="width:40%;font-size:.7rem">40%</div></div>
+            </div>
+            <div style="margin-top:6px">
+                <div style="font-size:.72rem;color:#9ca3af;margin-bottom:2px"><strong>안정기</strong> (7주차~)</div>
+                <div class="ratio-bar" style="height:22px"><div class="ratio-v" style="width:50%;font-size:.7rem">50%</div><div class="ratio-f" style="width:50%;font-size:.7rem">50%</div></div>
+            </div>
+
+            <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+                <span class="output">주차별 목표물량표</span>
+                <span class="sys">인트라: 세트 물량 구성 (7x5)</span>
+            </div>
+        </div>
+
+        <!-- STEP 5 -->
+        <div class="card" style="border-top:3px solid var(--green)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div><span style="font-size:.7rem;font-weight:700;color:var(--green)">STEP 5</span><span style="font-size:1rem;font-weight:700;color:#fff;margin-left:8px">기사 공급목표</span></div>
+                <span style="font-size:.7rem;color:var(--muted)">Q-2주 ~ Q-1주</span>
+            </div>
+
+            <div class="role role-lead"><span class="tag tag-ops tag-sm" style="border:0;padding:0">운영</span> 벤더 세트 수 + 프렌즈 인원 산출 (주도)</div>
+            <div class="role role-review"><span class="tag tag-sales tag-sm" style="border:0;padding:0">영업</span> 물량 리스크 재확인</div>
+            <div class="role role-approve"><span class="tag tag-plan tag-sm" style="border:0;padding:0">기획</span> 최종 승인 + 분기 기획 완료 선언</div>
+
+            <h3 style="margin-top:16px">예시: 동대문구 1주차</h3>
+            <table style="margin-top:4px">
+                <tr><th>Zone</th><th>벤더</th><th>세트</th><th>프렌즈 활성목표</th></tr>
+                <tr><td>Zone A</td><td>427건</td><td style="color:var(--plan);font-weight:700">3세트</td><td style="color:var(--green);font-weight:700">10명</td></tr>
+                <tr><td>Zone B</td><td>315건</td><td style="color:var(--plan);font-weight:700">2세트</td><td style="color:var(--green);font-weight:700">8명</td></tr>
+                <tr><td>Zone C</td><td>252건</td><td style="color:var(--plan);font-weight:700">2세트</td><td style="color:var(--green);font-weight:700">7명</td></tr>
+                <tr style="font-weight:700"><td>합계</td><td>994건</td><td style="color:var(--plan)">7세트</td><td style="color:var(--green)">25명</td></tr>
+            </table>
+
+            <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+                <span class="output">벤더 세트 목표표</span>
+                <span class="output">프렌즈 인원 목표표</span>
+                <span class="sys">인트라: 세트분배 관리</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 8: SYSTEM FLOW ═══ -->
+<div class="slide">
+    <div class="sl">시스템 연동</div>
+    <h2>인트라 시스템은 이렇게 연결됩니다</h2>
+
+    <div class="card" style="margin-top:8px">
+        <div style="display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap;padding:20px 0">
+            <div class="sys-node" style="border-color:var(--sales-border)">
+                <div class="sys-node-title" style="color:var(--sales)">Step 2</div>
+                <div class="sys-node-desc">관리정책 생성<br>+ Zone 연결</div>
+            </div>
+            <div class="sys-arrow">&rarr;</div>
+            <div class="sys-node" style="border-color:var(--accent);border-color:rgba(251,191,36,.4)">
+                <div class="sys-node-title">Step 3</div>
+                <div class="sys-node-desc">기사 원가 요금제<br>+ 보상기준 입력</div>
+            </div>
+            <div class="sys-arrow">&rarr;</div>
+            <div class="sys-node" style="border-color:rgba(96,165,250,.4)">
+                <div class="sys-node-title" style="color:var(--ops)">Step 4</div>
+                <div class="sys-node-desc">세트 물량 구성<br>(7x5 매트릭스)</div>
+            </div>
+            <div class="sys-arrow">&rarr;</div>
+            <div class="sys-node" style="border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.08)">
+                <div class="sys-node-title">관리정책 전체 저장</div>
+                <div class="sys-node-desc">4개 탭 한 번에 저장</div>
+            </div>
+        </div>
+
+        <div style="text-align:center;color:var(--accent);font-size:1.2rem;margin:8px 0">&darr;</div>
+
+        <div style="display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap;padding:0 0 20px">
+            <div class="sys-node" style="border-color:rgba(52,211,153,.4)">
+                <div class="sys-node-title" style="color:var(--green)">Step 5</div>
+                <div class="sys-node-desc">세트분배 관리<br>Zone-벤더 연결 + 세트 수</div>
+            </div>
+            <div class="sys-arrow">&rarr;</div>
+            <div class="sys-node" style="border:2px solid var(--accent);background:rgba(251,191,36,.06)">
+                <div class="sys-node-title">AI 배차 엔진 자동 연동</div>
+                <div class="sys-node-desc">벤더 기사에게 Zone 오더 배정<br>잔여 물량 기반 우선도 조정</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="note" style="margin-top:16px">
+        <strong>핵심:</strong> Step 2~4에서 인트라 권역관리에 입력한 설정(Zone, 원가, 물량)이 Step 5의 세트분배를 거쳐 <strong>AI 배차 엔진에 자동 반영</strong>됩니다.
+    </div>
+</div>
+
+<!-- ═══ SLIDE 9: SUMMARY ═══ -->
+<div class="slide" style="align-items:center;text-align:center;background:linear-gradient(160deg,#0d1117 0%,#161b22 50%,#1a1040 100%)">
+    <div class="sl">요약</div>
+    <h2 style="font-size:2rem">4주 안에, 5단계로, 분기 기획 완료</h2>
+
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:32px;text-align:left;max-width:1100px;width:100%">
+        <div class="card" style="border-top:3px solid var(--plan);padding:14px 16px">
+            <div style="font-size:.68rem;color:var(--plan);font-weight:700">STEP 1</div>
+            <div style="font-size:.88rem;font-weight:700;color:#fff;margin:4px 0">지역 확정</div>
+            <div style="font-size:.7rem;color:var(--muted)">킥오프 당일</div>
+            <div style="margin-top:8px"><span class="tag tag-plan tag-sm">기획 주도</span></div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--sales);padding:14px 16px">
+            <div style="font-size:.68rem;color:var(--sales);font-weight:700">STEP 2</div>
+            <div style="font-size:.88rem;font-weight:700;color:#fff;margin:4px 0">권역 기획</div>
+            <div style="font-size:.7rem;color:var(--muted)">1주</div>
+            <div style="margin-top:8px"><span class="tag tag-sales tag-sm">영업 주도</span></div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--accent);padding:14px 16px">
+            <div style="font-size:.68rem;color:var(--accent);font-weight:700">STEP 3</div>
+            <div style="font-size:.88rem;font-weight:700;color:#fff;margin:4px 0">원/판가</div>
+            <div style="font-size:.7rem;color:var(--muted)">3~4일</div>
+            <div style="margin-top:8px"><span class="tag tag-sales tag-sm">영업=판가</span> <span class="tag tag-ops tag-sm">운영=원가</span></div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--ops);padding:14px 16px">
+            <div style="font-size:.68rem;color:var(--ops);font-weight:700">STEP 4</div>
+            <div style="font-size:.88rem;font-weight:700;color:#fff;margin:4px 0">목표물량</div>
+            <div style="font-size:.7rem;color:var(--muted)">3~4일</div>
+            <div style="margin-top:8px"><span class="tag tag-sales tag-sm">영업 주도</span></div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--green);padding:14px 16px">
+            <div style="font-size:.68rem;color:var(--green);font-weight:700">STEP 5</div>
+            <div style="font-size:.88rem;font-weight:700;color:#fff;margin:4px 0">공급목표</div>
+            <div style="font-size:.7rem;color:var(--muted)">1주</div>
+            <div style="margin-top:8px"><span class="tag tag-ops tag-sm">운영 주도</span></div>
+        </div>
+    </div>
+
+    <div style="margin-top:32px;display:flex;gap:24px;font-size:.85rem;color:var(--muted)">
+        <div><span style="color:var(--plan);font-weight:700">기획</span> = 전 단계 최종 승인</div>
+        <div><span style="color:var(--sales);font-weight:700">영업</span> = Step 2~4 기획 주도 (Sales First)</div>
+        <div><span style="color:var(--ops);font-weight:700">운영</span> = 공급 실현성 검토 + Step 5 주도</div>
+    </div>
+
+    <p style="color:#4b5563;font-size:.75rem;margin-top:40px">신사업 분기 기획 운영 SOP v0.2 | 2026.03.24</p>
+</div>
+
+</body>
+</html>

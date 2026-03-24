@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1600">
+    <title>신사업 분기 기획 운영 SOP — 워크플로우</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; background: #f5f5f5; color: #1a1a1a; font-size: 12px; }
+
+        .page { width: 1560px; margin: 20px auto; background: #fff; border: 1px solid #ddd; }
+
+        /* ── Header ── */
+        .header { padding: 28px 40px 18px; border-bottom: 2px solid #222; }
+        .header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+        .header-sub { display: flex; justify-content: space-between; margin-top: 6px; color: #666; font-size: 11px; }
+
+        /* ── Phase Columns Top Bar ── */
+        .phase-bar { display: grid; grid-template-columns: 120px 1fr 1fr 1fr 1fr 1fr 200px; gap: 0; border-bottom: 2px solid #222; }
+        .phase-bar .label { background: #222; color: #fff; padding: 10px 12px; font-weight: 700; font-size: 11px; display: flex; align-items: center; }
+        .phase-col { text-align: center; padding: 10px 6px; border-left: 1px solid #ddd; }
+        .phase-col .step-num { font-size: 10px; color: #888; font-weight: 600; }
+        .phase-col .step-name { font-size: 13px; font-weight: 700; margin-top: 2px; }
+        .phase-col .step-period { font-size: 9px; color: #999; margin-top: 2px; }
+        .phase-col.s1 { background: #f0f4ff; }
+        .phase-col.s2 { background: #eef9f0; }
+        .phase-col.s3 { background: #fff8ed; }
+        .phase-col.s4 { background: #fef0f0; }
+        .phase-col.s5 { background: #f3eefe; }
+        .phase-col.out { background: #f9f9f9; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; border-left: 2px solid #222; }
+
+        /* ── Swim Lanes ── */
+        .swim-row { display: grid; grid-template-columns: 120px 1fr 1fr 1fr 1fr 1fr 200px; gap: 0; border-bottom: 1px solid #ddd; min-height: 140px; }
+        .swim-row:last-child { border-bottom: 2px solid #222; }
+        .lane-label { padding: 12px 10px; border-right: 1px solid #ddd; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; }
+        .lane-label .org-name { font-weight: 800; font-size: 12px; }
+        .lane-label .org-role { font-size: 9px; color: #888; text-align: center; }
+        .lane-label.planning { background: #e8e0f7; border-left: 4px solid #7c3aed; }
+        .lane-label.sales { background: #fde8e8; border-left: 4px solid #dc2626; }
+        .lane-label.ops { background: #dbeafe; border-left: 4px solid #2563eb; }
+
+        .cell { padding: 10px 8px; border-left: 1px solid #eee; position: relative; display: flex; flex-direction: column; gap: 5px; }
+        .cell.s1 { background: #f8faff; }
+        .cell.s2 { background: #f5fcf7; }
+        .cell.s3 { background: #fffcf5; }
+        .cell.s4 { background: #fef8f8; }
+        .cell.s5 { background: #f9f5ff; }
+
+        .output-cell { padding: 10px 8px; border-left: 2px solid #222; background: #f9f9f9; display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+
+        /* ── Activity Boxes ── */
+        .act { background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 5px 7px; font-size: 10.5px; line-height: 1.35; position: relative; }
+        .act.lead { border-left: 3px solid #f59e0b; font-weight: 600; }
+        .act.support { border-left: 3px solid #94a3b8; color: #555; }
+        .act.system { border: 1px dashed #7c3aed; background: #faf5ff; }
+        .act.system::before { content: '⚙'; margin-right: 3px; }
+
+        .act-title { font-weight: 700; font-size: 10px; color: #333; }
+        .act-desc { font-size: 9.5px; color: #666; margin-top: 1px; }
+
+        .output-item { font-size: 9.5px; padding: 3px 5px; background: #eee; border-radius: 3px; }
+        .output-item.key { background: #222; color: #fff; font-weight: 600; }
+
+        /* ── Arrows ── */
+        .arrow-right { position: absolute; right: -10px; top: 50%; transform: translateY(-50%); z-index: 5; color: #f59e0b; font-size: 16px; font-weight: 900; }
+
+        /* ── Phase Transition Bar ── */
+        .transition-bar { display: grid; grid-template-columns: 120px 1fr 1fr 1fr 1fr 1fr 200px; gap: 0; }
+        .trans-cell { padding: 3px 6px; font-size: 9px; color: #999; text-align: center; border-left: 1px solid #eee; }
+        .trans-cell.gate { background: #fef3c7; color: #92400e; font-weight: 700; border-radius: 0; font-size: 9.5px; }
+
+        /* ── Footer Sections ── */
+        .footer-section { padding: 20px 40px 24px; }
+        .footer-section h3 { font-size: 13px; font-weight: 700; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+
+        .raci-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+        .raci-table th, .raci-table td { padding: 5px 8px; border: 1px solid #ddd; text-align: center; }
+        .raci-table th { background: #f3f4f6; font-weight: 700; font-size: 10px; }
+        .raci-a { background: #dc2626; color: #fff; padding: 1px 5px; border-radius: 3px; font-weight: 700; font-size: 10px; }
+        .raci-r { background: #f59e0b; color: #fff; padding: 1px 5px; border-radius: 3px; font-weight: 700; font-size: 10px; }
+        .raci-c { background: #60a5fa; color: #fff; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
+        .raci-i { background: #d1d5db; color: #555; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
+
+        .timeline { display: grid; grid-template-columns: 120px repeat(8, 1fr); gap: 0; margin-top: 10px; }
+        .tl-header { background: #222; color: #fff; padding: 6px 8px; font-size: 10px; font-weight: 700; text-align: center; }
+        .tl-cell { padding: 6px 4px; border: 1px solid #eee; text-align: center; font-size: 9.5px; }
+        .tl-active { font-weight: 700; }
+        .tl-s1 { background: #e0e7ff; color: #3730a3; }
+        .tl-s2 { background: #d1fae5; color: #065f46; }
+        .tl-s3 { background: #fef3c7; color: #92400e; }
+        .tl-s4 { background: #fee2e2; color: #991b1b; }
+        .tl-s5 { background: #ede9fe; color: #5b21b6; }
+        .tl-milestone { background: #111; color: #fff; font-weight: 700; font-size: 9px; }
+
+        .legend { display: flex; gap: 16px; margin-top: 12px; font-size: 10px; color: #666; align-items: center; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-box { width: 14px; height: 14px; border-radius: 2px; border: 1px solid #ccc; }
+        .legend-box.lb-lead { border-left: 3px solid #f59e0b; }
+        .legend-box.lb-support { border-left: 3px solid #94a3b8; }
+        .legend-box.lb-system { border: 1px dashed #7c3aed; background: #faf5ff; }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 8px; }
+        .kpi-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px; }
+        .kpi-card .kpi-step { font-size: 9px; color: #888; font-weight: 600; }
+        .kpi-card .kpi-name { font-size: 11px; font-weight: 700; margin-top: 2px; }
+        .kpi-card .kpi-detail { font-size: 9.5px; color: #666; margin-top: 3px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <!-- Header -->
+    <div class="header">
+        <h1>신사업 분기 기획 운영 SOP — 워크플로우</h1>
+        <div class="header-sub">
+            <span>목적: 권역/세트분배 기능을 활용하는 신규 사업의 분기 단위 기획 프로세스 (Q-8주 ~ Q-1주)</span>
+            <span>v0.1 | 2026.03.24</span>
+        </div>
+    </div>
+
+    <!-- Phase Column Headers -->
+    <div class="phase-bar">
+        <div class="label">조직</div>
+        <div class="phase-col s1">
+            <div class="step-num">STEP 1</div>
+            <div class="step-name">목표지역 선정</div>
+            <div class="step-period">Q-8주 ~ Q-6주</div>
+        </div>
+        <div class="phase-col s2">
+            <div class="step-num">STEP 2</div>
+            <div class="step-name">권역 기획</div>
+            <div class="step-period">Q-6주 ~ Q-4주</div>
+        </div>
+        <div class="phase-col s3">
+            <div class="step-num">STEP 3</div>
+            <div class="step-name">원/판가 기획</div>
+            <div class="step-period">Q-4주 ~ Q-3주</div>
+        </div>
+        <div class="phase-col s4">
+            <div class="step-num">STEP 4</div>
+            <div class="step-name">영업 목표물량</div>
+            <div class="step-period">Q-3주 ~ Q-2주</div>
+        </div>
+        <div class="phase-col s5">
+            <div class="step-num">STEP 5</div>
+            <div class="step-name">기사 공급목표</div>
+            <div class="step-period">Q-2주 ~ Q-1주</div>
+        </div>
+        <div class="phase-col out">산출물</div>
+    </div>
+
+    <!-- ═══ 기획조직 Row ═══ -->
+    <div class="swim-row">
+        <div class="lane-label planning">
+            <div class="org-name">기획조직</div>
+            <div class="org-role">조율 및<br>플래닝 하달</div>
+        </div>
+        <div class="cell s1">
+            <div class="act support">
+                <div class="act-title">데이터 제공</div>
+                <div class="act-desc">기존 운영지역 지표, 시장 리서치 자료</div>
+            </div>
+            <div class="act support">
+                <div class="act-title">평가 기준 수립</div>
+                <div class="act-desc">목표지역 선정 평가표 설계</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">목표지역 확정 승인</div>
+                <div class="act-desc">영업/운영 의견 종합 → 최종 결정</div>
+            </div>
+        </div>
+        <div class="cell s2">
+            <div class="act support">
+                <div class="act-title">Zone 설계 가이드</div>
+                <div class="act-desc">권역 크기, 상점 수 가이드라인</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">Zone 확정 승인</div>
+                <div class="act-desc">운영/영업 의견 종합 → Zone 확정</div>
+            </div>
+        </div>
+        <div class="cell s3">
+            <div class="act support">
+                <div class="act-title">원/판가 정합성 리뷰</div>
+                <div class="act-desc">판가 - 원가 = 이익 구조 검증</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">P&L 시뮬레이션</div>
+                <div class="act-desc">시나리오별 손익 검토 → 승인</div>
+            </div>
+        </div>
+        <div class="cell s4">
+            <div class="act support">
+                <div class="act-title">목표 정합성 검증</div>
+                <div class="act-desc">영업 ↔ 공급 ↔ 수익성 정합 확인</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">분기 목표 확정 하달</div>
+                <div class="act-desc">주차별 목표 + 분배율 확정</div>
+            </div>
+        </div>
+        <div class="cell s5">
+            <div class="act lead">
+                <div class="act-title">공급 계획 최종 승인</div>
+                <div class="act-desc">벤더 세트 + 프렌즈 인원 확정</div>
+            </div>
+            <div class="act lead" style="background:#f0fdf4; border:1px solid #16a34a;">
+                <div class="act-title" style="color:#16a34a;">✓ 분기 기획 완료 선언</div>
+                <div class="act-desc">5단계 전체 산출물 취합·확정</div>
+            </div>
+        </div>
+        <div class="output-cell">
+            <div class="output-item key">분기 기획 최종 확정서</div>
+            <div class="output-item">P&L 시뮬레이션</div>
+            <div class="output-item">단계별 승인 기록</div>
+        </div>
+    </div>
+
+    <!-- ═══ 영업조직 Row ═══ -->
+    <div class="swim-row">
+        <div class="lane-label sales">
+            <div class="org-name">영업조직</div>
+            <div class="org-role">영업담당</div>
+        </div>
+        <div class="cell s1">
+            <div class="act lead">
+                <div class="act-title">시장 잠재력 평가</div>
+                <div class="act-desc">상점 수, 배달 수요, 인구, 소비 패턴</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">경쟁사 커버리지 조사</div>
+                <div class="act-desc">쿠팡이츠/배민 점유율, 배달비</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">목표지역 후보 선정</div>
+                <div class="act-desc">3~5개 후보 점수화 → 우선순위</div>
+            </div>
+        </div>
+        <div class="cell s2">
+            <div class="act support">
+                <div class="act-title">상점 밀집도 검토</div>
+                <div class="act-desc">Zone 분할 ↔ 영업대상 정합 검증</div>
+            </div>
+            <div class="act support">
+                <div class="act-title">영업 동선 피드백</div>
+                <div class="act-desc">현장 방문 기반 Zone 경계 실효성</div>
+            </div>
+        </div>
+        <div class="cell s3">
+            <div class="act lead">
+                <div class="act-title">경쟁사 배달비 조사</div>
+                <div class="act-desc">Zone별 경쟁사 상점 청구 수준</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">상점 지불의사 조사</div>
+                <div class="act-desc">영업 파이프라인 상점 수용 범위</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">권역별 판가 확정</div>
+                <div class="act-desc">영업이익 목표율 반영 → 판가 결정</div>
+            </div>
+        </div>
+        <div class="cell s4">
+            <div class="act lead">
+                <div class="act-title">주차별 영업 목표 수립</div>
+                <div class="act-desc">분기 → 주차 분해, Ramp-up 곡선</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">요일/시간대별 분배</div>
+                <div class="act-desc">7×5 = 35슬롯 목표 오더 배분</div>
+            </div>
+            <div class="act support">
+                <div class="act-title">파이프라인 정합 확인</div>
+                <div class="act-desc">영업 중 상점 ↔ 물량 목표 정합</div>
+            </div>
+        </div>
+        <div class="cell s5">
+            <div class="act support">
+                <div class="act-title">물량 리스크 확인</div>
+                <div class="act-desc">파이프라인 진행 대비 공급 적절성</div>
+            </div>
+        </div>
+        <div class="output-cell">
+            <div class="output-item key">목표지역 선정 보고서</div>
+            <div class="output-item key">권역별 원/판가표</div>
+            <div class="output-item key">주차별 목표물량표</div>
+            <div class="output-item">시장 기초 데이터</div>
+            <div class="output-item">상점 파이프라인</div>
+        </div>
+    </div>
+
+    <!-- ═══ 운영조직 Row ═══ -->
+    <div class="swim-row">
+        <div class="lane-label ops">
+            <div class="org-name">운영조직</div>
+            <div class="org-role">공급담당</div>
+        </div>
+        <div class="cell s1">
+            <div class="act support">
+                <div class="act-title">배송 기반 조사</div>
+                <div class="act-desc">도로 환경, 동선 복잡도, 지리 특성</div>
+            </div>
+            <div class="act support">
+                <div class="act-title">기사 수급 가능성 평가</div>
+                <div class="act-desc">벤더 후보, 프렌즈 활동 인원</div>
+            </div>
+            <div class="act support">
+                <div class="act-title">예상 Capa 초안</div>
+                <div class="act-desc">지역별 배송 가능 물량 추정</div>
+            </div>
+        </div>
+        <div class="cell s2">
+            <div class="act lead">
+                <div class="act-title">상권/거주지 분석</div>
+                <div class="act-desc">상점·주거 밀집, 유동인구 패턴</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">Zone 분할 설계</div>
+                <div class="act-desc">지리 경계, 배송 동선 효율 기준</div>
+            </div>
+            <div class="act system">
+                <div class="act-title">관리정책 생성 + Zone 연결</div>
+                <div class="act-desc">인트라 권역관리 시스템 입력</div>
+            </div>
+        </div>
+        <div class="cell s3">
+            <div class="act lead">
+                <div class="act-title">기사 원가 산출</div>
+                <div class="act-desc">판가에서 역산 → 원가 설계</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">원가 요금제 설계</div>
+                <div class="act-desc">50m당 + 픽업비 + 배송완료비</div>
+            </div>
+            <div class="act system">
+                <div class="act-title">원가 요금제 + 보상기준 입력</div>
+                <div class="act-desc">인트라 권역관리 > 관리정책 저장</div>
+            </div>
+        </div>
+        <div class="cell s4">
+            <div class="act support">
+                <div class="act-title">Capa 충족 가능성 검토</div>
+                <div class="act-desc">목표 물량 vs 배송 Capa 검증</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">벤더/프렌즈 분배율 제안</div>
+                <div class="act-desc">초기 70:30 → 안정기 50:50</div>
+            </div>
+            <div class="act system">
+                <div class="act-title">세트 물량 구성 입력</div>
+                <div class="act-desc">7×5 매트릭스 시스템 저장</div>
+            </div>
+        </div>
+        <div class="cell s5">
+            <div class="act lead">
+                <div class="act-title">벤더 필요 세트 수 산출</div>
+                <div class="act-desc">벤더 분배물량 ÷ 세트 목표</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">프렌즈 필요 인원 산출</div>
+                <div class="act-desc">프렌즈 분배물량 ÷ 인당 생산성</div>
+            </div>
+            <div class="act lead">
+                <div class="act-title">벤더 계약 + 프렌즈 확보</div>
+                <div class="act-desc">계약 조율, 프로모션 모집 계획</div>
+            </div>
+            <div class="act system">
+                <div class="act-title">세트분배 관리 입력</div>
+                <div class="act-desc">Zone-벤더 연결 + 벤더별 세트 수</div>
+            </div>
+        </div>
+        <div class="output-cell">
+            <div class="output-item key">권역 구획 맵 + Zone 목록</div>
+            <div class="output-item key">벤더 세트 목표표</div>
+            <div class="output-item key">프렌즈 인원 목표표</div>
+            <div class="output-item">배송 기반 조사서</div>
+            <div class="output-item">벤더 계약 계획</div>
+            <div class="output-item">프렌즈 확보 계획</div>
+        </div>
+    </div>
+
+    <!-- Gate / Transition Bar -->
+    <div class="transition-bar" style="border-bottom: 2px solid #222;">
+        <div class="trans-cell" style="background:#f3f4f6; font-weight:700; font-size:10px; color:#333;">Gate 기준</div>
+        <div class="trans-cell gate">목표지역 확정<br>시장데이터 확보<br>벤더 후보 2+</div>
+        <div class="trans-cell gate">Zone 구획 승인<br>인트라 관리정책 생성<br>Capa 초기 추정</div>
+        <div class="trans-cell gate">판가·원가 확정<br>수익성 검증 통과<br>인트라 원가 저장</div>
+        <div class="trans-cell gate">주차별 목표 확정<br>분배율 확정 하달<br>Capa 정합 확인</div>
+        <div class="trans-cell gate" style="background:#d1fae5; color:#065f46;">벤더 세트 확정<br>프렌즈 목표 확정<br><strong>★ 분기 기획 완료</strong></div>
+        <div class="trans-cell" style="background:#f3f4f6; font-size:9px; color:#666;">→ B존 TF 워크플로우<br>(초기영업 Phase) 전환</div>
+    </div>
+
+    <!-- ═══ 시스템 연동 Bar ═══ -->
+    <div style="display:grid; grid-template-columns:120px 1fr 1fr 1fr 1fr 1fr 200px; border-bottom:1px solid #ddd;">
+        <div style="background:#f3f4f6; padding:8px 10px; font-weight:700; font-size:10px; color:#555; display:flex; align-items:center; justify-content:center;">시스템 연동</div>
+        <div style="padding:8px; text-align:center; color:#aaa; font-size:10px; border-left:1px solid #eee;">—</div>
+        <div style="padding:6px; text-align:center; font-size:9.5px; border-left:1px solid #eee; background:#faf5ff;">
+            <div style="font-weight:700; color:#7c3aed;">인트라 > 권역관리</div>
+            <div style="color:#666; margin-top:2px;">관리정책 생성<br>연결 Zone 설정</div>
+        </div>
+        <div style="padding:6px; text-align:center; font-size:9.5px; border-left:1px solid #eee; background:#faf5ff;">
+            <div style="font-weight:700; color:#7c3aed;">인트라 > 권역관리</div>
+            <div style="color:#666; margin-top:2px;">기사 원가 요금제<br>보상기준 입력<br>→ 관리정책 전체 저장</div>
+        </div>
+        <div style="padding:6px; text-align:center; font-size:9.5px; border-left:1px solid #eee; background:#faf5ff;">
+            <div style="font-weight:700; color:#7c3aed;">인트라 > 권역관리</div>
+            <div style="color:#666; margin-top:2px;">세트 물량 구성<br>7×5 매트릭스 입력<br>→ 관리정책 전체 저장</div>
+        </div>
+        <div style="padding:6px; text-align:center; font-size:9.5px; border-left:1px solid #eee; background:#faf5ff;">
+            <div style="font-weight:700; color:#7c3aed;">인트라 > 세트분배 관리</div>
+            <div style="color:#666; margin-top:2px;">Zone-벤더 연결<br>벤더별 세트 수 입력<br>→ 배차 엔진 자동 연동</div>
+        </div>
+        <div style="padding:6px; border-left:2px solid #222; text-align:center; font-size:9px; color:#888;">기능명세<br>2.3 / 2.7 / 2.8<br>참조</div>
+    </div>
+
+    <!-- ═══ Footer: RACI + Timeline + KPI ═══ -->
+    <div class="footer-section">
+
+        <!-- Legend -->
+        <div class="legend" style="margin-bottom:16px;">
+            <strong style="font-size:11px; color:#333;">범례:</strong>
+            <div class="legend-item"><div class="legend-box lb-lead"></div>주도 활동 (Lead)</div>
+            <div class="legend-item"><div class="legend-box lb-support"></div>지원/검토 (Support)</div>
+            <div class="legend-item"><div class="legend-box lb-system"></div>⚙ 시스템 입력 (인트라)</div>
+            <div class="legend-item"><span style="background:#e8e0f7; padding:2px 8px; border-radius:3px; border-left:4px solid #7c3aed; font-weight:700;">기획</span></div>
+            <div class="legend-item"><span style="background:#fde8e8; padding:2px 8px; border-radius:3px; border-left:4px solid #dc2626; font-weight:700;">영업</span></div>
+            <div class="legend-item"><span style="background:#dbeafe; padding:2px 8px; border-radius:3px; border-left:4px solid #2563eb; font-weight:700;">운영</span></div>
+        </div>
+
+        <!-- RACI -->
+        <h3>RACI 매트릭스</h3>
+        <table class="raci-table">
+            <tr>
+                <th style="text-align:left; width:200px;">의사결정</th>
+                <th width="80">기획</th><th width="80">영업</th><th width="80">운영</th>
+                <th style="text-align:left;">비고</th>
+            </tr>
+            <tr><td style="text-align:left;">목표지역 선정</td><td><span class="raci-a">A</span></td><td><span class="raci-r">R</span></td><td><span class="raci-c">C</span></td><td style="text-align:left;">영업 실행, 기획 최종 승인</td></tr>
+            <tr><td style="text-align:left;">Zone 분할 설계</td><td><span class="raci-a">A</span></td><td><span class="raci-c">C</span></td><td><span class="raci-r">R</span></td><td style="text-align:left;">운영 실행, 영업 검토</td></tr>
+            <tr><td style="text-align:left;">판가 설정</td><td><span class="raci-a">A</span></td><td><span class="raci-r">R</span></td><td><span class="raci-c">C</span></td><td style="text-align:left;">영업 주도</td></tr>
+            <tr><td style="text-align:left;">기사 원가 설정</td><td><span class="raci-a">A</span></td><td><span class="raci-c">C</span></td><td><span class="raci-r">R</span></td><td style="text-align:left;">운영 주도</td></tr>
+            <tr><td style="text-align:left;">영업 목표물량 수립</td><td><span class="raci-a">A</span></td><td><span class="raci-r">R</span></td><td><span class="raci-c">C</span></td><td style="text-align:left;">운영 Capa 검토</td></tr>
+            <tr><td style="text-align:left;">벤더/프렌즈 분배율</td><td><span class="raci-a">A</span></td><td><span class="raci-c">C</span></td><td><span class="raci-r">R</span></td><td style="text-align:left;">운영 제안, 기획 확정</td></tr>
+            <tr><td style="text-align:left;">벤더 세트 분배 / 프렌즈 목표</td><td><span class="raci-c">C</span></td><td><span class="raci-i">I</span></td><td><span class="raci-a">A</span></td><td style="text-align:left;">운영 전권</td></tr>
+            <tr><td style="text-align:left;">분기 기획 최종 확정</td><td><span class="raci-a">A</span></td><td><span class="raci-i">I</span></td><td><span class="raci-i">I</span></td><td style="text-align:left;">기획 단독</td></tr>
+        </table>
+        <div style="font-size:9.5px; color:#888; margin-top:4px;">A = Accountable (최종 책임) &nbsp;|&nbsp; R = Responsible (실행) &nbsp;|&nbsp; C = Consulted (협의) &nbsp;|&nbsp; I = Informed (통보)</div>
+
+        <!-- Timeline -->
+        <h3 style="margin-top:20px;">8주 타임라인</h3>
+        <div class="timeline">
+            <div class="tl-header">주차</div>
+            <div class="tl-header">Q-8</div><div class="tl-header">Q-7</div><div class="tl-header">Q-6</div><div class="tl-header">Q-5</div><div class="tl-header">Q-4</div><div class="tl-header">Q-3</div><div class="tl-header">Q-2</div><div class="tl-header">Q-1</div>
+        </div>
+        <div class="timeline">
+            <div class="tl-cell" style="font-weight:700; background:#f3f4f6;">Step 1</div>
+            <div class="tl-cell tl-s1 tl-active">▓▓▓▓</div><div class="tl-cell tl-s1 tl-active">▓▓▓▓</div>
+            <div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div>
+        </div>
+        <div class="timeline">
+            <div class="tl-cell" style="font-weight:700; background:#f3f4f6;">Step 2</div>
+            <div class="tl-cell"></div><div class="tl-cell"></div>
+            <div class="tl-cell tl-s2 tl-active">▓▓▓▓</div><div class="tl-cell tl-s2 tl-active">▓▓▓▓</div>
+            <div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div>
+        </div>
+        <div class="timeline">
+            <div class="tl-cell" style="font-weight:700; background:#f3f4f6;">Step 3</div>
+            <div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div>
+            <div class="tl-cell tl-s3 tl-active">▓▓▓▓</div>
+            <div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div>
+        </div>
+        <div class="timeline">
+            <div class="tl-cell" style="font-weight:700; background:#f3f4f6;">Step 4</div>
+            <div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div>
+            <div class="tl-cell tl-s4 tl-active">▓▓▓▓</div>
+            <div class="tl-cell"></div><div class="tl-cell"></div>
+        </div>
+        <div class="timeline">
+            <div class="tl-cell" style="font-weight:700; background:#f3f4f6;">Step 5</div>
+            <div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div><div class="tl-cell"></div>
+            <div class="tl-cell tl-s5 tl-active">▓▓▓▓</div>
+            <div class="tl-cell"></div>
+        </div>
+        <div class="timeline">
+            <div class="tl-cell" style="font-weight:700; background:#f3f4f6;">마일스톤</div>
+            <div class="tl-cell tl-milestone">킥오프</div><div class="tl-cell"></div>
+            <div class="tl-cell tl-milestone">지역 확정</div><div class="tl-cell"></div>
+            <div class="tl-cell tl-milestone">Zone 확정</div>
+            <div class="tl-cell tl-milestone">원/판가 확정</div>
+            <div class="tl-cell tl-milestone">목표물량 확정</div>
+            <div class="tl-cell tl-milestone" style="background:#16a34a;">★ 기획 완료</div>
+        </div>
+
+        <!-- 주요 완료 기준 KPI -->
+        <h3 style="margin-top:20px;">단계별 핵심 완료 기준</h3>
+        <div class="kpi-grid">
+            <div class="kpi-card" style="border-top:3px solid #6366f1;">
+                <div class="kpi-step">STEP 1</div>
+                <div class="kpi-name">목표지역 선정</div>
+                <div class="kpi-detail">• 기획조직 승인 완료<br>• 시장 데이터 확보<br>• 벤더 후보 2개+ 리스트업</div>
+            </div>
+            <div class="kpi-card" style="border-top:3px solid #16a34a;">
+                <div class="kpi-step">STEP 2</div>
+                <div class="kpi-name">권역 기획</div>
+                <div class="kpi-detail">• Zone 구획 승인<br>• 인트라 관리정책 생성<br>• Capa 초기 추정 완료</div>
+            </div>
+            <div class="kpi-card" style="border-top:3px solid #f59e0b;">
+                <div class="kpi-step">STEP 3</div>
+                <div class="kpi-name">원/판가 기획</div>
+                <div class="kpi-detail">• 판가·원가 확정 승인<br>• 수익성 검증 통과<br>• 인트라 원가/보상 저장</div>
+            </div>
+            <div class="kpi-card" style="border-top:3px solid #dc2626;">
+                <div class="kpi-step">STEP 4</div>
+                <div class="kpi-name">영업 목표물량</div>
+                <div class="kpi-detail">• 주차별 목표 승인<br>• 벤더/프렌즈 분배율 확정<br>• 7×5 매트릭스 저장</div>
+            </div>
+            <div class="kpi-card" style="border-top:3px solid #7c3aed;">
+                <div class="kpi-step">STEP 5</div>
+                <div class="kpi-name">기사 공급목표</div>
+                <div class="kpi-detail">• 벤더 세트 수 확정<br>• 프렌즈 인원 확정<br>• 세트분배 시스템 저장<br>• <strong>★ 분기 기획 완료</strong></div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
