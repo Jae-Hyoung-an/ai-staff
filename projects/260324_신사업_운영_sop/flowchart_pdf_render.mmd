@@ -1,0 +1,65 @@
+flowchart LR
+    subgraph Step1["Step 1: 진출 지역 확정 (L-4주 킥오프)"]
+        direction TB
+        S1A["기획: 진출 지역 확정"]
+        S1A2["(주도)"]
+        S1B["영업/운영: 의견 제시"]
+        S1A --> S1A2
+        S1A2 --- S1B
+    end
+
+    subgraph Step2["Step 2: 권역 기획 (L-4주~L-3주, 영업 주도)"]
+        direction TB
+        S2A1["영업: 경쟁사 분석"]
+        S2A2["Zone 초안 설계"]
+        S2B["운영: 협력사 확보 가능성 검토"]
+        S2C["기획: Zone 확정 승인"]
+        S2A1 --> S2A2 --> S2B --> S2C
+    end
+
+    subgraph Step3["Step 3: 원/판가 기획 (L-3주~L-2.5주)"]
+        direction TB
+        S3A1["영업: 경쟁사 조사"]
+        S3A2["판가 설정"]
+        S3B1["운영: 원가 요금제 설계"]
+        S3B2["보상기준 설계"]
+        S3C["기획: P&L 검증 -> 승인"]
+        S3A1 --> S3A2 --> S3C
+        S3B1 --> S3B2 --> S3C
+    end
+
+    subgraph parallel["Step 4-1 / 4-2 병렬 진행 (L-2.5주~L-1주, 기획 주도)"]
+        direction LR
+        P4["병렬 진행 허브"]
+        subgraph Step4a["4-1: 영업 목표물량"]
+            direction TB
+            S4A1["기획: Zone별·주차별 목표 오더"]
+            S4A2["초안 하달"]
+            S4B["영업: 현장 관점 조정 협의"]
+            S4C["기획: 최종 확정"]
+            S4A1 --> S4A2 --> S4B --> S4C
+        end
+
+        subgraph Step4b["4-2: 기사 공급목표"]
+            direction TB
+            S5A1["기획: Zone별·주차별 세트 수 + 프렌즈 수"]
+            S5A2["초안 하달"]
+            S5B["운영: 공급 실현성 조정 협의"]
+            S5C["기획: 최종 확정"]
+            S5A1 --> S5A2 --> S5B --> S5C
+        end
+        P4 --- S4A1
+        P4 --- S5A1
+    end
+
+    subgraph launch["런칭 및 운영 전환"]
+        direction LR
+        L1["서비스 런칭"]
+        L2["주간 S&OP 미팅으로 전환 (별도 SOP)"]
+        L1 --> L2
+    end
+
+    Step1 -->|지역 확정| Step2
+    Step2 -->|Zone 확정 + 관리정책 생성| Step3
+    Step3 -->|원/판가 확정| P4
+    parallel -->|진출 기획 완료| launch

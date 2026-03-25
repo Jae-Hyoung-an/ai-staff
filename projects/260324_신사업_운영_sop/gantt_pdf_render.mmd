@@ -1,0 +1,27 @@
+gantt
+    title 진출 기획 타임라인 (L-4주 ~ L-1주)
+    dateFormat YYYY-MM-DD
+    axisFormat %m/%d
+
+    section Step 1
+    킥오프/지역확정            :milestone, m1, 2026-02-23, 0d
+
+    section Step 2
+    권역 기획                  :s2, 2026-02-23, 7d
+    Step 2 리뷰                :milestone, m3, after s2, 0d
+
+    section Step 3
+    원/판가 기획               :s3, after s2, 4d
+    Step 3 리뷰                :milestone, m4, after s3, 0d
+
+    section Step 4-1
+    영업 목표물량              :s4a, after s3, 10d
+
+    section Step 4-2
+    기사 공급목표              :s4b, after s3, 10d
+
+    section 완료
+    기획 완료 미팅             :milestone, m6, after s4a, 0d
+
+    section 런칭
+    서비스 런칭               :milestone, m7, 2026-03-23, 0d

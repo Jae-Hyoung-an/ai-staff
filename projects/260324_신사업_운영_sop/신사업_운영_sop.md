@@ -47,61 +47,75 @@
 ### 2.1 흐름도
 
 ```mermaid
-flowchart TB
-    subgraph Step1["Step 1: 진출 지역 확정 — L-4주 킥오프"]
-        direction LR
-        S1A["기획: 진출 지역 확정 (주도)"]
-        S1B["영업/운영: 의견 제시"]
-        S1A --- S1B
+%%{init: {'themeVariables': {'fontSize': '20px'}, 'flowchart': {'nodeSpacing': 90, 'rankSpacing': 120}}}%%
+flowchart LR
+    subgraph Step1[Step 1: 진출 지역 확정 (L-4주 킥오프)]
+        direction TB
+        S1A[기획: 진출 지역 확정]
+        S1A2[(주도)]
+        S1B[영업/운영: 의견 제시]
+        S1A --> S1A2
+        S1A2 --- S1B
     end
 
-    subgraph Step2["Step 2: 권역 기획 — L-4주~L-3주 (영업 주도, Sales First)"]
-        direction LR
-        S2A["영업: 경쟁사 분석 → Zone 초안 설계"]
-        S2B["운영: 협력사 확보 가능성 검토"]
-        S2C["기획: Zone 확정 승인"]
-        S2A --> S2B --> S2C
+    subgraph Step2[Step 2: 권역 기획 (L-4주~L-3주, 영업 주도)]
+        direction TB
+        S2A1[영업: 경쟁사 분석]
+        S2A2[Zone 초안 설계]
+        S2B[운영: 협력사 확보 가능성 검토]
+        S2C[기획: Zone 확정 승인]
+        S2A1 --> S2A2 --> S2B --> S2C
     end
 
-    subgraph Step3["Step 3: 원/판가 기획 — L-3주~L-2.5주"]
-        direction LR
-        S3A["영업: 경쟁사 조사 → 판가 설정"]
-        S3B["운영: 원가 요금제 + 보상기준 설계"]
-        S3C["기획: P&L 검증 → 승인"]
-        S3A --> S3C
-        S3B --> S3C
+    subgraph Step3[Step 3: 원/판가 기획 (L-3주~L-2.5주)]
+        direction TB
+        S3A1[영업: 경쟁사 조사]
+        S3A2[판가 설정]
+        S3B1[운영: 원가 요금제 설계]
+        S3B2[보상기준 설계]
+        S3C[기획: P&L 검증 -> 승인]
+        S3A1 --> S3A2 --> S3C
+        S3B1 --> S3B2 --> S3C
     end
 
-    subgraph parallel["Step 4-1 / 4-2 병렬 진행 — L-2.5주~L-1주 (기획 주도)"]
+    subgraph parallel[Step 4-1 / 4-2 병렬 진행 (L-2.5주~L-1주, 기획 주도)]
         direction LR
-        subgraph Step4a["4-1: 영업 목표물량"]
+        P4[병렬 진행 허브]
+        subgraph Step4a[4-1: 영업 목표물량]
             direction TB
-            S4A["기획: Zone별·주차별 목표 오더 초안 하달"]
-            S4B["영업: 현장 관점 조정 협의"]
-            S4C["기획: 최종 확정"]
-            S4A --> S4B --> S4C
+            S4A1[기획: Zone별·주차별 목표 오더]
+            S4A2[초안 하달]
+            S4B[영업: 현장 관점 조정 협의]
+            S4C[기획: 최종 확정]
+            S4A1 --> S4A2 --> S4B --> S4C
         end
 
-        subgraph Step4b["4-2: 기사 공급목표"]
+        subgraph Step4b[4-2: 기사 공급목표]
             direction TB
-            S5A["기획: Zone별·주차별 세트 수 + 프렌즈 수 초안 하달"]
-            S5B["운영: 공급 실현성 조정 협의"]
-            S5C["기획: 최종 확정"]
-            S5A --> S5B --> S5C
+            S5A1[기획: Zone별·주차별 세트 수 + 프렌즈 수]
+            S5A2[초안 하달]
+            S5B[운영: 공급 실현성 조정 협의]
+            S5C[기획: 최종 확정]
+            S5A1 --> S5A2 --> S5B --> S5C
         end
+        P4 --- S4A1
+        P4 --- S5A1
     end
 
-    subgraph launch["런칭 및 운영 전환"]
+    subgraph launch[런칭 및 운영 전환]
         direction LR
-        L1["서비스 런칭"]
-        L2["주간 S&OP 미팅으로 전환 (별도 SOP)"]
+        L1[서비스 런칭]
+        L2[주간 S&OP 미팅으로 전환 (별도 SOP)]
         L1 --> L2
     end
 
-    Step1 -->|"지역 확정"| Step2
-    Step2 -->|"Zone 확정 + 관리정책 생성"| Step3
-    Step3 -->|"원/판가 확정"| parallel
-    parallel -->|"진출 기획 완료"| launch
+    Step1 -->|지역 확정| Step2
+    Step2 -->|Zone 확정 + 관리정책 생성| Step3
+    Step3 -->|원/판가 확정| P4
+    parallel -->|진출 기획 완료| launch
+
+    classDef box font-size:20px,padding:16px,stroke-width:2px
+    class S1A,S1A2,S1B,S2A1,S2A2,S2B,S2C,S3A1,S3A2,S3B1,S3B2,S3C,S4A1,S4A2,S4B,S4C,S5A1,S5A2,S5B,S5C,P4,L1,L2 box
 ```
 
 ### 2.2 단계별 요약
@@ -251,19 +265,6 @@ Zone 확정 후 인트라 시스템에 관리정책을 생성한다.
 |------|------|
 | 원/판가 정합성 리뷰 | 판가 - 원가 = 영업이익 구조의 적정성 검증 |
 | P&L 시뮬레이션 | 목표 물량 시나리오별 손익 시뮬레이션 조율 |
-
-### 5.2 원/판가 설계 구조
-
-```
-상점 판가 (영업조직 설정)
-    │
-    ├── 영업이익 마진
-    │
-    └── 기사 원가 (운영조직 설정)
-         ├── 50m당 금액 × 배송 거리
-         ├── 픽업비용 (건당 고정)
-         └── 배송완료 비용 (건당 고정)
-```
 
 ### 5.3 시스템 연동: 인트라 권역관리
 
@@ -467,6 +468,19 @@ Zone 확정 후 인트라 시스템에 관리정책을 생성한다.
 
 ---
 
+## 7.7 단계별 최종 산출물 요약
+
+| 단계 | 최종 산출물 | 최종 확정 주체 | 확정 시점 |
+|------|------------|---------------|----------|
+| **Step 1** 진출 지역 확정 | 진출 대상 지역 확정안 | 기획 | L-4주 킥오프 당일 |
+| **Step 2** 권역 기획 | Zone 구획 맵, Zone 목록, 인트라 관리정책(생성/저장) | 영업 초안 + 운영 검토 + 기획 승인 | L-3주 (Step 2 리뷰) |
+| **Step 3** 원/판가 기획 | 권역별 원/판가표, 수익성 시뮬레이션, 인트라 원가/보상 설정 | 영업(판가) + 운영(원가) + 기획 승인 | L-2.5주 (Step 3 리뷰) |
+| **Step 4-1** 영업 목표물량 | Zone별·주차별 영업 목표(오더) | 기획 초안 + 영업 협의 + 기획 확정 | L-1주 이전 |
+| **Step 4-2** 기사 공급목표 | Zone별·주차별 세트 수/활성 프렌즈 목표, 벤더 계약 계획, 프렌즈 확보 계획, 인트라 세트분배 설정 | 기획 초안 + 운영 협의 + 기획 확정 | L-1주 이전 |
+| **진출 기획 완료** | Step 1~4 통합 최종 산출물 패키지(런칭 준비본) | 기획 최종 확정 (영업/운영 합의 반영) | L-1주 완료 미팅 |
+
+---
+
 ## 8. 조직간 협업 체계
 
 ### 8.1 RACI 매트릭스
@@ -516,24 +530,24 @@ gantt
     axisFormat %m/%d
 
     section Step 1
-    킥오프 + 목표지역 확정      :milestone, m1, 2026-02-23, 0d
+    킥오프/지역확정            :milestone, m1, 2026-02-23, 0d
 
     section Step 2
-    권역 기획                  :s2, 2026-02-23, 7d
+    권역 기획                 :s2, 2026-02-23, 7d
     Step 2 리뷰               :milestone, m3, after s2, 0d
 
     section Step 3
-    원/판가 기획               :s3, after s2, 4d
+    원/판가 기획              :s3, after s2, 4d
     Step 3 리뷰               :milestone, m4, after s3, 0d
 
     section Step 4-1
-    영업 목표물량 기획          :s4a, after s3, 10d
+    영업 목표물량             :s4a, after s3, 10d
 
     section Step 4-2
-    기사 공급목표 기획          :s4b, after s3, 10d
+    기사 공급목표             :s4b, after s3, 10d
 
     section 완료
-    진출 기획 완료 미팅         :milestone, m6, after s4a, 0d
+    기획 완료 미팅            :milestone, m6, after s4a, 0d
 
     section 런칭
     서비스 런칭                :milestone, m7, 2026-03-23, 0d
