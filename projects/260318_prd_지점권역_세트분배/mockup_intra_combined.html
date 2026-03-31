@@ -51,6 +51,30 @@
     .th-time { display: flex; flex-direction: column; align-items: center; gap: 2px; }
     .th-time span { font-size: 10px; color: #64748b; }
     .history-row td { font-size: 11px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+    .badge.active { background: #dbeafe; color: #1d4ed8; }
+    .badge.scheduled { background: #fef3c7; color: #b45309; }
+    .badge.previous { background: #f1f5f9; color: #64748b; }
+    .badge.cancelled { background: #fee2e2; color: #dc2626; }
+    .schedule-form { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 14px; margin-top: 10px; }
+    .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:1000; justify-content:center; align-items:center; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:#fff; border-radius:10px; width:800px; max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.2); }
+    .modal-head { padding:14px 20px; border-bottom:1px solid #e8ecf1; display:flex; justify-content:space-between; align-items:center; }
+    .modal-head h3 { font-size:14px; font-weight:700; }
+    .modal-close { cursor:pointer; font-size:18px; color:#64748b; border:none; background:none; }
+    .modal-body { padding:16px 20px; }
+    .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .compare-col { border:1px solid #e2e8f0; border-radius:6px; padding:12px; }
+    .compare-col h4 { font-size:12px; font-weight:700; margin-bottom:8px; color:#334155; }
+    .diff-row { display:flex; justify-content:space-between; padding:4px 0; font-size:11px; border-bottom:1px solid #f1f5f9; }
+    .diff-label { color:#64748b; min-width:120px; }
+    .diff-val { font-weight:600; }
+    .diff-changed { background:#fff7ed; padding:2px 6px; border-radius:3px; color:#b45309; }
+    .diff-same { color:#94a3b8; }
+    .version-select { display:flex; gap:12px; align-items:center; margin-bottom:14px; }
+    .version-select select { border:1px solid #c7d0db; border-radius:5px; padding:6px 10px; font-size:12px; }
+    .ro { display:inline-block; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:4px 10px; font-size:12px; color:#334155; }
     .page { display: none; }
     .page.visible { display: block; }
   </style>
@@ -160,7 +184,8 @@
               <div class="tab" onclick="ztab(this,'zd-rwd')">보상기준</div>
               <div class="tab" onclick="ztab(this,'zd-cost')">기사 원가 요금제</div>
               <div class="tab" onclick="ztab(this,'zd-zone')">연결 zone</div>
-              <div class="tab" onclick="ztab(this,'zd-hist')">변경 이력</div>
+              <div class="tab" onclick="ztab(this,'zd-ver')">버전 관리</div>
+              <div class="tab" onclick="ztab(this,'zd-sch')">예약 변경</div>
             </div>
             <div id="zd-vol" class="ztp">
               <div class="notice">시간 정합성: 시작&lt;종료 · 순서 정렬 · 오버랩 금지 · 입력된 구간 내 5구간 연속 (24시간 전체 커버 불필요)</div>
@@ -190,15 +215,34 @@
               <div class="row"><button class="btn ghost">zone 검색</button></div>
               <div class="zone-list"><div class="zone-chip">강북A <span class="x">×</span></div><div class="zone-chip">강북B <span class="x">×</span></div></div>
             </div>
-            <div id="zd-hist" class="ztp hidden">
-              <div class="sl">변경 이력</div>
-              <table><thead><tr><th>변경 일시</th><th>변경자</th><th>변경 항목</th><th>변경 전</th><th>변경 후</th></tr></thead>
+            <div id="zd-ver" class="ztp hidden">
+              <div class="sl">버전 이력</div>
+              <table><thead><tr><th>버전</th><th>생성 일시</th><th>생성자</th><th>상태</th><th>적용 시작일</th><th>메모</th><th>관리</th></tr></thead>
               <tbody>
-                <tr class="history-row"><td>2026-03-19 14:22</td><td>김재형</td><td>보상 조건 > 수락률</td><td>85%</td><td>92%</td></tr>
-                <tr class="history-row"><td>2026-03-18 10:05</td><td>김재형</td><td>물량 구성 > 금요일 저녁피크</td><td>72건</td><td>80건</td></tr>
-                <tr class="history-row"><td>2026-03-15 09:30</td><td>이희연</td><td>연결 zone</td><td>강북A</td><td>강북A, 강북B</td></tr>
-                <tr class="history-row"><td>2026-03-01 11:00</td><td>이희연</td><td>정책 생성</td><td>-</td><td>초기 생성</td></tr>
+                <tr><td>v5</td><td>2026-03-28 09:00</td><td>김재형</td><td><span class="badge scheduled">예약</span></td><td>2026-03-31</td><td>4월 1주차 조정</td><td><button class="btn danger sm" onclick="alert('예약이 취소되었습니다.')">예약 취소</button></td></tr>
+                <tr><td>v4</td><td>2026-03-19 14:22</td><td>김재형</td><td><span class="badge active">현재 적용</span></td><td>-</td><td>수락률 상향</td><td><button class="btn ghost sm" onclick="openModal('z-modal-detail')">상세</button> <button class="btn ghost sm" onclick="openModal('z-modal-compare')">비교</button></td></tr>
+                <tr><td>v3</td><td>2026-03-15 09:30</td><td>이희연</td><td><span class="badge previous">이전 버전</span></td><td>-</td><td>강북B 추가</td><td><button class="btn ghost sm" onclick="openModal('z-modal-detail')">상세</button> <button class="btn ghost sm" onclick="openModal('z-modal-compare')">비교</button></td></tr>
+                <tr><td>v2</td><td>2026-03-10 11:00</td><td>이희연</td><td><span class="badge previous">이전 버전</span></td><td>-</td><td>피크 물량 증가</td><td><button class="btn ghost sm" onclick="openModal('z-modal-detail')">상세</button> <button class="btn ghost sm" onclick="openModal('z-modal-compare')">비교</button></td></tr>
+                <tr><td>v1</td><td>2026-03-01 11:00</td><td>이희연</td><td><span class="badge previous">이전 버전</span></td><td>-</td><td>초기 생성</td><td><button class="btn ghost sm" onclick="openModal('z-modal-detail')">상세</button> <button class="btn ghost sm" onclick="openModal('z-modal-compare')">비교</button></td></tr>
               </tbody></table>
+              <div style="font-size:11px;color:#64748b;margin-top:8px;">전체 버전 보관 (기간/수량 제한 없음)</div>
+            </div>
+            <div id="zd-sch" class="ztp hidden">
+              <div class="sl">다음 주 설정 예약</div>
+              <div class="schedule-form">
+                <div class="fr"><label>적용 시작일</label><input type="datetime-local" value="2026-03-31T00:00" style="width:200px;border:1px solid #c7d0db;border-radius:5px;padding:7px 10px;font-size:12px;"> <span style="font-size:11px;color:#64748b;margin-left:6px;">매주 월요일 00:00 기본, 시간 변경 가능</span></div>
+                <div class="fr"><label>메모 (선택)</label><input type="text" class="wide" placeholder="예약 변경 사유" value="4월 1주차 물량 조정"></div>
+                <div style="font-size:11px;color:#64748b;margin:8px 0;">현재 적용 v4 설정값 복사. 변경할 항목만 수정하세요.</div>
+                <div style="border:1px solid #e2e8f0;border-radius:6px;padding:10px;background:#fff;">
+                  <div class="sl" style="margin-top:0;">보상기준 (발췌)</div>
+                  <div class="fr"><label>수락률</label><input type="number" value="92" style="width:80px"> %</div>
+                  <div class="fr"><label>세트당 보상 금액</label><input type="number" value="150000" style="width:120px"> 원</div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
+                  <button class="btn ghost">초기화</button>
+                  <button class="btn primary" onclick="alert('예약 저장 완료!\n적용: 2026-03-31 00:00')">예약 저장</button>
+                </div>
+              </div>
             </div>
           </div>
           <div class="footer">
@@ -244,6 +288,8 @@
             <div class="tabs" id="stabs">
               <div class="tab active" onclick="stab(this,'sv')">연결 벤더</div>
               <div class="tab" onclick="stab(this,'ss')">벤더별 세트 분배</div>
+              <div class="tab" onclick="stab(this,'s-ver')">버전 관리</div>
+              <div class="tab" onclick="stab(this,'s-sch')">예약 변경</div>
             </div>
             <div id="sv" class="stp">
               <div class="sl">현재 연결된 벤더 목록</div>
@@ -268,6 +314,44 @@
               </tbody></table>
               <div style="font-size:11px;color:#64748b;margin-top:6px;">저장 이력 없는 벤더는 기본 0개 · 음수/빈칸 입력 시 저장 불가 · 세트 수 상한 없음</div>
             </div>
+            <div id="s-ver" class="stp hidden">
+              <div class="sl">버전 이력</div>
+              <table><thead><tr><th>버전</th><th>생성 일시</th><th>생성자</th><th>상태</th><th>적용 시작일</th><th>메모</th><th>관리</th></tr></thead>
+              <tbody>
+                <tr><td>v4</td><td>2026-03-28 09:00</td><td>김재형</td><td><span class="badge scheduled">예약</span></td><td>2026-03-31</td><td>4월 1주차 조정</td><td><button class="btn danger sm" onclick="alert('예약 취소')">예약 취소</button></td></tr>
+                <tr><td>v3</td><td>2026-03-19 14:00</td><td>김재형</td><td><span class="badge active">현재 적용</span></td><td>-</td><td>C벤더 조정</td><td><button class="btn ghost sm" onclick="openModal('s-modal-detail')">상세</button> <button class="btn ghost sm" onclick="openModal('s-modal-compare')">비교</button></td></tr>
+                <tr><td>v2</td><td>2026-03-10 10:00</td><td>이희연</td><td><span class="badge previous">이전 버전</span></td><td>-</td><td>B벤더 추가</td><td><button class="btn ghost sm" onclick="openModal('s-modal-detail')">상세</button> <button class="btn ghost sm" onclick="openModal('s-modal-compare')">비교</button></td></tr>
+                <tr><td>v1</td><td>2026-03-01 11:00</td><td>이희연</td><td><span class="badge previous">이전 버전</span></td><td>-</td><td>초기 설정</td><td><button class="btn ghost sm" onclick="openModal('s-modal-detail')">상세</button> <button class="btn ghost sm" onclick="openModal('s-modal-compare')">비교</button></td></tr>
+              </tbody></table>
+              <div style="font-size:11px;color:#64748b;margin-top:8px;">전체 버전 보관 (기간/수량 제한 없음)</div>
+            </div>
+            <div id="s-sch" class="stp hidden">
+              <div class="sl">다음 주 세트 분배 예약</div>
+              <div class="schedule-form">
+                <div class="fr"><label>적용 시작일</label><input type="datetime-local" value="2026-03-31T00:00" style="width:200px;border:1px solid #c7d0db;border-radius:5px;padding:7px 10px;font-size:12px;"> <span style="font-size:11px;color:#64748b;">매주 월요일 00:00 기본, 시간 변경 가능</span></div>
+                <div class="fr"><label>메모 (선택)</label><input type="text" class="wide" placeholder="예약 변경 사유" value="4월 1주차 벤더 세트 조정"></div>
+                <div style="font-size:11px;color:#64748b;margin:8px 0;">현재 적용 v3 설정값 복사. 변경할 항목만 수정하세요.</div>
+                <div style="border:1px solid #e2e8f0;border-radius:6px;padding:10px;background:#fff;">
+                  <div class="sl" style="margin-top:0;">연결 벤더 + 벤더별 세트 분배</div>
+                  <div class="row" style="margin-bottom:8px;">
+                    <input type="text" placeholder="벤더명 검색">
+                    <button class="btn ghost">벤더 검색/추가</button>
+                  </div>
+                  <table><thead><tr><th>벤더명</th><th style="width:140px;">세트 수</th><th style="width:80px;text-align:center;">삭제</th></tr></thead>
+                  <tbody>
+                    <tr><td>A벤더</td><td><input class="set-input" type="number" value="5" min="0"></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+                    <tr><td>B벤더</td><td><input class="set-input" type="number" value="4" min="0"></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+                    <tr style="background:#fff7ed;"><td>C벤더</td><td><input class="set-input" type="number" value="4" min="0" style="font-weight:700;color:#b45309;"></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+                  </tbody></table>
+                  <div style="font-size:11px;color:#64748b;margin-top:6px;">연결 벤더 삭제 시 다른 벤더의 세트 분배값은 유지됩니다. 벤더 검색/추가로 연결을 확장할 수 있습니다.</div>
+                  <div style="font-size:10px;color:#b45309;margin-top:4px;">* 주황색: 현재 적용 값(3)에서 변경</div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
+                  <button class="btn ghost">초기화</button>
+                  <button class="btn primary" onclick="alert('예약 저장 완료!\n적용: 2026-03-31 00:00')">예약 저장</button>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="footer">
             <button class="btn ghost" onclick="go('s-list')">목록으로</button>
@@ -277,6 +361,95 @@
       </div>
 
     </main>
+  </div>
+
+  <!-- 권역관리 버전 상세 모달 -->
+  <div class="modal-overlay" id="z-modal-detail">
+    <div class="modal">
+      <div class="modal-head"><h3>권역관리 버전 상세 — v4</h3><button class="modal-close" onclick="closeModal('z-modal-detail')">&times;</button></div>
+      <div class="modal-body">
+        <div class="sl" style="margin-top:0;">보상기준</div>
+        <div class="fr"><label>수락률</label><span class="ro">92%</span></div>
+        <div class="fr"><label>성공 슬롯 수</label><span class="ro">28개</span></div>
+        <div class="fr"><label>세트당 보상 금액</label><span class="ro">150,000원</span></div>
+        <div class="sl">기사 원가 요금제</div>
+        <div class="fr"><label>50m당 금액</label><span class="ro">100원</span></div>
+        <div class="fr"><label>픽업비용</label><span class="ro">500원</span></div>
+        <div class="fr"><label>배송완료 비용</label><span class="ro">700원</span></div>
+        <div class="sl">연결 zone</div>
+        <div style="display:flex;gap:6px;"><span class="ro">강북A</span><span class="ro">강북B</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 권역관리 버전 비교 모달 -->
+  <div class="modal-overlay" id="z-modal-compare">
+    <div class="modal" style="width:900px;">
+      <div class="modal-head"><h3>권역관리 버전 비교</h3><button class="modal-close" onclick="closeModal('z-modal-compare')">&times;</button></div>
+      <div class="modal-body">
+        <div class="version-select">
+          <label style="font-size:12px;font-weight:600;">비교 대상:</label>
+          <select><option selected>v4 (현재 적용)</option><option>v3</option><option>v2</option><option>v1</option></select>
+          <span style="font-size:12px;color:#64748b;">vs</span>
+          <select><option>v4 (현재 적용)</option><option selected>v3</option><option>v2</option><option>v1</option></select>
+          <button class="btn ghost sm" onclick="alert('비교 결과 갱신')">비교 실행</button>
+        </div>
+        <div class="compare-grid">
+          <div class="compare-col"><h4>v4 (현재 적용)</h4>
+            <div class="diff-row"><span class="diff-label">수락률</span><span class="diff-val diff-changed">92%</span></div>
+            <div class="diff-row"><span class="diff-label">금요일 17~20시</span><span class="diff-val diff-changed">80건</span></div>
+            <div class="diff-row"><span class="diff-label">연결 zone</span><span class="diff-val diff-changed">강북A, 강북B</span></div>
+          </div>
+          <div class="compare-col"><h4>v3 (이전 버전)</h4>
+            <div class="diff-row"><span class="diff-label">수락률</span><span class="diff-val diff-changed">85%</span></div>
+            <div class="diff-row"><span class="diff-label">금요일 17~20시</span><span class="diff-val diff-changed">72건</span></div>
+            <div class="diff-row"><span class="diff-label">연결 zone</span><span class="diff-val diff-changed">강북A</span></div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#b45309;margin-top:8px;">* 주황색: 차이 있는 항목</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 세트분배 버전 상세 모달 -->
+  <div class="modal-overlay" id="s-modal-detail">
+    <div class="modal">
+      <div class="modal-head"><h3>세트분배 버전 상세 — v3</h3><button class="modal-close" onclick="closeModal('s-modal-detail')">&times;</button></div>
+      <div class="modal-body">
+        <div class="sl" style="margin-top:0;">연결 벤더 + 벤더별 세트 분배</div>
+        <table><thead><tr><th>벤더명</th><th>세트 수</th></tr></thead>
+        <tbody><tr><td>A벤더</td><td><span class="ro">5</span></td></tr><tr><td>B벤더</td><td><span class="ro">4</span></td></tr><tr><td>C벤더</td><td><span class="ro">3</span></td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 세트분배 버전 비교 모달 -->
+  <div class="modal-overlay" id="s-modal-compare">
+    <div class="modal" style="width:900px;">
+      <div class="modal-head"><h3>세트분배 버전 비교</h3><button class="modal-close" onclick="closeModal('s-modal-compare')">&times;</button></div>
+      <div class="modal-body">
+        <div class="version-select">
+          <label style="font-size:12px;font-weight:600;">비교 대상:</label>
+          <select><option selected>v3 (현재 적용)</option><option>v2</option><option>v1</option></select>
+          <span style="font-size:12px;color:#64748b;">vs</span>
+          <select><option>v3 (현재 적용)</option><option selected>v2</option><option>v1</option></select>
+          <button class="btn ghost sm" onclick="alert('비교 결과 갱신')">비교 실행</button>
+        </div>
+        <div class="compare-grid">
+          <div class="compare-col"><h4>v3 (현재 적용)</h4>
+            <div class="diff-row"><span class="diff-label">C벤더 세트 수</span><span class="diff-val diff-changed">3개</span></div>
+            <div class="diff-row"><span class="diff-label">A벤더 세트 수</span><span class="diff-val diff-same">5개</span></div>
+            <div class="diff-row"><span class="diff-label">B벤더 세트 수</span><span class="diff-val diff-same">4개</span></div>
+          </div>
+          <div class="compare-col"><h4>v2 (이전 버전)</h4>
+            <div class="diff-row"><span class="diff-label">C벤더 세트 수</span><span class="diff-val diff-changed">2개</span></div>
+            <div class="diff-row"><span class="diff-label">A벤더 세트 수</span><span class="diff-val diff-same">5개</span></div>
+            <div class="diff-row"><span class="diff-label">B벤더 세트 수</span><span class="diff-val diff-same">4개</span></div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#b45309;margin-top:8px;">* 주황색: 차이 있는 항목</div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -315,8 +488,12 @@
       el.classList.add('active');
       el.closest('.card-body').querySelectorAll('.stp').forEach(function(p){p.classList.add('hidden');});
       document.getElementById(panelId).classList.remove('hidden');
-      document.getElementById('s-save').textContent = panelId==='sv' ? '연결 벤더 목록 저장' : '세트 분배 저장';
+      var saveBtn = document.getElementById('s-save');
+      if (panelId==='s-ver' || panelId==='s-sch') { saveBtn.parentElement.style.display='none'; }
+      else { saveBtn.parentElement.style.display='flex'; saveBtn.textContent = panelId==='sv' ? '연결 벤더 목록 저장' : '세트 분배 저장'; }
     }
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
   </script>
 </body>
 </html>
