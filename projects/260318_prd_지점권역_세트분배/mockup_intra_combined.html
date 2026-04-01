@@ -75,6 +75,11 @@
     .version-select { display:flex; gap:12px; align-items:center; margin-bottom:14px; }
     .version-select select { border:1px solid #c7d0db; border-radius:5px; padding:6px 10px; font-size:12px; }
     .ro { display:inline-block; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:4px 10px; font-size:12px; color:#334155; }
+    .badge.v-active { background: #dcfce7; color: #166534; }
+    .badge.v-standby { background: #f1f5f9; color: #475569; }
+    .badge.v-suspended { background: #fef3c7; color: #92400e; }
+    .badge.v-terminated { background: #fee2e2; color: #991b1b; }
+    input.set-input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
     .page { display: none; }
     .page.visible { display: block; }
   </style>
@@ -293,11 +298,11 @@
             </div>
             <div id="sv" class="stp">
               <div class="sl">현재 연결된 벤더 목록</div>
-              <table><thead><tr><th>벤더명</th><th style="width:80px;text-align:center;">삭제</th></tr></thead>
+              <table><thead><tr><th>벤더명</th><th style="width:100px;">상태</th><th style="width:80px;text-align:center;">삭제</th></tr></thead>
               <tbody>
-                <tr><td>A벤더</td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
-                <tr><td>B벤더</td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
-                <tr><td>C벤더</td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+                <tr><td>A벤더</td><td><span class="badge v-active">운영중</span></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+                <tr><td>B벤더</td><td><span class="badge v-active">운영중</span></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+                <tr><td>C벤더</td><td><span class="badge v-suspended">운영중지</span></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
               </tbody></table>
               <div style="font-size:11px;color:#64748b;margin-top:6px;">연결 벤더 삭제 시 다른 벤더의 세트 분배값은 유지됩니다.</div>
               <div style="margin-top:10px;"><div class="row"><input type="text" placeholder="벤더명 검색"><button class="btn ghost">벤더 검색</button></div></div>
@@ -306,13 +311,14 @@
             </div>
             <div id="ss" class="stp hidden">
               <div class="sl">벤더별 세트 수 입력</div>
-              <table><thead><tr><th>벤더명</th><th style="width:140px;">세트 수</th></tr></thead>
+              <table><thead><tr><th>벤더명</th><th style="width:100px;">상태</th><th style="width:140px;">세트 수</th></tr></thead>
               <tbody>
-                <tr><td>A벤더</td><td><input class="set-input" type="number" value="5" min="0"></td></tr>
-                <tr><td>B벤더</td><td><input class="set-input" type="number" value="4" min="0"></td></tr>
-                <tr><td>C벤더</td><td><input class="set-input" type="number" value="3" min="0"></td></tr>
+                <tr><td>A벤더</td><td><span class="badge v-active">운영중</span></td><td><input class="set-input" type="number" value="5" min="0"></td></tr>
+                <tr><td>B벤더</td><td><span class="badge v-active">운영중</span></td><td><input class="set-input" type="number" value="4" min="0"></td></tr>
+                <tr style="background:#f8fafc;"><td>C벤더</td><td><span class="badge v-suspended">운영중지</span></td><td><input class="set-input" type="number" value="0" min="0" max="0" disabled title="운영중이 아닌 벤더는 세트 수 0만 허용"></td></tr>
               </tbody></table>
               <div style="font-size:11px;color:#64748b;margin-top:6px;">저장 이력 없는 벤더는 기본 0개 · 음수/빈칸 입력 시 저장 불가 · 세트 수 상한 없음</div>
+              <div style="font-size:11px;color:#b45309;margin-top:4px;">⚠ 운영중이 아닌 벤더(대기/운영중지/해지)는 세트 수 0만 설정 가능</div>
             </div>
             <div id="s-ver" class="stp hidden">
               <div class="sl">버전 이력</div>
@@ -337,14 +343,14 @@
                     <input type="text" placeholder="벤더명 검색">
                     <button class="btn ghost">벤더 검색/추가</button>
                   </div>
-                  <table><thead><tr><th>벤더명</th><th style="width:140px;">세트 수</th><th style="width:80px;text-align:center;">삭제</th></tr></thead>
+                  <table><thead><tr><th>벤더명</th><th style="width:100px;">상태</th><th style="width:140px;">세트 수</th><th style="width:80px;text-align:center;">삭제</th></tr></thead>
                   <tbody>
-                    <tr><td>A벤더</td><td><input class="set-input" type="number" value="5" min="0"></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
-                    <tr><td>B벤더</td><td><input class="set-input" type="number" value="4" min="0"></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
-                    <tr style="background:#fff7ed;"><td>C벤더</td><td><input class="set-input" type="number" value="4" min="0" style="font-weight:700;color:#b45309;"></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+                    <tr><td>A벤더</td><td><span class="badge v-active">운영중</span></td><td><input class="set-input" type="number" value="5" min="0"></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+                    <tr><td>B벤더</td><td><span class="badge v-active">운영중</span></td><td style="background:#fff7ed;"><input class="set-input" type="number" value="5" min="0" style="font-weight:700;color:#b45309;"></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
+                    <tr style="background:#f8fafc;"><td>C벤더</td><td><span class="badge v-suspended">운영중지</span></td><td><input class="set-input" type="number" value="0" min="0" max="0" disabled title="운영중이 아닌 벤더는 세트 수 0만 허용"></td><td style="text-align:center;"><button class="btn danger sm" onclick="this.closest('tr').remove()">삭제</button></td></tr>
                   </tbody></table>
                   <div style="font-size:11px;color:#64748b;margin-top:6px;">연결 벤더 삭제 시 다른 벤더의 세트 분배값은 유지됩니다. 벤더 검색/추가로 연결을 확장할 수 있습니다.</div>
-                  <div style="font-size:10px;color:#b45309;margin-top:4px;">* 주황색: 현재 적용 값(3)에서 변경</div>
+                  <div style="font-size:10px;color:#b45309;margin-top:4px;">* 주황색: 현재 적용 값에서 변경 · ⚠ 비운영 벤더는 0만 허용 · 적용 시점 비운영 벤더 자동 0개 보정</div>
                 </div>
                 <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
                   <button class="btn ghost">초기화</button>
@@ -417,8 +423,9 @@
       <div class="modal-head"><h3>세트분배 버전 상세 — v3</h3><button class="modal-close" onclick="closeModal('s-modal-detail')">&times;</button></div>
       <div class="modal-body">
         <div class="sl" style="margin-top:0;">연결 벤더 + 벤더별 세트 분배</div>
-        <table><thead><tr><th>벤더명</th><th>세트 수</th></tr></thead>
-        <tbody><tr><td>A벤더</td><td><span class="ro">5</span></td></tr><tr><td>B벤더</td><td><span class="ro">4</span></td></tr><tr><td>C벤더</td><td><span class="ro">3</span></td></tr></tbody></table>
+        <table><thead><tr><th>벤더명</th><th>상태 (스냅샷)</th><th>세트 수</th></tr></thead>
+        <tbody><tr><td>A벤더</td><td><span class="badge v-active">운영중</span></td><td><span class="ro">5</span></td></tr><tr><td>B벤더</td><td><span class="badge v-active">운영중</span></td><td><span class="ro">4</span></td></tr><tr><td>C벤더</td><td><span class="badge v-active">운영중</span></td><td><span class="ro">3</span></td></tr></tbody></table>
+        <div style="font-size:11px;color:#64748b;margin-top:6px;">벤더 상태는 버전 생성(스냅샷) 시점 기준입니다.</div>
       </div>
     </div>
   </div>
@@ -437,17 +444,23 @@
         </div>
         <div class="compare-grid">
           <div class="compare-col"><h4>v3 (현재 적용)</h4>
-            <div class="diff-row"><span class="diff-label">C벤더 세트 수</span><span class="diff-val diff-changed">3개</span></div>
+            <div class="diff-row"><span class="diff-label">A벤더 상태</span><span class="diff-val diff-same">운영중</span></div>
             <div class="diff-row"><span class="diff-label">A벤더 세트 수</span><span class="diff-val diff-same">5개</span></div>
+            <div class="diff-row"><span class="diff-label">B벤더 상태</span><span class="diff-val diff-same">운영중</span></div>
             <div class="diff-row"><span class="diff-label">B벤더 세트 수</span><span class="diff-val diff-same">4개</span></div>
+            <div class="diff-row"><span class="diff-label">C벤더 상태</span><span class="diff-val diff-changed">운영중지</span></div>
+            <div class="diff-row"><span class="diff-label">C벤더 세트 수</span><span class="diff-val diff-changed">3개</span></div>
           </div>
           <div class="compare-col"><h4>v2 (이전 버전)</h4>
-            <div class="diff-row"><span class="diff-label">C벤더 세트 수</span><span class="diff-val diff-changed">2개</span></div>
+            <div class="diff-row"><span class="diff-label">A벤더 상태</span><span class="diff-val diff-same">운영중</span></div>
             <div class="diff-row"><span class="diff-label">A벤더 세트 수</span><span class="diff-val diff-same">5개</span></div>
+            <div class="diff-row"><span class="diff-label">B벤더 상태</span><span class="diff-val diff-same">운영중</span></div>
             <div class="diff-row"><span class="diff-label">B벤더 세트 수</span><span class="diff-val diff-same">4개</span></div>
+            <div class="diff-row"><span class="diff-label">C벤더 상태</span><span class="diff-val diff-changed">운영중</span></div>
+            <div class="diff-row"><span class="diff-label">C벤더 세트 수</span><span class="diff-val diff-changed">2개</span></div>
           </div>
         </div>
-        <div style="font-size:10px;color:#b45309;margin-top:8px;">* 주황색: 차이 있는 항목</div>
+        <div style="font-size:10px;color:#b45309;margin-top:8px;">* 주황색: 차이 있는 항목 (벤더 상태 포함)</div>
       </div>
     </div>
   </div>
