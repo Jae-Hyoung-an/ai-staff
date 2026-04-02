@@ -91,6 +91,31 @@
 
 ---
 
+## html-to-pptx
+
+- **목적**: HTML 슬라이드를 python-pptx로 편집 가능한 네이티브 PPTX로 변환
+- **트리거**:
+  - "HTML을 PPTX로 변환해줘"
+  - "발표자료 PPTX로 만들어줘"
+  - HTML 슬라이드 완성 후 PPTX 배포가 필요할 때
+- **사용법**: `python tools/html_to_pptx.py`
+- **위치**: `tools/html_to_pptx.py`
+- **비고**: 현재 신사업 SOP 프로젝트 전용으로 하드코딩되어 있어, 범용화 시 경로 인자 추가 필요
+
+---
+
+## screenshot-to-pptx
+
+- **목적**: HTML 슬라이드를 Playwright로 캡처하여 이미지 기반 PPTX로 변환
+- **트리거**:
+  - "HTML 슬라이드를 이미지 PPTX로 만들어줘"
+  - 편집 불필요하고 레이아웃 보존이 중요할 때
+- **사용법**: `python tools/screenshot_to_pptx.py`
+- **위치**: `tools/screenshot_to_pptx.py`
+- **비고**: Playwright 설치 필요 (`pip install playwright && playwright install chromium`)
+
+---
+
 <!-- 예시: 아래 형식으로 도구를 등록합니다
 
 ## pdf-converter
@@ -132,5 +157,6 @@
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
+| 1.2 | 2026-04-02 | html-to-pptx, screenshot-to-pptx 도구 등록 |
 | 1.1 | 2026-02-24 | analyze-orders 도구 등록 |
 | 1.0 | 2026-01-06 | 초기 버전 |
