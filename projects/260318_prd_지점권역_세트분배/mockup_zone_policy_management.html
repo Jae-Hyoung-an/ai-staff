@@ -131,7 +131,6 @@
             <div class="tabs">
               <div class="tab active" onclick="switchTab(this,'create','tab-c-volume')">세트 물량 구성</div>
               <div class="tab" onclick="switchTab(this,'create','tab-c-reward')">보상기준</div>
-              <div class="tab" onclick="switchTab(this,'create','tab-c-cost')">기사 원가 요금제</div>
               <div class="tab" onclick="switchTab(this,'create','tab-c-zone')">연결 zone</div>
             </div>
 
@@ -170,15 +169,6 @@
               <div class="field-row"><label>세트당 보상 금액</label><input type="number" value="0" style="width:120px"> 원</div>
             </div>
 
-            <!-- 탭: 기사 원가 요금제 -->
-            <div id="tab-c-cost" class="tab-panel hidden">
-              <div class="section-label">기사 원가 요금제</div>
-              <div class="notice">모든 항목 0원 미만 입력 시 저장 불가</div>
-              <div class="field-row"><label>50미터 당 금액</label><input type="number" value="0" style="width:120px"> 원</div>
-              <div class="field-row"><label>픽업비용</label><input type="number" value="0" style="width:120px"> 원</div>
-              <div class="field-row"><label>배송완료 비용</label><input type="number" value="0" style="width:120px"> 원</div>
-            </div>
-
             <!-- 탭: 연결 zone -->
             <div id="tab-c-zone" class="tab-panel hidden">
               <div class="section-label">연결 zone</div>
@@ -215,7 +205,6 @@
             <div class="tabs">
               <div class="tab active" onclick="switchTab(this,'detail','tab-d-volume')">세트 물량 구성</div>
               <div class="tab" onclick="switchTab(this,'detail','tab-d-reward')">보상기준</div>
-              <div class="tab" onclick="switchTab(this,'detail','tab-d-cost')">기사 원가 요금제</div>
               <div class="tab" onclick="switchTab(this,'detail','tab-d-zone')">연결 zone</div>
               <div class="tab" onclick="switchTab(this,'detail','tab-d-version')">버전 관리</div>
               <div class="tab" onclick="switchTab(this,'detail','tab-d-schedule')">예약 변경</div>
@@ -254,14 +243,6 @@
               <div class="field-row"><label>성공 슬롯 수 (0~35)</label><input type="number" value="28" style="width:80px"> 개</div>
               <div class="section-label" style="margin-top:16px;">보상 금액</div>
               <div class="field-row"><label>세트당 보상 금액</label><input type="number" value="150000" style="width:120px"> 원</div>
-            </div>
-
-            <!-- 상세 탭: 기사 원가 요금제 -->
-            <div id="tab-d-cost" class="tab-panel hidden">
-              <div class="section-label">기사 원가 요금제</div>
-              <div class="field-row"><label>50미터 당 금액</label><input type="number" value="100" style="width:120px"> 원</div>
-              <div class="field-row"><label>픽업비용</label><input type="number" value="500" style="width:120px"> 원</div>
-              <div class="field-row"><label>배송완료 비용</label><input type="number" value="700" style="width:120px"> 원</div>
             </div>
 
             <!-- 상세 탭: 연결 zone -->
@@ -322,10 +303,6 @@
                   <div class="field-row"><label>수락률</label><input type="number" value="92" style="width:80px"> %</div>
                   <div class="field-row"><label>성공 슬롯 수</label><input type="number" value="28" style="width:80px"> 개</div>
                   <div class="field-row"><label>세트당 보상 금액</label><input type="number" value="150000" style="width:120px"> 원</div>
-                  <div class="section-label">기사 원가 요금제</div>
-                  <div class="field-row"><label>50미터 당 금액</label><input type="number" value="100" style="width:120px"> 원</div>
-                  <div class="field-row"><label>픽업비용</label><input type="number" value="500" style="width:120px"> 원</div>
-                  <div class="field-row"><label>배송완료 비용</label><input type="number" value="700" style="width:120px"> 원</div>
                 </div>
               </div>
               <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
@@ -366,10 +343,6 @@
         <div class="field-row"><label>수락률</label><span class="readonly-field">92%</span></div>
         <div class="field-row"><label>성공 슬롯 수</label><span class="readonly-field">28개</span></div>
         <div class="field-row"><label>세트당 보상 금액</label><span class="readonly-field">150,000원</span></div>
-        <div class="section-label">기사 원가 요금제</div>
-        <div class="field-row"><label>50미터 당 금액</label><span class="readonly-field">100원</span></div>
-        <div class="field-row"><label>픽업비용</label><span class="readonly-field">500원</span></div>
-        <div class="field-row"><label>배송완료 비용</label><span class="readonly-field">700원</span></div>
         <div class="section-label">연결 zone</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <span class="readonly-field">강북A</span>
@@ -410,16 +383,12 @@
             <div class="diff-row"><span class="diff-label">보상 조건 > 수락률</span><span class="diff-val diff-changed">92%</span></div>
             <div class="diff-row"><span class="diff-label">물량 > 금요일 17~20시</span><span class="diff-val diff-changed">80건</span></div>
             <div class="diff-row"><span class="diff-label">연결 zone</span><span class="diff-val diff-changed">강북A, 강북B</span></div>
-            <div class="diff-row"><span class="diff-label">50m당 금액</span><span class="diff-val diff-same">100원</span></div>
-            <div class="diff-row"><span class="diff-label">픽업비용</span><span class="diff-val diff-same">500원</span></div>
           </div>
           <div class="compare-col">
             <h4>v3 (이전 버전) — 2026-03-15</h4>
             <div class="diff-row"><span class="diff-label">보상 조건 > 수락률</span><span class="diff-val diff-changed">85%</span></div>
             <div class="diff-row"><span class="diff-label">물량 > 금요일 17~20시</span><span class="diff-val diff-changed">72건</span></div>
             <div class="diff-row"><span class="diff-label">연결 zone</span><span class="diff-val diff-changed">강북A</span></div>
-            <div class="diff-row"><span class="diff-label">50m당 금액</span><span class="diff-val diff-same">100원</span></div>
-            <div class="diff-row"><span class="diff-label">픽업비용</span><span class="diff-val diff-same">500원</span></div>
           </div>
         </div>
         <div style="font-size:10px;color:#b45309;margin-top:8px;">* 주황색 하이라이트: 두 버전 간 차이가 있는 항목</div>

@@ -120,6 +120,7 @@
             <div class="tabs">
               <div class="tab active" onclick="switchTab(this,'tab-vendor')">연결 벤더</div>
               <div class="tab" onclick="switchTab(this,'tab-set')">벤더별 세트 분배</div>
+              <div class="tab" onclick="switchTab(this,'tab-cost')">적용 기사원가</div>
               <div class="tab" onclick="switchTab(this,'tab-version')">버전 관리</div>
               <div class="tab" onclick="switchTab(this,'tab-schedule')">예약 변경</div>
             </div>
@@ -165,6 +166,23 @@
               </table>
               <div style="font-size:11px;color:#64748b;margin-top:6px;">저장 이력 없는 벤더는 기본 0개 · 음수/빈칸 입력 시 저장 불가 · 세트 수 상한 없음</div>
               <div style="font-size:11px;color:#b45309;margin-top:4px;">⚠ 운영중이 아닌 벤더(대기/운영중지/해지)는 세트 수 0만 설정 가능</div>
+            </div>
+
+            <!-- 탭: 적용 기사원가 -->
+            <div id="tab-cost" class="tab-panel hidden">
+              <div class="section-label">적용 기사원가 (요금제 서버 조회)</div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:10px;">아래 값은 요금제 서버에서 해당 Zone에 적용된 기사 원가를 조회한 결과입니다. 수정은 요금제 서버에서만 가능합니다.</div>
+              <table>
+                <thead><tr><th style="width:200px;">항목</th><th>적용 값</th></tr></thead>
+                <tbody>
+                  <tr><td>50m당 금액</td><td><span class="readonly-field">100원</span></td></tr>
+                  <tr><td>픽업비용</td><td><span class="readonly-field">500원</span></td></tr>
+                  <tr><td>배송완료 비용</td><td><span class="readonly-field">700원</span></td></tr>
+                </tbody>
+              </table>
+              <div style="margin-top:12px;">
+                <a href="#" onclick="alert('요금제 서버 관리 페이지로 이동합니다.'); return false;" style="color:#2e6ff2;font-size:12px;text-decoration:underline;">요금제 서버에서 수정 →</a>
+              </div>
             </div>
 
             <!-- 탭: 버전 관리 -->
@@ -318,7 +336,7 @@
       document.getElementById(panelId).classList.remove('hidden');
       var saveBtn = document.getElementById('btn-save');
       var footerEl = document.getElementById('footer-vendor');
-      if (panelId === 'tab-version' || panelId === 'tab-schedule') {
+      if (panelId === 'tab-version' || panelId === 'tab-schedule' || panelId === 'tab-cost') {
         footerEl.style.display = 'none';
       } else {
         footerEl.style.display = 'flex';
