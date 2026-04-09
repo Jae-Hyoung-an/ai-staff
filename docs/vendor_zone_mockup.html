@@ -146,6 +146,8 @@
                 <th><div class="th-time"><span>시간대 4</span><input class="time" value="17:00">~<input class="time" value="20:00"></div></th>
                 <th><div class="th-time"><span>시간대 5</span><input class="time" value="20:00">~<input class="time" value="23:00"></div></th>
               </tr></thead><tbody id="matrix-create"></tbody></table>
+              <div class="sl" style="margin-top:16px;">세트당 최대 활성화 기사수</div>
+              <div class="fr"><label>세트당 최대 활성화 기사수</label><input type="number" value="5" min="1" max="99" style="width:80px"> 명 <span style="font-size:11px;color:#64748b;margin-left:8px;">최소 1, 최대 99</span></div>
             </div>
             <div id="zc-rwd" class="ztp hidden">
               <div class="sl">보상 조건</div>
@@ -192,6 +194,8 @@
                 <th><div class="th-time"><span>시간대 4</span><input class="time" value="17:00">~<input class="time" value="20:00"></div></th>
                 <th><div class="th-time"><span>시간대 5</span><input class="time" value="20:00">~<input class="time" value="23:00"></div></th>
               </tr></thead><tbody id="matrix-detail"></tbody></table>
+              <div class="sl" style="margin-top:16px;">세트당 최대 활성화 기사수</div>
+              <div class="fr"><label>세트당 최대 활성화 기사수</label><input type="number" value="5" min="1" max="99" style="width:80px"> 명</div>
             </div>
             <div id="zd-rwd" class="ztp hidden">
               <div class="sl">보상 조건</div>
@@ -224,7 +228,9 @@
                 <div class="fr"><label>메모 (선택)</label><input type="text" class="wide" placeholder="예약 변경 사유" value="4월 1주차 물량 조정"></div>
                 <div style="font-size:11px;color:#64748b;margin:8px 0;">현재 적용 v4 설정값 복사. 변경할 항목만 수정하세요.</div>
                 <div style="border:1px solid #e2e8f0;border-radius:6px;padding:10px;background:#fff;">
-                  <div class="sl" style="margin-top:0;">보상기준 (발췌)</div>
+                  <div class="sl" style="margin-top:0;">세트 물량 구성 (발췌)</div>
+                  <div class="fr"><label>세트당 최대 활성화 기사수</label><input type="number" value="5" min="1" max="99" style="width:80px"> 명</div>
+                  <div class="sl">보상기준 (발췌)</div>
                   <div class="fr"><label>수락률</label><input type="number" value="92" style="width:80px"> %</div>
                   <div class="fr"><label>세트당 보상 금액</label><input type="number" value="150000" style="width:120px"> 원</div>
                 </div>
@@ -375,7 +381,9 @@
     <div class="modal">
       <div class="modal-head"><h3>권역관리 버전 상세 — v4</h3><button class="modal-close" onclick="closeModal('z-modal-detail')">&times;</button></div>
       <div class="modal-body">
-        <div class="sl" style="margin-top:0;">보상기준</div>
+        <div class="sl" style="margin-top:0;">세트 물량 구성</div>
+        <div class="fr"><label>세트당 최대 활성화 기사수</label><span class="ro">5명</span></div>
+        <div class="sl">보상기준</div>
         <div class="fr"><label>수락률</label><span class="ro">92%</span></div>
         <div class="fr"><label>성공 슬롯 수</label><span class="ro">28개</span></div>
         <div class="fr"><label>세트당 보상 금액</label><span class="ro">150,000원</span></div>
