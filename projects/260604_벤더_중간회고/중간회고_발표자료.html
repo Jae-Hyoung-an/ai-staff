@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>벤더 구조 동대문 테스트 — 중간 회고</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #ffffff; line-height: 1.6; }
+        .slide { min-height: 100vh; padding: 60px 80px; display: flex; flex-direction: column; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .slide-title { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
+        h1 { font-size: 3.4rem; font-weight: 700; margin-bottom: 20px; background: linear-gradient(90deg, #00d4ff, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.25; }
+        h2 { font-size: 2.1rem; font-weight: 600; margin-bottom: 36px; color: #00d4ff; border-left: 4px solid #7c3aed; padding-left: 20px; }
+        h3 { font-size: 1.4rem; font-weight: 600; margin-bottom: 18px; color: #a78bfa; }
+        .subtitle { font-size: 1.4rem; color: #94a3b8; margin-bottom: 36px; }
+        .meta { font-size: 1rem; color: #64748b; }
+        .lead { font-size: 1.25rem; color: #cbd5e1; margin-bottom: 10px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 24px; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 28px; border: 1px solid rgba(255,255,255,0.1); }
+        .card-highlight { background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(0, 212, 255, 0.2) 100%); border: 1px solid rgba(124, 58, 237, 0.3); }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { padding: 13px 18px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); vertical-align: top; }
+        th { background: rgba(124, 58, 237, 0.2); font-weight: 600; color: #a78bfa; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { font-size: 1.02rem; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+        td.num { color: #7c3aed; font-weight: 700; width: 48px; text-align: center; }
+        .asis { color: #f8a4a4; }
+        .tobe { color: #6ee7b7; font-weight: 600; }
+        .insight-box { background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; padding: 22px 24px; margin-top: 26px; }
+        .insight-box h4 { color: #fbbf24; font-size: 1.05rem; margin-bottom: 8px; }
+        .insight-box p { color: #fcd34d; font-size: 1.05rem; }
+        .danger-box { background: linear-gradient(135deg, rgba(248,113,113,0.12) 0%, rgba(239,68,68,0.12) 100%); border: 1px solid rgba(248,113,113,0.35); border-radius: 12px; padding: 22px 24px; margin-top: 26px; }
+        .danger-box p { color: #fca5a5; font-size: 1.05rem; }
+        .good-box { background: linear-gradient(135deg, rgba(52,211,153,0.12) 0%, rgba(16,185,129,0.12) 100%); border: 1px solid rgba(52,211,153,0.35); border-radius: 12px; padding: 22px 24px; margin-top: 26px; }
+        .good-box p { color: #6ee7b7; font-size: 1.1rem; }
+        ul { list-style: none; padding-left: 0; }
+        ul li { padding: 9px 0; padding-left: 26px; position: relative; font-size: 1.05rem; }
+        ul li::before { content: "→"; position: absolute; left: 0; color: #7c3aed; }
+        .mono { font-family: 'SFMono-Regular', Consolas, monospace; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 24px 28px; margin-top: 18px; font-size: 1.1rem; color: #e2e8f0; }
+        .mono .hl { color: #00d4ff; font-weight: 700; }
+        .flow { display: flex; align-items: stretch; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
+        .flow-step { flex: 1; min-width: 150px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 18px; text-align: center; font-size: 0.98rem; display: flex; align-items: center; justify-content: center; }
+        .flow-step.bad { border-color: rgba(248,113,113,0.5); background: rgba(248,113,113,0.08); }
+        .flow-arrow { display: flex; align-items: center; color: #7c3aed; font-size: 1.6rem; }
+        .tag { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: rgba(124,58,237,0.25); color: #c4b5fd; margin-left: 8px; }
+        .tag-struct { background: rgba(0,212,255,0.18); color: #67e8f9; }
+        .tag-proc { background: rgba(251,191,36,0.18); color: #fcd34d; }
+        .nav { position: fixed; bottom: 18px; right: 22px; background: rgba(0,0,0,0.45); color: #94a3b8; font-size: 0.85rem; padding: 6px 14px; border-radius: 20px; z-index: 100; }
+        @media print { .slide { page-break-after: always; } .nav { display: none; } }
+    </style>
+</head>
+<body>
+    <section class="slide slide-title">
+        <h1>벤더 구조 동대문 테스트<br>중간 회고</h1>
+        <p class="subtitle">본질 리마인드 → 겪은 문제 → 개선 제안</p>
+        <p class="meta">2026-06-05 | 발표 파트 (운영 · 영업 · 기획 · 프로덕트)</p>
+    </section>
+
+    <section class="slide">
+        <h2>들어가며 — 숫자 이전에</h2>
+        <p class="lead"><strong>상점 물량 · 벤더 SLA는 오늘의 핵심 주제.</strong> 하지만 이 숫자들은 <strong>목적이 아니라 '수단'</strong>이다.</p>
+        <div class="grid-2">
+            <div class="card">
+                <h3>자주 보는 것 (수단)</h3>
+                <p style="color:#cbd5e1;">상점 물량, 벤더 SLA, 당장의 처리율</p>
+            </div>
+            <div class="card card-highlight">
+                <h3>진짜 목적 (본질)</h3>
+                <p style="color:#e2e8f0;">본사가 <strong>물량 · 배차 · 공급을 통제</strong>할 수 있는 운영 체계의 정착</p>
+            </div>
+        </div>
+        <div class="insight-box"><p>숫자 논의에 앞서 — "<strong>왜 이 구조인가</strong>"를 먼저 정렬한다.</p></div>
+    </section>
+
+    <section class="slide">
+        <h2>본질 한 장 — "사람 의존"에서 "구조 의존"으로</h2>
+        <p class="lead"><strong>본질은 한 문장 — 개인기 · 선의에 기대던 운영을, 시스템으로 작동하는 운영으로.</strong></p>
+        <table>
+            <thead><tr><th>구분</th><th>사람에 의존 (위탁지점)</th><th>구조로 작동 (벤더 체계)</th></tr></thead>
+            <tbody>
+                <tr><td>영업 · 물량</td><td class="asis">지점이 알아서</td><td class="tobe">본사가 통제</td></tr>
+                <tr><td>배차</td><td class="asis">전투배차 (개인 선택)</td><td class="tobe">AI 배차 (최적)</td></tr>
+                <tr><td>공급 (기사)</td><td class="asis">지점장 개인기 · 선의</td><td class="tobe">예측 → 발주 → 벤더 평가</td></tr>
+                <tr><td>품질 · SLA</td><td class="asis">개인 역량에 좌우</td><td class="tobe">성과 · 보상으로 통제</td></tr>
+                <tr><td>교체 · 확장</td><td class="asis">독점 → 경직</td><td class="tobe">소단위 → 유연</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="slide">
+        <h2>왜 위탁지점을 벗어나려 했나 (AS-IS의 한계)</h2>
+        <table>
+            <tbody>
+                <tr><td class="num">1</td><td>완료 <strong>건당 fee</strong> 구조 → SLA(적시 배송)를 지킬 동인이 없음</td></tr>
+                <tr><td class="num">2</td><td>지점이 본사 <strong>법인물량</strong>보다 본인 수익원인 <strong>로컬물량</strong>을 우선 처리</td></tr>
+                <tr><td class="num">3</td><td><strong>전투배차</strong>(기사 자율 선택) → '꿀콜'만 수행, 나머지 오더 방치</td></tr>
+                <tr><td class="num">4</td><td>경쟁적 선택 → <strong>전체 최적 배차</strong> 불가</td></tr>
+                <tr><td class="num">5</td><td><strong>1지역 1지점 독점</strong> → 문제 지점 교체 곤란</td></tr>
+                <tr><td class="num">6</td><td>개인사업자가 기사 관리 → 퀄리티보다 기사 수익보전 우선 → 필요 공급 안 됨</td></tr>
+                <tr><td class="num">7</td><td>영업까지 지점에 위임 → 물량 증대 · 컨트롤 불가</td></tr>
+            </tbody>
+        </table>
+        <div class="insight-box"><h4>결국 뿌리는 하나</h4><p>모든 실적이 <strong>운영 담당자와 지점장 개인의 역량(개인기)과 선의</strong>에 달려 있었다 — 즉 <strong>구조가 아니라 사람에 의존</strong>하는 운영이었습니다.</p></div>
+    </section>
+
+    <section class="slide">
+        <h2>그래서 만든 구조 (TO-BE)</h2>
+        <table>
+            <tbody>
+                <tr><td class="num">1</td><td><strong>AI 배차(Dispatch Service)</strong> 기본 사용 → 최적 배차</td></tr>
+                <tr><td class="num">2</td><td><strong>본사가 권역 직접 설계</strong></td></tr>
+                <tr><td class="num">3</td><td>예측 물량을 요일 · 시간 단위 <strong>세트</strong>로 쪼개 <strong>다수 벤더에 발주</strong></td></tr>
+                <tr><td class="num">4</td><td>벤더 실적을 <strong>주간 평가 → 보상 차등</strong> (공급 컨트롤러빌리티 확보)</td></tr>
+                <tr><td class="num">5</td><td>소단위 분배 → 미충족 벤더를 <strong>부담 없이 빠르게 교체</strong></td></tr>
+            </tbody>
+        </table>
+        <div class="mono">
+            <span class="hl">본사</span>  : 영업(물량) · AI배차 · 공급예측  →  전부 통제<br>
+            <span class="hl">벤더</span>  : 발주받은 물량을 거절 없이 수행 + 필요한 기사 확보
+        </div>
+    </section>
+
+    <section class="slide">
+        <h2>동대문은 끝이 아니라 '시작점'</h2>
+        <div class="good-box"><p>궁극 목표는 <strong>전 지역 전환</strong>이고, 동대문은 그 <strong>첫 테스트</strong>입니다.<br>그래서 지금 중요한 건 "이번 2주의 점수"가 아니라 <strong>"이 구조가 작동하게 만드는 법을 배우는 것"</strong>입니다.</p></div>
+    </section>
+
+    <section class="slide">
+        <h2>지난 2주, 우리가 겪은 문제 (1)</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>2-1. 초기 진출계획이 시작하자마자 틀어짐</h3>
+                <ul>
+                    <li>합의했던 권역이 테스트 직후부터 삐걱 → 계속 수정 · 조정</li>
+                    <li>원인: 양측 모두 야심차게, "서로 좋은 사람" 되려 <strong>다 된다고만</strong> 함 (낙관 편향)</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>2-2. 첫 S&amp;OP의 실패 — 핵심 학습 지점</h3>
+                <ul>
+                    <li>기존 물량 예측은 OK. 단, <strong>신규 영업 상점 물량을 과다 예측</strong></li>
+                    <li>의도: 첫 테스트라 프렌즈 버퍼를 크게 (벤더:프렌즈 = 5:5)</li>
+                    <li>플래닝: 50% 벤더 → <strong>1세트 = 벤더 1개</strong>면 충분</li>
+                    <li>실제: <strong>계획-실행 단절</strong>로 <strong>벤더 3개 / 3세트</strong> 투입 (과다)</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide">
+        <h2>실패의 핵심 인과 — 버퍼 잠식</h2>
+        <div class="flow">
+            <div class="flow-step bad">벤더 과다 계약<br>(3세트)</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step bad">벤더 우선 배차<br>로직</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step bad">프렌즈에 갈<br>오더 거의 없음</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step bad">프렌즈<br>대거 이탈</div>
+        </div>
+        <div class="flow" style="margin-top:16px;">
+            <div class="flow-step bad">시스템 이슈<br>(배차엔진 불만 + 후불결제 적응 실패)</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step bad">벤더 3개 중<br>2개 이탈</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step bad">버퍼 역할 할<br>프렌즈 부재</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step bad" style="border-color:rgba(239,68,68,0.8);background:rgba(239,68,68,0.18);"><strong>SLA 붕괴</strong></div>
+        </div>
+        <div class="danger-box"><p><strong>핵심:</strong> 벤더 발주량 + 벤더 우선 배차가 <strong>프렌즈 버퍼를 잠식</strong>합니다. → 발주량을 통제하지 못하면, 안전망(프렌즈)이 먼저 사라집니다.</p></div>
+    </section>
+
+    <section class="slide">
+        <h2>지난 2주, 우리가 겪은 문제 (2)</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>2-3. CX SOP의 부재</h3>
+                <ul>
+                    <li>벤더 기사: 배달대행 특유 오더(<strong>후불결제</strong> 등)에 적응 못함</li>
+                    <li>상점: 이슈 시 본사 콜센터가 아닌 <strong>영업사원 · 기사에게 직접 항의</strong></li>
+                    <li>전투배차에 익숙한 상점: <strong>픽업 임박 배차하는 AI배차</strong>에 불만</li>
+                    <li>"시스템 운영"이 목표였지만 <strong>초기엔 사람 손이 너무 많이</strong> 들어감</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>2-4. 기타</h3>
+                <ul>
+                    <li>준비됐어야 할 프로세스 누락 (예: <strong>주간 정산서 작성</strong>) → 시간 소모</li>
+                    <li><strong>후불결제는 프렌즈 불가</strong>(앱 모듈 미구현) → 벤더 기사가 처리해야 하나 미숙 → 문제 빈발</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide">
+        <h2>다음 사이클, 이렇게 개선하자 (1)</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>3-1. 초기 진출계획 — 더 촘촘하게</h3>
+                <ul>
+                    <li>권역 기준을 <strong>영업/운영이 명확히 상호 약속</strong>하고 설계</li>
+                    <li><strong>야심찬 한 방 대신</strong>, 상황 보며 <strong>점진적으로 확대</strong></li>
+                    <li>사전 고려 추가: <strong>1·2차 예비 권역</strong>, <strong>배상정책</strong>, <strong>재이동 · 반납 요율</strong></li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>3-2. 초기 S&amp;OP — 보수적 · 체계적으로</h3>
+                <ul>
+                    <li>오픈 <strong>첫 주는 최소 세트</strong> → 이슈 탐지 · 해결 집중 → <strong>점진적 상점 오픈</strong></li>
+                    <li><strong>주간 S&amp;OP를 실제로 실행</strong> (이번엔 각자 대응만 하다 간극 확대)</li>
+                    <li>물량 예측 + 영업 목표/현황 <strong>공유 강화</strong></li>
+                    <li>벤더 <strong>성과/보상 기준 강하게</strong>, <strong>슬롯 더 촘촘히</strong></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide">
+        <h2>다음 사이클, 이렇게 개선하자 (2)</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>3-3. CX SOP — 본격 구축</h3>
+                <ul>
+                    <li><strong>개인기가 아닌 시스템 기반 공통 프로세스</strong>로 전환</li>
+                    <li>상점 / 벤더(기사) / 프렌즈 / 본사 간 <strong>새로운 관계성에 맞춘 대응 SOP</strong> 수립</li>
+                </ul>
+            </div>
+            <div class="card card-highlight">
+                <h3>3-4. 벤더 평가 — 선행지표로 '주중' 개입</h3>
+                <ul>
+                    <li><strong>주간 평가만으로는 늦다</strong> — 이번에도 벤더 2곳이 주중에 이탈, 타이밍을 놓침</li>
+                    <li><strong>일 · 슬롯 단위 선행지표</strong>(거절률 · 노쇼 · 적시율 + 배차엔진 체감지표)로 <strong>주중 개입</strong> (코칭/발주 조정/교체 준비)</li>
+                    <li>벤더 체감 지표(평균 대기 · 콜 품질)도 함께 추적</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide">
+        <h2>문제 → 개선 매핑 (한눈에)</h2>
+        <table>
+            <thead><tr><th>겪은 문제</th><th>개선 방향</th><th>다음 액션 (담당)</th></tr></thead>
+            <tbody>
+                <tr><td>초기 진출계획 틀어짐</td><td>권역기준 상호 약속 + 점진 확대 + 예비권역 · 배상 · 요율 사전 설계</td><td style="color:#fbbf24;">(논의)</td></tr>
+                <tr><td>첫 S&amp;OP 실패<br>(공급 과다 → 버퍼 잠식 → SLA 붕괴)</td><td>첫 주 최소세트 + <strong>주간 S&amp;OP 복원</strong> + <strong>발주량 통제</strong></td><td style="color:#fbbf24;">(논의)</td></tr>
+                <tr><td>CX SOP 부재</td><td>시스템 기반 공통 CX SOP 수립</td><td style="color:#fbbf24;">(논의)</td></tr>
+                <tr><td>지원 프로세스 누락<br>(정산서 · 후불결제)</td><td>정산서 등 선제 준비 + 후불결제(KICC) 개선</td><td style="color:#fbbf24;">(논의)</td></tr>
+            </tbody>
+        </table>
+        <div class="insight-box"><p>매핑은 토론의 출발점입니다. 오늘 <strong>각 개선의 담당과 첫 액션</strong>을 정하는 것을 목표로 합니다.</p></div>
+    </section>
+
+    <section class="slide">
+        <h2>프로덕트 개선 백로그</h2>
+        <table>
+            <thead><tr><th>항목</th><th>내용</th></tr></thead>
+            <tbody>
+                <tr><td><strong>후불결제 개선</strong></td><td>KICC 솔루션 도입 → 프렌즈 앱 후불결제 모듈 부재 해소</td></tr>
+                <tr><td><strong>회귀오더 기능 추가</strong></td><td>권역 외 오더를 수행한 벤더 기사에게, 본인 소속 벤더 담당 구역으로 돌아오는 오더를 우선 배차 → 권역 외 이탈 오더 거부감 감소</td></tr>
+                <tr><td><strong>배차엔진 성능 개선</strong></td><td>벤더 이탈 사유였던 배차엔진 만족도 개선</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="slide slide-title">
+        <h1 style="font-size:2.6rem;">한 줄 마무리</h1>
+        <div class="good-box" style="max-width:900px;"><p>지금 점수가 아니라 <strong>구조를 작동시키는 법</strong>을 배우는 단계라고 생각합니다.<br>본질(본사 통제 + 안정 · 버퍼 공급)에 다시 정렬하고,<br><strong>첫 주 보수적 운영 + 주간 S&amp;OP 복원</strong>부터 시작하길 제안드립니다.</p></div>
+    </section>
+
+    <div class="nav"><span id="cur">1</span> / <span id="total">15</span> &nbsp;·&nbsp; ↑↓ 또는 ←→ 로 이동</div>
+
+    <script>
+        const slides = Array.from(document.querySelectorAll('.slide'));
+        document.getElementById('total').textContent = slides.length;
+        let idx = 0;
+        function go(n) {
+            idx = Math.max(0, Math.min(slides.length - 1, n));
+            slides[idx].scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('cur').textContent = idx + 1;
+        }
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowDown', 'ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(idx + 1); }
+            else if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(idx - 1); }
+        });
+        // keep counter in sync with manual scroll
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach((ent) => {
+                if (ent.isIntersecting) {
+                    idx = slides.indexOf(ent.target);
+                    document.getElementById('cur').textContent = idx + 1;
+                }
+            });
+        }, { threshold: 0.6 });
+        slides.forEach((s) => obs.observe(s));
+    </script>
+</body>
+</html>
