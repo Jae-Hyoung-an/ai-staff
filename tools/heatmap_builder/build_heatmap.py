@@ -336,7 +336,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
 
   <div class="group">
     <span class="label">경계 표시</span>
-    <label class="opt"><input type="checkbox" id="chkAdm" /> <span class="swatch" style="border-color:#e8511d"></span>행정동 경계</label>
+    <label class="opt"><input type="checkbox" id="chkAdm" checked /> <span class="swatch" style="border-color:#e8511d"></span>행정동 경계</label>
     <label class="opt"><input type="checkbox" id="chkGu" /> <span class="swatch" style="border-color:#1d4ed8"></span>자치구(구) 경계</label>
     <label class="opt"><input type="checkbox" id="chkStore" /> 상점 위치 점 표시</label>
   </div>
@@ -414,10 +414,14 @@ function buildStoreLayer() {
   const filt = document.querySelector('input[name=filter]:checked').value;
   const rows = STORES.filter(s => filt === 'all' ? true : s.d === 'Y');
   return L.layerGroup(rows.map(s => L.circleMarker([s.la, s.lo], {
-      radius:3.5, color: s.d==='Y' ? '#0a8f5b' : '#888', weight:1,
+      radius:4, color: s.d==='Y' ? '#0a8f5b' : '#888', weight:1,
       fillColor: s.d==='Y' ? '#13c47d' : '#bbb', fillOpacity:0.85
     }).bindPopup(
-      `<b>${s.n||'(이름없음)'}</b><br>가게배달: ${s.d}<br>최근주문수: ${s.o.toLocaleString('ko-KR')}`
+      `<div style="min-width:150px">
+         <div style="font-size:14px;font-weight:700;margin-bottom:6px">${s.n || '(이름없음)'}</div>
+         <div>가게배달: <b style="color:${s.d==='Y'?'#0a8f5b':'#b04b00'}">${s.d==='Y' ? 'Y (가능)' : 'N (불가)'}</b></div>
+         <div>최근 주문수: <b>${s.o.toLocaleString('ko-KR')}</b> 건</div>
+       </div>`
     )));
 }
 function refreshStoreLayer() {
@@ -437,6 +441,9 @@ document.getElementById('chkStore').addEventListener('change', refreshStoreLayer
 const panel = document.getElementById('panel');
 document.getElementById('panelToggle').addEventListener('click', () => panel.classList.toggle('collapsed'));
 if (window.matchMedia('(max-width: 640px)').matches) panel.classList.add('collapsed');
+
+// 행정동 경계는 기본 표시
+if (document.getElementById('chkAdm').checked) admLayer.addTo(map);
 
 buildPoints();
 updateLabelVisibility();
