@@ -24,3 +24,6 @@ __pycache__/
 .env
 .env.*
 secrets/
+
+# heatmap-builder 다운로드 캐시 (대용량 경계 원본)
+tools/heatmap_builder/.cache/

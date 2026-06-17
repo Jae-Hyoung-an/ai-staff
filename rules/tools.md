@@ -116,6 +116,24 @@
 
 ---
 
+## heatmap-builder
+
+- **목적**: 상점 위치/주문수 CSV를 받아 지도를 움직이며 볼 수 있는 인터랙티브 오더 히트맵(단일 HTML)을 생성. 행정동/자치구 경계는 공개 GeoJSON을 자동 다운로드해 데이터 영역만 잘라 HTML에 인라인 임베드(외부 서버 불필요).
+- **트리거**:
+  - "상점/오더 위치를 지도 히트맵으로 만들어줘"
+  - "어느 지역에 주문이 몰리는지 지도로 보고 싶어"
+  - 위경도 + 주문수가 포함된 CSV가 제공되었을 때
+- **사용법**: `python tools/heatmap_builder/build_heatmap.py --csv <CSV경로> --out <HTML경로> --title "제목"`
+- **위치**: `tools/heatmap_builder/`
+- **비고**: `pip install -r tools/heatmap_builder/requirements.txt` (requests). 인터랙션: 히트맵 강도(주문수 가중/상점 밀도), 표시 대상(전체/가게배달 Y만), 경계(행정동/자치구) on·off, 상점 점 표시.
+- **예시**:
+  ```powershell
+  python tools/heatmap_builder/build_heatmap.py
+  # → projects/260617_성북구_오더_히트맵/index.html 생성 (더블클릭 실행)
+  ```
+
+---
+
 <!-- 예시: 아래 형식으로 도구를 등록합니다
 
 ## pdf-converter
@@ -157,6 +175,7 @@
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
+| 1.3 | 2026-06-17 | heatmap-builder 도구 등록 |
 | 1.2 | 2026-04-02 | html-to-pptx, screenshot-to-pptx 도구 등록 |
 | 1.1 | 2026-02-24 | analyze-orders 도구 등록 |
 | 1.0 | 2026-01-06 | 초기 버전 |
