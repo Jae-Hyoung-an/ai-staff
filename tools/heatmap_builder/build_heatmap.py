@@ -338,7 +338,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
     <span class="label">경계 표시</span>
     <label class="opt"><input type="checkbox" id="chkAdm" checked /> <span class="swatch" style="border-color:#e8511d"></span>행정동 경계</label>
     <label class="opt"><input type="checkbox" id="chkGu" /> <span class="swatch" style="border-color:#1d4ed8"></span>자치구(구) 경계</label>
-    <label class="opt"><input type="checkbox" id="chkStore" /> 상점 위치 점 표시</label>
+    <label class="opt"><input type="checkbox" id="chkStore" checked /> 상점 위치 점 표시</label>
   </div>
   </div><!-- /panelBody -->
 </div>
@@ -446,6 +446,7 @@ if (window.matchMedia('(max-width: 640px)').matches) panel.classList.add('collap
 if (document.getElementById('chkAdm').checked) admLayer.addTo(map);
 
 buildPoints();
+refreshStoreLayer();
 updateLabelVisibility();
 </script>
 </body>
