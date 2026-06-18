@@ -42,10 +42,30 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
 CACHE_DIR = SCRIPT_DIR / ".cache"
 
-DEFAULT_CSV = Path(r"c:\Users\jaehyoung.an\Downloads\성북구_데이터.csv")
+DEFAULT_CSVS = [
+    Path(r"c:\Users\jaehyoung.an\Downloads\성북구_데이터.csv"),
+    Path(r"c:\Users\jaehyoung.an\Downloads\260618_성북성동기존오더.csv"),
+]
 DEFAULT_OUT = REPO_ROOT / "projects" / "260617_성북구_오더_히트맵" / "index.html"
 
 BBOX_MARGIN = 0.012  # 약 1.2km 여유
+
+# 컬럼명 별칭 (파일마다 헤더가 다를 수 있음)
+NAME_KEYS = ("상호명", "상점명", "상점", "이름")
+ORDER_KEYS = ("최근주문수", "오더수", "주문수")
+DELIVER_KEYS = ("가게배달유무", "가게배달", "배달유무")
+
+# 가게배달유무 카테고리 코드
+#   Y = 가게배달 가능, N = 불가, E = 기존오더
+def _deliver_code(raw: str) -> str:
+    v = (raw or "").strip()
+    if v.upper() == "Y":
+        return "Y"
+    if v.upper() == "N":
+        return "N"
+    if v == "기존오더":
+        return "E"
+    return v or "N"
 
 
 # --- 유틸 --------------------------------------------------------------------
@@ -68,10 +88,18 @@ def download(url: str, cache_name: str) -> dict:
     return resp.json()
 
 
+def _pick(row: dict, keys: tuple) -> str:
+    for k in keys:
+        if k in row and row[k] not in (None, ""):
+            return row[k]
+    return ""
+
+
 def read_csv(csv_path: Path) -> list[dict]:
-    """CSV(cp949 우선) 읽고 검증된 상점 목록 반환."""
+    """CSV(인코딩 자동 판별) 읽고 검증된 상점 목록 반환. 컬럼명은 별칭 허용."""
     last_err = None
-    for enc in ("cp949", "utf-8-sig", "utf-8"):
+    rows = None
+    for enc in ("utf-8-sig", "cp949", "utf-8"):
         try:
             with open(csv_path, encoding=enc, newline="") as f:
                 rows = list(csv.DictReader(f))
@@ -79,7 +107,7 @@ def read_csv(csv_path: Path) -> list[dict]:
             break
         except (UnicodeDecodeError, LookupError) as e:
             last_err = e
-    else:
+    if rows is None:
         raise RuntimeError(f"CSV 인코딩 판별 실패: {last_err}")
 
     stores = []
@@ -88,7 +116,7 @@ def read_csv(csv_path: Path) -> list[dict]:
         try:
             lat = float(r["위도"])
             lon = float(r["경도"])
-            order = int(float(r.get("최근주문수") or 0))
+            order = int(float(_pick(r, ORDER_KEYS) or 0))
         except (ValueError, TypeError, KeyError):
             skipped += 1
             continue
@@ -96,13 +124,12 @@ def read_csv(csv_path: Path) -> list[dict]:
         if not (33.0 <= lat <= 39.5 and 124.0 <= lon <= 132.0):
             skipped += 1
             continue
-        deliver = (r.get("가게배달유무") or "").strip().upper()
         stores.append(
             {
-                "n": (r.get("상호명") or "").strip(),
+                "n": _pick(r, NAME_KEYS).strip(),
                 "la": round(lat, 6),
                 "lo": round(lon, 6),
-                "d": "Y" if deliver == "Y" else "N",
+                "d": _deliver_code(_pick(r, DELIVER_KEYS)),
                 "o": order,
             }
         )
@@ -213,22 +240,29 @@ def build_html(stores, adm_gj, gu_gj, bbox, title: str) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="상점 CSV -> 인터랙티브 오더 히트맵 HTML")
-    ap.add_argument("--csv", default=str(DEFAULT_CSV), help="입력 CSV 경로")
+    ap.add_argument("--csv", nargs="+", default=[str(p) for p in DEFAULT_CSVS],
+                    help="입력 CSV 경로(여러 개 가능, 공백으로 구분)")
     ap.add_argument("--out", default=str(DEFAULT_OUT), help="출력 HTML 경로")
-    ap.add_argument("--title", default="성북구 오더 히트맵", help="지도 제목")
+    ap.add_argument("--title", default="성북·성동 오더 히트맵", help="지도 제목")
     args = ap.parse_args()
 
-    csv_path = Path(args.csv)
     out_path = Path(args.out)
-    if not csv_path.exists():
-        log(f"[오류] CSV 파일을 찾을 수 없습니다: {csv_path}")
+    csv_paths = [Path(c) for c in args.csv]
+    missing = [str(p) for p in csv_paths if not p.exists()]
+    if missing:
+        log(f"[오류] CSV 파일을 찾을 수 없습니다: {', '.join(missing)}")
         sys.exit(1)
 
     log("[1/4] CSV 읽는 중...")
-    stores = read_csv(csv_path)
+    stores = []
+    for p in csv_paths:
+        log(f"  · {p.name}")
+        stores.extend(read_csv(p))
     bbox = data_bbox(stores)
     n_y = sum(1 for s in stores if s["d"] == "Y")
-    log(f"  - 상점 {len(stores)}개 (배달 Y={n_y}, N={len(stores) - n_y})")
+    n_n = sum(1 for s in stores if s["d"] == "N")
+    n_e = sum(1 for s in stores if s["d"] == "E")
+    log(f"  - 상점 {len(stores)}개 (배달 Y={n_y}, N={n_n}, 기존오더={n_e})")
     log(f"  - 영역 bbox: {tuple(round(v, 4) for v in bbox)}")
 
     log("[2/4] 행정동 경계 처리 중...")
@@ -320,7 +354,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
     <button id="panelToggle" class="ptoggle" aria-label="설정 패널 열기/닫기" title="설정 열기/닫기">&#9776;</button>
   </div>
   <div id="panelBody">
-  <p class="sub">표시 상점 <span class="count" id="cnt">0</span>개 · 데이터 기준 최근 주문수</p>
+  <p class="sub">표시 상점 <span class="count" id="cnt">0</span>개 · 주문수 기준 히트맵</p>
 
   <div class="group">
     <span class="label">히트맵 강도 기준</span>
@@ -332,6 +366,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
     <span class="label">표시 대상</span>
     <label class="opt"><input type="radio" name="filter" value="all" checked /> 전체 상점</label>
     <label class="opt"><input type="radio" name="filter" value="Y" /> 가게배달 Y만</label>
+    <label class="opt"><input type="radio" name="filter" value="E" /> 기존오더만</label>
   </div>
 
   <div class="group">
@@ -370,17 +405,16 @@ try { map.fitBounds(CONFIG.bounds, { padding:[20,20] }); } catch(e) {}
 const gradient = {0.0:'#2b6cff',0.25:'#36e0c8',0.45:'#7cf04a',0.65:'#f5e13a',0.82:'#f59f1b',1.0:'#e8201a'};
 let heat = L.heatLayer([], { radius:26, blur:20, maxZoom:17, minOpacity:0.25, max:1.0, gradient:gradient }).addTo(map);
 
+function matchFilter(s, filt) { return filt === 'all' || s.d === filt; }
+
 function buildPoints() {
   const mode = document.querySelector('input[name=weight]:checked').value;
   const filt = document.querySelector('input[name=filter]:checked').value;
-  const rows = STORES.filter(s => filt === 'all' ? true : s.d === 'Y');
+  const rows = STORES.filter(s => matchFilter(s, filt));
+  // 현재 표시 대상 기준으로 정규화 -> 각 보기에서 색 대비 최대화
+  const mx = rows.reduce((m, s) => Math.max(m, s.o), 0) || 1;
   const pts = rows.map(s => {
-    let w;
-    if (mode === 'order') {
-      w = Math.max(0.05, s.o / CONFIG.maxOrder); // 전체 기준 정규화 -> 절대 비교 가능
-    } else {
-      w = 0.5; // 균등 가중 -> 상점 밀집도
-    }
+    const w = (mode === 'order') ? Math.max(0.05, s.o / mx) : 0.5;
     return [s.la, s.lo, w];
   });
   heat.setLatLngs(pts);
@@ -410,19 +444,28 @@ const guLayer = L.geoJSON(GU, {
 
 // 상점 점 레이어 (요청 시)
 let storeLayer = null;
+const DELIVER_STYLE = {
+  Y: { stroke:'#0a8f5b', fill:'#13c47d', label:'Y (가게배달 가능)', color:'#0a8f5b' },
+  N: { stroke:'#888',    fill:'#bbb',    label:'N (가게배달 불가)', color:'#b04b00' },
+  E: { stroke:'#6a35c9', fill:'#9b6be6', label:'기존오더',          color:'#6a35c9' }
+};
+function dstyle(d) { return DELIVER_STYLE[d] || DELIVER_STYLE.N; }
+
 function buildStoreLayer() {
   const filt = document.querySelector('input[name=filter]:checked').value;
-  const rows = STORES.filter(s => filt === 'all' ? true : s.d === 'Y');
-  return L.layerGroup(rows.map(s => L.circleMarker([s.la, s.lo], {
-      radius:4, color: s.d==='Y' ? '#0a8f5b' : '#888', weight:1,
-      fillColor: s.d==='Y' ? '#13c47d' : '#bbb', fillOpacity:0.85
+  const rows = STORES.filter(s => matchFilter(s, filt));
+  return L.layerGroup(rows.map(s => {
+    const st = dstyle(s.d);
+    return L.circleMarker([s.la, s.lo], {
+      radius:4, color:st.stroke, weight:1, fillColor:st.fill, fillOpacity:0.85
     }).bindPopup(
       `<div style="min-width:150px">
          <div style="font-size:14px;font-weight:700;margin-bottom:6px">${s.n || '(이름없음)'}</div>
-         <div>가게배달: <b style="color:${s.d==='Y'?'#0a8f5b':'#b04b00'}">${s.d==='Y' ? 'Y (가능)' : 'N (불가)'}</b></div>
-         <div>최근 주문수: <b>${s.o.toLocaleString('ko-KR')}</b> 건</div>
+         <div>구분: <b style="color:${st.color}">${st.label}</b></div>
+         <div>주문수: <b>${s.o.toLocaleString('ko-KR')}</b> 건</div>
        </div>`
-    )));
+    );
+  }));
 }
 function refreshStoreLayer() {
   const on = document.getElementById('chkStore').checked;
