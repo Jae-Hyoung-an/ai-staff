@@ -364,8 +364,9 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
 
   <div class="group">
     <span class="label">표시 대상</span>
-    <label class="opt"><input type="radio" name="filter" value="all" checked /> 전체 상점</label>
-    <label class="opt"><input type="radio" name="filter" value="Y" /> 가게배달 Y만</label>
+    <label class="opt"><input type="radio" name="filter" value="all" checked /> 전체 오더</label>
+    <label class="opt"><input type="radio" name="filter" value="baemin" /> 배민 자료 전체 (Y/N)</label>
+    <label class="opt"><input type="radio" name="filter" value="Y" /> 가게배달만 (Y)</label>
     <label class="opt"><input type="radio" name="filter" value="E" /> 기존오더만</label>
   </div>
 
@@ -405,7 +406,11 @@ try { map.fitBounds(CONFIG.bounds, { padding:[20,20] }); } catch(e) {}
 const gradient = {0.0:'#2b6cff',0.25:'#36e0c8',0.45:'#7cf04a',0.65:'#f5e13a',0.82:'#f59f1b',1.0:'#e8201a'};
 let heat = L.heatLayer([], { radius:26, blur:20, maxZoom:17, minOpacity:0.25, max:1.0, gradient:gradient }).addTo(map);
 
-function matchFilter(s, filt) { return filt === 'all' || s.d === filt; }
+function matchFilter(s, filt) {
+  if (filt === 'all') return true;
+  if (filt === 'baemin') return s.d === 'Y' || s.d === 'N';
+  return s.d === filt;
+}
 
 function buildPoints() {
   const mode = document.querySelector('input[name=weight]:checked').value;
