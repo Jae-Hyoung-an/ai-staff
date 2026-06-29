@@ -45,15 +45,17 @@ CACHE_DIR = SCRIPT_DIR / ".cache"
 DEFAULT_CSVS = [
     Path(r"c:\Users\jaehyoung.an\Downloads\성북구_데이터.csv"),
     Path(r"c:\Users\jaehyoung.an\Downloads\260618_성북성동기존오더.csv"),
+    Path(r"c:\Users\jaehyoung.an\Downloads\성동구데이터.xlsx"),
 ]
 DEFAULT_OUT = REPO_ROOT / "projects" / "260617_성북구_오더_히트맵" / "index.html"
 
 BBOX_MARGIN = 0.012  # 약 1.2km 여유
 
 # 컬럼명 별칭 (파일마다 헤더가 다를 수 있음)
-NAME_KEYS = ("상호명", "상점명", "상점", "이름")
+NAME_KEYS = ("상호명", "상점명", "사이트_상호명", "상점", "이름")
 ORDER_KEYS = ("최근주문수", "오더수", "주문수")
-DELIVER_KEYS = ("가게배달유무", "가게배달", "배달유무")
+DELIVER_KEYS = ("가게배달유무", "가게배달여부", "가게배달", "배달유무")
+PRICE_KEYS = ("가게배달가격", "가게배달 가격", "배달가격", "가게배달비")
 
 # 가게배달유무 카테고리 코드
 #   Y = 가게배달 가능, N = 불가, E = 기존오더
@@ -90,25 +92,46 @@ def download(url: str, cache_name: str) -> dict:
 
 def _pick(row: dict, keys: tuple) -> str:
     for k in keys:
-        if k in row and row[k] not in (None, ""):
-            return row[k]
+        v = row.get(k)
+        if v not in (None, ""):
+            return v
     return ""
 
 
-def read_csv(csv_path: Path) -> list[dict]:
-    """CSV(인코딩 자동 판별) 읽고 검증된 상점 목록 반환. 컬럼명은 별칭 허용."""
+def _load_rows(path: Path) -> list[dict]:
+    """CSV/XLSX를 dict 행 목록으로 로드."""
+    if path.suffix.lower() in (".xlsx", ".xlsm"):
+        try:
+            import openpyxl
+        except ImportError:
+            raise RuntimeError("xlsx 읽기에는 openpyxl 이 필요합니다. `pip install -r requirements.txt`")
+        wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+        ws = wb[wb.sheetnames[0]]
+        it = ws.iter_rows(values_only=True)
+        header = [str(h).strip() if h is not None else "" for h in next(it)]
+        rows = []
+        for vals in it:
+            if vals is None or all(v is None for v in vals):
+                continue
+            rows.append({header[i]: vals[i] for i in range(min(len(header), len(vals)))})
+        log(f"  - xlsx 시트 '{wb.sheetnames[0]}' 에서 {len(rows)}행 읽음")
+        return rows
+    # CSV: 인코딩 자동 판별
     last_err = None
-    rows = None
     for enc in ("utf-8-sig", "cp949", "utf-8"):
         try:
-            with open(csv_path, encoding=enc, newline="") as f:
+            with open(path, encoding=enc, newline="") as f:
                 rows = list(csv.DictReader(f))
             log(f"  - 인코딩 {enc} 로 {len(rows)}행 읽음")
-            break
+            return rows
         except (UnicodeDecodeError, LookupError) as e:
             last_err = e
-    if rows is None:
-        raise RuntimeError(f"CSV 인코딩 판별 실패: {last_err}")
+    raise RuntimeError(f"CSV 인코딩 판별 실패: {last_err}")
+
+
+def read_csv(csv_path: Path) -> list[dict]:
+    """CSV/XLSX 읽고 검증된 상점 목록 반환. 컬럼명은 별칭 허용."""
+    rows = _load_rows(csv_path)
 
     stores = []
     skipped = 0
@@ -124,15 +147,17 @@ def read_csv(csv_path: Path) -> list[dict]:
         if not (33.0 <= lat <= 39.5 and 124.0 <= lon <= 132.0):
             skipped += 1
             continue
-        stores.append(
-            {
-                "n": _pick(r, NAME_KEYS).strip(),
-                "la": round(lat, 6),
-                "lo": round(lon, 6),
-                "d": _deliver_code(_pick(r, DELIVER_KEYS)),
-                "o": order,
-            }
-        )
+        store = {
+            "n": str(_pick(r, NAME_KEYS)).strip(),
+            "la": round(lat, 6),
+            "lo": round(lon, 6),
+            "d": _deliver_code(str(_pick(r, DELIVER_KEYS))),
+            "o": order,
+        }
+        price = str(_pick(r, PRICE_KEYS)).strip()
+        if price:
+            store["p"] = price  # 가게배달 가격 (있을 때만 저장 -> 용량 절약)
+        stores.append(store)
     if skipped:
         log(f"  - 좌표/형식 이상으로 {skipped}행 제외")
     if not stores:
@@ -456,20 +481,26 @@ const DELIVER_STYLE = {
 };
 function dstyle(d) { return DELIVER_STYLE[d] || DELIVER_STYLE.N; }
 
+function storeInfoHtml(s) {
+  const st = dstyle(s.d);
+  return `<div style="min-width:160px">
+       <div style="font-size:14px;font-weight:700;margin-bottom:6px">${s.n || '(이름없음)'}</div>
+       <div>구분: <b style="color:${st.color}">${st.label}</b></div>
+       <div>주문수: <b>${s.o.toLocaleString('ko-KR')}</b> 건</div>
+       <div>가게배달 가격: <b>${s.p || ''}</b></div>
+     </div>`;
+}
+
 function buildStoreLayer() {
   const filt = document.querySelector('input[name=filter]:checked').value;
   const rows = STORES.filter(s => matchFilter(s, filt));
   return L.layerGroup(rows.map(s => {
     const st = dstyle(s.d);
+    const html = storeInfoHtml(s);
     return L.circleMarker([s.la, s.lo], {
       radius:4, color:st.stroke, weight:1, fillColor:st.fill, fillOpacity:0.85
-    }).bindPopup(
-      `<div style="min-width:150px">
-         <div style="font-size:14px;font-weight:700;margin-bottom:6px">${s.n || '(이름없음)'}</div>
-         <div>구분: <b style="color:${st.color}">${st.label}</b></div>
-         <div>주문수: <b>${s.o.toLocaleString('ko-KR')}</b> 건</div>
-       </div>`
-    );
+    }).bindTooltip(html, { direction:'top', offset:[0,-4], opacity:0.96 })
+      .bindPopup(html);
   }));
 }
 function refreshStoreLayer() {
