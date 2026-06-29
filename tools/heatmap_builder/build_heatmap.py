@@ -52,10 +52,13 @@ DEFAULT_OUT = REPO_ROOT / "projects" / "260617_성북구_오더_히트맵" / "in
 BBOX_MARGIN = 0.012  # 약 1.2km 여유
 
 # 컬럼명 별칭 (파일마다 헤더가 다를 수 있음)
-NAME_KEYS = ("상호명", "상점명", "사이트_상호명", "상점", "이름")
+NAME_KEYS = ("상호명", "상점명", "리스트_상호명", "사이트_상호명", "가맹점명", "상점", "이름")
 ORDER_KEYS = ("최근주문수", "오더수", "주문수")
 DELIVER_KEYS = ("가게배달유무", "가게배달여부", "가게배달", "배달유무")
 PRICE_KEYS = ("가게배달가격", "가게배달 가격", "배달가격", "가게배달비")
+
+# 상호명 부분일치 폴백: 별칭에 없어도 '상호명/상점명' 등이 들어간 컬럼을 자동 인식
+NAME_CONTAINS = ("상호명", "상점명", "상호", "상점명", "가맹점")
 
 # 가게배달유무 카테고리 코드
 #   Y = 가게배달 가능, N = 불가, E = 기존오더
@@ -95,6 +98,19 @@ def _pick(row: dict, keys: tuple) -> str:
         v = row.get(k)
         if v not in (None, ""):
             return v
+    return ""
+
+
+def _pick_name(row: dict) -> str:
+    """상호명: 별칭 우선, 없으면 컬럼명 부분일치로 폴백."""
+    v = _pick(row, NAME_KEYS)
+    if v:
+        return v
+    for key, val in row.items():
+        if val in (None, ""):
+            continue
+        if any(tok in str(key) for tok in NAME_CONTAINS):
+            return val
     return ""
 
 
@@ -148,7 +164,7 @@ def read_csv(csv_path: Path) -> list[dict]:
             skipped += 1
             continue
         store = {
-            "n": str(_pick(r, NAME_KEYS)).strip(),
+            "n": str(_pick_name(r)).strip(),
             "la": round(lat, 6),
             "lo": round(lon, 6),
             "d": _deliver_code(str(_pick(r, DELIVER_KEYS))),
