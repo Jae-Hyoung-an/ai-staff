@@ -134,6 +134,26 @@
 
 ---
 
+## admin_dong_matcher
+
+- **목적**: 상점 위경도를 행정동 경계 폴리곤과 대조(point-in-polygon)하여 실제 소속 행정동을 판별. 동 컬럼 결측/법정동·행정동 표기 불일치 문제를 좌표로 우회.
+- **트리거**:
+  - "행정동 기준으로 상점 추출해줘"
+  - "특정 권역(여러 행정동) 안의 상점만 뽑아줘"
+  - 상점 주소의 동 컬럼이 비어있거나 법정동/행정동이 섞여 있을 때
+  - 좌표는 있는데 행정동 기준 분류가 필요할 때
+- **사용법**: `python tools/admin_dong_matcher/match.py` (대조) → `python tools/admin_dong_matcher/finalize.py` (오더 결합)
+- **위치**: `tools/admin_dong_matcher/`
+- **비고**: `pip install shapely`. 행정동 경계는 vuski/admdongkor GeoJSON 사용. Metabase 2,000행 제한 주의(상점×월 등으로 행수 축소).
+- **예시**:
+  ```powershell
+  # 1) 경계 GeoJSON + 상점좌표(data/stores_*.json) 준비 후
+  python tools/admin_dong_matcher/match.py
+  # → output/matched_stores.csv (store_id, sgg, admin_dong)
+  ```
+
+---
+
 <!-- 예시: 아래 형식으로 도구를 등록합니다
 
 ## pdf-converter
@@ -175,6 +195,7 @@
 
 | 버전 | 날짜 | 변경 내용 |
 |------|------|----------|
+| 1.4 | 2026-06-30 | admin_dong_matcher 도구 등록 |
 | 1.3 | 2026-06-17 | heatmap-builder 도구 등록 |
 | 1.2 | 2026-04-02 | html-to-pptx, screenshot-to-pptx 도구 등록 |
 | 1.1 | 2026-02-24 | analyze-orders 도구 등록 |

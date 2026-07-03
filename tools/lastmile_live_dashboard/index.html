@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>라스트마일 라이브 대시보드</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0f1420; --card:#1a2030; --card2:#222a3d; --line:#2c3650;
+    --txt:#e8edf7; --sub:#9aa6c0; --accent:#4f8cff; --accent2:#22c1a4;
+    --warn:#f5a623; --danger:#ff5d6c; --good:#2ec27e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    background:radial-gradient(1200px 600px at 20% -10%,#1b2740 0%,var(--bg) 55%);
+    color:var(--txt);padding:28px;min-height:100vh}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.5px}
+  .subtitle{color:var(--sub);font-size:13px;margin-top:4px}
+  .badge{display:inline-block;background:var(--card2);border:1px solid var(--line);
+    padding:3px 9px;border-radius:999px;font-size:11px;color:var(--sub);margin-left:6px}
+  .live{color:var(--good)} .live::before{content:"● "}
+  .meta{text-align:right;font-size:12px;color:var(--sub);line-height:1.7}
+  .meta b{color:var(--txt)}
+  .controls{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:6px}
+  button{background:var(--accent);color:#fff;border:none;padding:8px 14px;border-radius:10px;
+    font-weight:700;font-size:13px;cursor:pointer;transition:.15s}
+  button:hover{filter:brightness(1.1)} button:disabled{opacity:.5;cursor:wait}
+  label.auto{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:5px;cursor:pointer}
+  .grid{display:grid;gap:16px;margin-top:20px}
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .card{background:linear-gradient(180deg,var(--card) 0%,#161c2b 100%);
+    border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+  .kpi .label{font-size:12px;color:var(--sub);font-weight:600}
+  .kpi .value{font-size:28px;font-weight:800;margin-top:8px;letter-spacing:-1px}
+  .kpi .unit{font-size:14px;color:var(--sub);font-weight:600;margin-left:3px}
+  .kpi .delta{font-size:12px;margin-top:6px;font-weight:600;color:var(--sub)}
+  .up{color:var(--good)} .down{color:var(--danger)}
+  .charts{grid-template-columns:1.6fr 1fr}
+  @media(max-width:820px){.charts{grid-template-columns:1fr}}
+  .card h3{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+  .chart-box{position:relative;height:300px}
+  .chart-box.sm{height:260px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--sub);font-weight:600;cursor:pointer;user-select:none}
+  th:hover{color:var(--txt)}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .bar{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin-top:4px}
+  footer{margin-top:22px;color:var(--sub);font-size:12px;line-height:1.8;border-top:1px solid var(--line);padding-top:16px}
+  code{background:#0c1120;padding:2px 6px;border-radius:5px;color:#9ec1ff;font-size:12px}
+  #err{display:none;background:#3a1c22;border:1px solid var(--danger);color:#ffd0d5;
+    border-radius:12px;padding:14px 16px;margin-top:16px;font-size:13px;line-height:1.7}
+  #loading{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--accent);
+    color:#fff;padding:7px 16px;border-radius:999px;font-size:12px;font-weight:700;display:none;z-index:9}
+</style>
+</head>
+<body>
+<div id="loading">데이터 조회 중…</div>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>라스트마일 라이브 대시보드 <span class="badge live">LIVE</span></h1>
+      <div class="subtitle">메타베이스 → <b>Snowflake · VROONG.DATAMART.ORDERS</b> · 접속/새로고침마다 실시간 조회</div>
+    </div>
+    <div class="meta">
+      마지막 조회 시각<br><b id="genTime">-</b>
+      <div class="controls">
+        <label class="auto"><input type="checkbox" id="autoChk" /> 60초 자동 갱신</label>
+        <button id="refreshBtn" onclick="load()">↻ 새로고침</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="err"></div>
+
+  <div class="grid kpis">
+    <div class="card kpi"><div class="label">어제 주문 건수</div><div class="value" id="k_orders">-</div><div class="delta" id="k_orders_d"></div></div>
+    <div class="card kpi"><div class="label">어제 매출 (청구금액 합)</div><div class="value" id="k_rev">-</div><div class="delta" id="k_avg"></div></div>
+    <div class="card kpi"><div class="label">어제 완료율</div><div class="value" id="k_done">-</div><div class="delta" id="k_done_d"></div></div>
+    <div class="card kpi"><div class="label">최근 7일 누적</div><div class="value" id="k_week">-</div><div class="delta" id="k_wavg"></div></div>
+  </div>
+
+  <div class="grid charts">
+    <div class="card"><h3><span class="dot"></span>일별 주문 추세 (최근 30일)</h3><div class="chart-box"><canvas id="trend"></canvas></div></div>
+    <div class="card"><h3><span class="dot" style="background:var(--accent2)"></span>어제 상태별 분포</h3><div class="chart-box sm"><canvas id="status"></canvas></div></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:16px">
+    <div class="card"><h3><span class="dot" style="background:var(--warn)"></span>어제 출발지 시·도별 주문 (Top 10)</h3><div class="chart-box"><canvas id="region"></canvas></div></div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--accent2)"></span>지역별 상세 <span style="font-weight:400;color:var(--sub);font-size:12px">(헤더 클릭 정렬)</span></h3>
+      <table id="regionTbl"><thead><tr>
+        <th data-k="region">지역</th><th data-k="orders" class="num">주문 수</th><th data-k="share" class="num">비중</th>
+      </tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <footer>
+    데이터 경로: 브라우저 → 내 PC 로컬 서버 → 메타베이스 REST API → Snowflake DWH<br>
+    매 조회 시 <code>VROONG.DATAMART.ORDERS</code>를 실시간 집계합니다. (사전집계 마트라 빠름)
+  </footer>
+</div>
+
+<script>
+const won = n => Number(n).toLocaleString("ko-KR");
+const eok = n => (n/1e8).toFixed(2);
+let trendChart, statusChart, regionChart, regionData = [];
+let sortKey="orders", sortAsc=false;
+const STATUS_COLOR = {"배달완료":"#2ec27e","취소":"#ff5d6c","접수":"#4f8cff","대기":"#f5a623"};
+
+async function load(){
+  const btn=document.getElementById("refreshBtn");
+  document.getElementById("loading").style.display="block";
+  btn.disabled=true;
+  try{
+    const res=await fetch("/api/dashboard",{cache:"no-store"});
+    const data=await res.json();
+    if(!res.ok||data.error) throw new Error(data.error||("HTTP "+res.status));
+    document.getElementById("err").style.display="none";
+    render(data);
+  }catch(e){
+    const box=document.getElementById("err");
+    box.style.display="block";
+    box.innerHTML="<b>데이터 조회 실패</b><br>"+e.message+
+      "<br><span style='color:#9aa6c0'>서버가 실행 중인지, .env의 메타베이스 설정이 올바른지 확인하세요.</span>";
+  }finally{
+    document.getElementById("loading").style.display="none";
+    btn.disabled=false;
+  }
+}
+
+function render(d){
+  document.getElementById("genTime").textContent=d.generatedAt;
+
+  // KPI (daily 마지막에서 두번째 = 어제, 마지막은 오늘 진행중일 수 있음)
+  const daily=d.daily;
+  const yIdx=daily.length-2>=0?daily.length-2:daily.length-1;
+  const y=daily[yIdx], prev=daily[yIdx-1];
+  document.getElementById("k_orders").innerHTML=won(y.orders)+'<span class="unit">건</span>';
+  if(prev){const c=(y.orders-prev.orders)/prev.orders*100;
+    document.getElementById("k_orders_d").innerHTML=
+      `<span class="${c>=0?'up':'down'}">${c>=0?'▲':'▼'} ${Math.abs(c).toFixed(1)}%</span> 전일 대비`;}
+  document.getElementById("k_rev").innerHTML=eok(y.revenue)+'<span class="unit">억원</span>';
+  document.getElementById("k_avg").textContent="평균 단가 "+won(Math.round(y.revenue/y.orders))+"원";
+
+  const tot=d.status.reduce((a,b)=>a+b.v,0);
+  const done=(d.status.find(s=>s.name==="배달완료")||{v:0}).v;
+  const cancel=(d.status.find(s=>s.name==="취소")||{v:0}).v;
+  document.getElementById("k_done").innerHTML=(done/tot*100).toFixed(1)+'<span class="unit">%</span>';
+  document.getElementById("k_done_d").textContent="취소 "+won(cancel)+"건";
+
+  const last7=daily.slice(-8,-1);
+  const week=last7.reduce((a,b)=>a+b.orders,0);
+  document.getElementById("k_week").innerHTML=won(week)+'<span class="unit">건</span>';
+  document.getElementById("k_wavg").textContent="일평균 "+won(Math.round(week/7))+"건";
+
+  drawTrend(daily); drawStatus(d.status); drawRegion(d.region);
+  regionData=d.region; renderTbl();
+}
+
+Chart.defaults.color="#9aa6c0";
+Chart.defaults.font.family="'Pretendard','Malgun Gothic',sans-serif";
+const gridC="rgba(255,255,255,.06)";
+
+function drawTrend(daily){
+  const labels=daily.map(x=>x.d.slice(5));
+  const vals=daily.map(x=>x.orders);
+  if(trendChart) trendChart.destroy();
+  trendChart=new Chart(document.getElementById("trend"),{
+    type:"line",
+    data:{labels,datasets:[{label:"주문 수",data:vals,borderColor:"#4f8cff",borderWidth:2.5,
+      backgroundColor:c=>{const g=c.chart.ctx.createLinearGradient(0,0,0,300);
+        g.addColorStop(0,"rgba(79,140,255,.35)");g.addColorStop(1,"rgba(79,140,255,0)");return g;},
+      fill:true,tension:.35,pointRadius:2,pointHoverRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>" "+won(c.parsed.y)+"건"}}},
+      scales:{y:{grid:{color:gridC},ticks:{callback:v=>(v/1000)+"k"}},x:{grid:{display:false}}}}
+  });
+}
+function drawStatus(status){
+  if(statusChart) statusChart.destroy();
+  statusChart=new Chart(document.getElementById("status"),{
+    type:"doughnut",
+    data:{labels:status.map(s=>s.name),datasets:[{data:status.map(s=>s.v),
+      backgroundColor:status.map(s=>STATUS_COLOR[s.name]||"#7b8aa8"),borderColor:"#161c2b",borderWidth:3}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"62%",
+      plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:c=>{
+        const t=c.dataset.data.reduce((a,b)=>a+b,0);return " "+won(c.parsed)+"건 ("+(c.parsed/t*100).toFixed(1)+"%)";}}}}}
+  });
+}
+function drawRegion(region){
+  if(regionChart) regionChart.destroy();
+  regionChart=new Chart(document.getElementById("region"),{
+    type:"bar",
+    data:{labels:region.map(r=>r.region),datasets:[{data:region.map(r=>r.orders),
+      backgroundColor:"rgba(245,166,35,.8)",borderRadius:5}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>" "+won(c.parsed.x)+"건"}}},
+      scales:{x:{grid:{color:gridC},ticks:{callback:v=>(v/1000)+"k"}},y:{grid:{display:false}}}}
+  });
+}
+function renderTbl(){
+  const tot=regionData.reduce((a,b)=>a+b.orders,0);
+  const rows=regionData.map(r=>({...r,share:r.orders/tot*100}));
+  rows.sort((a,b)=>{const x=a[sortKey],y=b[sortKey];
+    const r=(typeof x==="string")?x.localeCompare(y):x-y;return sortAsc?r:-r;});
+  const max=Math.max(...rows.map(r=>r.orders));
+  document.querySelector("#regionTbl tbody").innerHTML=rows.map(r=>`
+    <tr><td>${r.region}</td>
+    <td class="num">${won(r.orders)}<div class="bar" style="width:${r.orders/max*100}%"></div></td>
+    <td class="num">${r.share.toFixed(1)}%</td></tr>`).join("");
+}
+document.querySelectorAll("#regionTbl th").forEach(th=>{
+  th.onclick=()=>{const k=th.dataset.k;if(k===sortKey)sortAsc=!sortAsc;else{sortKey=k;sortAsc=false;}renderTbl();};
+});
+
+let timer=null;
+document.getElementById("autoChk").onchange=e=>{
+  if(e.target.checked){timer=setInterval(load,60000);}else{clearInterval(timer);}
+};
+
+load();
+</script>
+</body>
+</html>

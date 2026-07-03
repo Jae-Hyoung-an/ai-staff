@@ -1,0 +1,29 @@
+-- A2. WoW — 전주 동요일 대비 (완료일 기준, 오늘 제외) — Number. 표시=WoW_증감율
+WITH va AS (
+  SELECT AGENT_ID, VENDOR_ID FROM VROONG.RAW_VENDORSET.VENDOR_AGENTS
+  WHERE IS_DELETED = '0'
+  QUALIFY ROW_NUMBER() OVER (PARTITION BY AGENT_ID ORDER BY ACTIVATED_AT DESC NULLS LAST) = 1
+),
+daily AS (
+  SELECT o.PARTITIONAL_DATE AS dt, COUNT(*) AS cnt
+  FROM VROONG.DATAMART.ORDERS o
+  JOIN va ON TO_VARCHAR(o.AGENT_ID) = va.AGENT_ID
+  JOIN VROONG.RAW_VENDORSET.VENDORS v ON va.VENDOR_ID = v.ID
+   AND v.BUSINESS_NAME NOT ILIKE '%QA%' AND v.BUSINESS_NAME NOT ILIKE '%테스트%' AND v.BUSINESS_NAME NOT ILIKE '%test%'
+  LEFT JOIN VROONG.RAW_SALESMANAGEMENT.ZONES z ON v.ZONE_UUID = z.UUID
+  WHERE o.PARTITIONAL_DATE < CURRENT_DATE      -- 부분일(오늘) 제외
+    [[AND z.ZONE_NAME = {{zone}}]]
+  GROUP BY 1
+),
+pick AS (
+  SELECT
+    MAX(CASE WHEN dt = (SELECT MAX(dt) FROM daily) THEN cnt END) AS latest_cnt,
+    MAX(CASE WHEN dt = DATEADD(day, -7, (SELECT MAX(dt) FROM daily)) THEN cnt END) AS prev_cnt
+  FROM daily
+)
+SELECT
+  (SELECT MAX(dt) FROM daily) AS "기준일",
+  latest_cnt AS "최신일물량",
+  prev_cnt   AS "전주동요일물량",
+  ROUND((latest_cnt - prev_cnt) / NULLIF(prev_cnt, 0) * 100, 1) AS "WoW_증감율"
+FROM pick
