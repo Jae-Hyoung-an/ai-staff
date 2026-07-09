@@ -1,4 +1,4 @@
--- B4+B5. 프렌즈·벤더 40분 완료율 (2시리즈) — Line. 권역 접수 오더를 수행주체로 분류.
+-- B4+B5. 프렌즈·벤더 40분 완료율 (2시리즈) — Line. 권역 오더를 수행주체로 분류 (기타=일반기사 수행 제외).
 WITH va AS (
   SELECT TO_NUMBER(a.AGENT_ID) AS agent_id
   FROM VROONG.RAW_VENDORSET.VENDOR_AGENTS a
@@ -10,15 +10,15 @@ WITH va AS (
 SELECT
   DATE_TRUNC({{granularity}}, o.CREATED_AT) AS "기간",
   CASE WHEN va.agent_id IS NOT NULL THEN '벤더세트'
-       WHEN o.IS_VROONG_FRIENDS_ORDER THEN '프렌즈'
-       ELSE '기타' END AS "수행유형",
+       ELSE '프렌즈' END AS "수행유형",
   ROUND(COUNT_IF(o.ORDER_STATUS='배달완료' AND DATEDIFF('second', o.CREATED_AT, o.DELIVERED_AT) <= 2400)
         / NULLIF(COUNT_IF(o.ORDER_STATUS='배달완료'),0) * 100, 1) AS "완료율_40분"
 FROM VROONG.DATAMART.ORDERS o
 JOIN VROONG.RAW_SALESMANAGEMENT.ZONES z
   ON TO_VARCHAR(o.MONITORING_PARTNER_ID) = z.EXTERNAL_PARTNER_ID AND z.IS_ACTIVE = '1'
 LEFT JOIN va ON o.AGENT_ID = va.agent_id
-WHERE z.ZONE_NAME NOT ILIKE '%QA%' AND z.ZONE_NAME NOT ILIKE '%테스트%' AND z.ZONE_NAME NOT ILIKE '%test%'
+WHERE (va.agent_id IS NOT NULL OR o.IS_VROONG_FRIENDS_ORDER)   -- 기타(일반기사)·미배차 제외
+  AND z.ZONE_NAME NOT ILIKE '%QA%' AND z.ZONE_NAME NOT ILIKE '%테스트%' AND z.ZONE_NAME NOT ILIKE '%test%'
   [[AND z.ZONE_NAME = {{zone}}]]
   [[AND o.CREATED_AT >= {{start_date}}]]
   [[AND o.CREATED_AT < DATEADD(day, 1, {{end_date}})]]
