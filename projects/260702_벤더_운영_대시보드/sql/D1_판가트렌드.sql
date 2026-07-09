@@ -1,5 +1,5 @@
--- B2. 40분 내 완료율 트렌드 (일/주, 물량타입 3분류 + 전체) — Line. Goal 85%. 권역 기준.
--- SLA = 오더 생성(CREATED_AT)→배달완료 40분 이내 (상점 체감 기준. COMPLETE_TIME은 SUBMITTED_AT 기준이라 미사용)
+-- D1. 판가 트렌드 (일/주, 물량타입 3분류 + 전체) — Line 2장 (총액 / 오더당 평균). 완료건 기준.
+-- 판가 = STORE_BILLABLE_FEE ÷ 1.1 (VAT 10% 제외. billable = base + extra 합산 청구액)
 WITH base AS (
   SELECT
     DATE_TRUNC({{granularity}}, o.CREATED_AT) AS bkt,
@@ -10,23 +10,22 @@ WITH base AS (
       WHEN s.MANAGEMENT_TYPE='로컬세일즈' THEN '로컬'
       ELSE '기타'
     END AS vol_type,
-    o.ORDER_STATUS AS status,
-    DATEDIFF('second', o.CREATED_AT, o.DELIVERED_AT) AS lead_sec
+    o.STORE_BILLABLE_FEE / 1.1 AS price
   FROM VROONG.DATAMART.ORDERS o
   JOIN VROONG.RAW_SALESMANAGEMENT.ZONES z
     ON TO_VARCHAR(o.MONITORING_PARTNER_ID) = z.EXTERNAL_PARTNER_ID AND z.IS_ACTIVE = '1'
   LEFT JOIN VROONG.DATAMART.STORES s ON o.STORE_ID = s.STORE_ID
-  WHERE z.ZONE_NAME NOT ILIKE '%QA%' AND z.ZONE_NAME NOT ILIKE '%테스트%' AND z.ZONE_NAME NOT ILIKE '%test%'
+  WHERE o.ORDER_STATUS = '배달완료'
+    AND z.ZONE_NAME NOT ILIKE '%QA%' AND z.ZONE_NAME NOT ILIKE '%테스트%' AND z.ZONE_NAME NOT ILIKE '%test%'
     [[AND z.ZONE_NAME = {{zone}}]]
     [[AND o.CREATED_AT >= {{start_date}}]]
     [[AND o.CREATED_AT < DATEADD(day, 1, {{end_date}})]]
 )
 SELECT bkt AS "기간", vol_type AS "물량타입",
-       ROUND(COUNT_IF(status='배달완료' AND lead_sec <= 2400)
-             / NULLIF(COUNT_IF(status='배달완료'), 0) * 100, 1) AS "완료율_40분"
+       ROUND(SUM(price), 0) AS "판가총액",
+       ROUND(AVG(price), 0) AS "오더당평균판가"
 FROM base WHERE vol_type IN ('법인','OD','G4') GROUP BY 1, 2
 UNION ALL
-SELECT bkt, '전체', ROUND(COUNT_IF(status='배달완료' AND lead_sec <= 2400)
-                          / NULLIF(COUNT_IF(status='배달완료'), 0) * 100, 1)
+SELECT bkt, '전체', ROUND(SUM(price), 0), ROUND(AVG(price), 0)
 FROM base GROUP BY 1
 ORDER BY 1, 2

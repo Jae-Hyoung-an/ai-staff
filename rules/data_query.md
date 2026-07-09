@@ -59,6 +59,23 @@ ORDER BY p.PARTNER_NAME, s.STORE_ID;
 
 ---
 
+## ORDERS 시간 컬럼 의미 (⚠️ 지표 설계 시 필수 숙지)
+
+> 2026-07-09 확정. `VROONG.DATAMART.ORDERS` 기준.
+
+| 컬럼 | 의미 | 지표 용도 |
+|------|------|----------|
+| `CREATED_AT` | **상점이 오더를 넣은 시점** (실제 수요 발생) | ✅ 수요 집계·SLA·기간 필터의 표준 시간축 |
+| `SUBMITTED_AT` | 오더가 '접수(전체공개)' 상태로 **전환**된 시점 | ❌ 수요/SLA 시간축으로 사용 금지 |
+| `COMPLETE_TIME` | `SUBMITTED_AT`→`DELIVERED_AT` 소요 초 (실측 검증) | ❌ 상점 체감 SLA에 사용 금지 |
+
+- 배차 흐름: 오더 **생성 직후부터 AI 배차 엔진이 기사에게 제안을 지속**한다. 픽업요청 시점까지 배정이 안 되면 그때 오더를 '접수' 상태로 전환해 전체공개한다.
+- 따라서 `SUBMITTED_AT`에 도달했다는 것 자체가 (공급 부족·기사 비선호 등) **옵티멀 배차 실패 신호**다.
+- **상점 체감 40분 SLA** = `DATEDIFF('second', CREATED_AT, DELIVERED_AT) <= 2400` (동대문 실측: 생성 기준 90.9% vs 접수 기준 95.6% — 기준 혼동 시 ~5%p 왜곡)
+- `PARTITIONAL_DATE`는 KST 날짜 파티션. 대량 스캔 쿼리는 `PARTITIONAL_DATE` 범위 조건으로 프루닝 후 `CREATED_AT`으로 정밀 필터.
+
+---
+
 ## Metabase 데이터베이스 ID 참고
 
 | ID | 이름 | 엔진 | 용도 |
