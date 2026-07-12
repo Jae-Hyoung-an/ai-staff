@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>영덕 8월 여행 - 감성 PPT</title>
+  <style>
+    :root {
+      --bg: #071a2c;
+      --card: rgba(6, 18, 32, 0.58);
+      --text: #f6f8ff;
+      --muted: #d6e4f4;
+      --accent: #7cc5ff;
+      --accent-soft: rgba(124, 197, 255, 0.24);
+      --ok: #97e7bf;
+      --warn: #ffd18f;
+      --tbd: #ffd4d4;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Pretendard", "Noto Sans KR", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    .deck {
+      position: relative;
+      width: min(100vw, calc(100vh * 16 / 9));
+      height: min(100vh, calc(100vw * 9 / 16));
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.02);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(145deg, rgba(3, 9, 18, 0.78), rgba(5, 20, 36, 0.55) 45%, rgba(8, 36, 62, 0.48)),
+        radial-gradient(1200px 600px at 85% 90%, rgba(124, 197, 255, 0.18), transparent 70%);
+      z-index: 0;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+      z-index: 1;
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      margin: 5.5vh 6vw 1vh;
+      max-width: min(980px, 88vw);
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 24px;
+      padding: clamp(20px, 3vw, 40px);
+      backdrop-filter: blur(4px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .kicker {
+      font-size: 0.92rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    h1, h2 {
+      margin: 0 0 12px;
+      line-height: 1.25;
+      text-wrap: balance;
+    }
+
+    h1 { font-size: clamp(2rem, 5vw, 3.7rem); }
+    h2 { font-size: clamp(1.55rem, 3vw, 2.4rem); }
+
+    .lead {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.8vw, 1.28rem);
+      line-height: 1.6;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--text);
+      font-size: clamp(0.97rem, 1.7vw, 1.14rem);
+      line-height: 1.75;
+    }
+
+    .quote {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent);
+      background: rgba(124, 197, 255, 0.1);
+      border-radius: 0 12px 12px 0;
+      color: #ebf6ff;
+      line-height: 1.6;
+    }
+
+    .vehicle-photo {
+      margin-top: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 12px;
+      overflow: hidden;
+      max-width: 520px;
+      background: rgba(0, 0, 0, 0.28);
+    }
+
+    .vehicle-photo img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .vehicle-photo figcaption {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.88);
+      padding: 8px 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(7, 18, 32, 0.74);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .chip {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.98rem;
+    }
+
+    .chip strong { color: #fff; }
+
+    .tag {
+      display: inline-block;
+      padding: 5px 9px;
+      margin: 0 8px 8px 0;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .tag.ok { background: rgba(151, 231, 191, 0.2); color: var(--ok); }
+    .tag.warn { background: rgba(255, 209, 143, 0.2); color: var(--warn); }
+    .tag.tbd { background: rgba(255, 212, 212, 0.2); color: var(--tbd); }
+
+    .footer {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 6vw 4vh;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 0.93rem;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button {
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(7, 16, 28, 0.52);
+      color: #fff;
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    button:hover { background: rgba(124, 197, 255, 0.2); }
+
+    .progress-wrap {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.18);
+      z-index: 10;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #8fd4ff, #9ff0cc);
+      transition: width 0.2s ease;
+    }
+
+    .rotate-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      background: rgba(3, 10, 20, 0.94);
+      color: #f3f8ff;
+      z-index: 30;
+    }
+
+    .rotate-card {
+      max-width: 340px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 14px;
+      padding: 18px 16px;
+      background: rgba(9, 24, 43, 0.85);
+      line-height: 1.5;
+      font-size: 0.96rem;
+    }
+
+    .credit {
+      font-size: 0.76rem;
+      opacity: 0.9;
+      text-align: right;
+      max-width: 56%;
+    }
+
+    .cover .content {
+      margin-top: 8vh;
+      max-width: 920px;
+      text-align: left;
+    }
+
+    .cover h1 { font-size: clamp(2.2rem, 5.5vw, 4.4rem); }
+
+    .cover .lead {
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      max-width: 730px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .credit { display: none; }
+      .content { margin-top: 6vh; }
+    }
+
+    @media (orientation: portrait) and (max-width: 1024px) {
+      .rotate-overlay {
+        display: flex;
+      }
+    }
+
+    @media print {
+      @page {
+        size: 16in 9in;
+        margin: 0;
+      }
+
+      html, body {
+        width: 16in;
+        height: auto;
+        overflow: visible;
+        background: #000;
+      }
+
+      .deck {
+        width: 16in;
+        height: auto;
+        overflow: visible;
+      }
+
+      .slide {
+        position: relative;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        transform: none !important;
+        width: 16in;
+        height: 9in;
+        page-break-after: always;
+        break-after: page;
+      }
+
+      .slide:last-of-type {
+        page-break-after: auto;
+        break-after: auto;
+      }
+
+      .controls-bar,
+      .progress-wrap {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" id="deck">
+    <section class="slide cover active" data-bg="assets/bg01.jpg">
+      <article class="content">
+        <div class="kicker">YEONGDEOK SUMMER TRIP · V0.1</div>
+        <h1>이번 여름, 빡센 관광 말고<br>우리끼리 쉬어가는 영덕 3박4일</h1>
+        <p class="lead">해외 부럽지 않은 바다 + 편한 사람들 + 느슨한 일정.<br>이건 일정표보다 분위기가 먼저인 여행입니다.</p>
+        <div>
+          <span class="tag ok">확정: 영덕</span>
+          <span class="tag ok">확정: 3박4일</span>
+          <span class="tag warn">가정: 11~13명</span>
+          <span class="tag tbd">TBD: 정확한 날짜</span>
+        </div>
+      </article>
+      <footer class="footer">
+        <div>1 / 9 · 오프닝</div>
+        <div class="credit">이미지: Unsplash / Hongjin Wang</div>
+      </footer>
+    </section>
+
+    <section class="slide" data-bg="assets/bg02.jpg">
+      <article class="content">
+        <div class="kicker">Slide 2 · 컨셉</div>
+        <h2>우리식 1박2일 감성, 그런데 3박4일 버전</h2>
+        <ul>
+          <li>조용한 바닷가에서 여유 있게 쉬기</li>
+          <li>같이 요리하고 같이 먹고 같이 치우는 팀플 여행</li>
+          <li>빡빡한 관광보다 지금 이 순간 즐기기</li>
+        </ul>
+        <p class="quote">핵심은 많이 보는 게 아니라, 오래 기억나는 시간을 만드는 겁니다.</p>
+      </article>
+      <footer class="footer">
+        <div>2 / 9 · 여행 컨셉</div>
+        <div class="credit">이미지: Unsplash / Kabiur Rahman Riyad</div>
+      </footer>
+    </section>
+
+    <section class="slide" data-bg="assets/bg03.jpg">
+      <article class="content">
+        <div class="kicker">Slide 3 · Why Yeongdeok</div>
+        <h2>사람 많고 복잡한 곳 말고, 맑고 한적한 동해</h2>
+        <ul>
+          <li>해변 접근성이 좋아 여름 물놀이와 궁합이 좋음</li>
+          <li>조용한 분위기에서 단체 힐링에 유리</li>
+          <li>해산물 + 바다 감성 + 여유 루틴이 함께 가능</li>
+        </ul>
+        <p class="quote">이번엔 인증샷 스팟보다, 숨 쉬기 좋은 곳으로 갑니다.</p>
+      </article>
+      <footer class="footer">
+        <div>3 / 9 · 왜 영덕인가</div>
+        <div class="credit">이미지: Unsplash / Jen Theodore</div>
+      </footer>
+    </section>
+
+    <section class="slide" data-bg="assets/bg04.jpg">
+      <article class="content">
+        <div class="kicker">Slide 4 · 일정 큰 그림</div>
+        <h2>3박4일, 쉬는 리듬 중심으로</h2>
+        <div class="grid">
+          <div class="chip"><strong>확정</strong><br>8월 초 · 3박4일 · 영덕</div>
+          <div class="chip"><strong>TBD</strong><br>정확한 출발/복귀 날짜</div>
+          <div class="chip"><strong>TBD</strong><br>시간대별 세부 타임라인</div>
+          <div class="chip"><strong>운영 원칙</strong><br>무리한 이동보다 회복 우선</div>
+        </div>
+        <p class="quote">지금은 큰 줄기를 먼저 맞추고, 디테일은 인원 확정 후 빠르게 업데이트합니다.</p>
+      </article>
+      <footer class="footer">
+        <div>4 / 9 · 일정</div>
+        <div class="credit">이미지: Unsplash / Jeremy Bishop</div>
+      </footer>
+    </section>
+
+    <section class="slide" data-bg="assets/bg05.jpg">
+      <article class="content">
+        <div class="kicker">Slide 5 · 이동</div>
+        <h2>이동도 여행이다: 서울 출발 쏠라티 원팀 이동</h2>
+        <ul>
+          <li>대형 밴 1대로 다 같이 이동 (11~13명 가정)</li>
+          <li>편도 대략 4시간 30분~5시간 30분 범위(교통상황 변동)</li>
+          <li>운전 피로 관리: 보조 운전자 + 휴게소 루틴 권장</li>
+        </ul>
+        <figure class="vehicle-photo">
+          <img src="assets/solati.jpg" alt="현대 쏠라티 차량 이미지">
+        </figure>
+        <p class="quote">각자 따로 가는 순간 분위기가 분산됩니다. 우리는 출발부터 한 팀으로 갑니다.</p>
+      </article>
+      <footer class="footer">
+        <div>5 / 9 · 이동 계획</div>
+        <div class="credit">이미지: Unsplash / Martin Kallur</div>
+      </footer>
+    </section>
+
+    <section class="slide" data-bg="assets/bg06.jpg">
+      <article class="content">
+        <div class="kicker">Slide 6 · 숙소</div>
+        <h2>바다 왕복 쉬운 단체형 숙소 + 생활형 베이스캠프</h2>
+        <ul>
+          <li>바다 접근성 최우선</li>
+          <li>남/여 생활 동선 분리 가능한 구조 선호</li>
+          <li>공동 요리/식사/수다 가능한 공용공간 필수</li>
+        </ul>
+        <div style="margin-top:12px;">
+          <span class="tag tbd">TBD: 최종 숙소 1곳 확정</span>
+          <span class="tag tbd">TBD: 침구/주방도구/바비큐 조건</span>
+        </div>
+      </article>
+      <footer class="footer">
+        <div>6 / 9 · 숙소 콘셉트</div>
+        <div class="credit">이미지: Unsplash / Annie Spratt</div>
+      </footer>
+    </section>
+
+    <section class="slide" data-bg="assets/bg07.jpg">
+      <article class="content">
+        <div class="kicker">Slide 7 · 식사</div>
+        <h2>맛집 줄서기 대신, 우리끼리 해먹는 재미</h2>
+        <ul>
+          <li>해산물 + 고기 + 아침 간단식 조합</li>
+          <li>대형 장보기 1회 + 중간 보충 1회</li>
+          <li>한 끼 자급자족 챌린지(가능하면) 진행</li>
+        </ul>
+        <p class="quote">이번 여행의 메인 콘텐츠는 같이 밥 해먹는 시간일 수도 있습니다.</p>
+      </article>
+      <footer class="footer">
+        <div>7 / 9 · 식단 운영</div>
+        <div class="credit">이미지: Unsplash / Land O'Lakes, Inc.</div>
+      </footer>
+    </section>
+
+    <section class="slide" data-bg="assets/bg08.jpg">
+      <article class="content">
+        <div class="kicker">Slide 8 · 예산</div>
+        <h2>팬시 대신 힐링: 무리 없는 예산으로 충분히 가능</h2>
+        <div class="grid">
+          <div class="chip"><strong>차량 분담</strong><br>10만 ~ 18만원</div>
+          <div class="chip"><strong>숙소 분담</strong><br>12만 ~ 24만원</div>
+          <div class="chip"><strong>식비/간식</strong><br>10만 ~ 18만원</div>
+          <div class="chip"><strong>예비비</strong><br>3만 ~ 6만원</div>
+        </div>
+        <p class="quote"><strong>1인 합계 러프:</strong> 35만 ~ 66만원 (날짜/숙소 확정 후 업데이트)</p>
+      </article>
+      <footer class="footer">
+        <div>8 / 9 · 예산 감각</div>
+        <div class="credit">이미지: Unsplash / Jakob Owens</div>
+      </footer>
+    </section>
+
+    <section class="slide" data-bg="assets/bg09.jpg">
+      <article class="content">
+        <div class="kicker">Slide 9 · TBD 안내</div>
+        <h2>아직 안 정한 것들, 정해지는 즉시 업데이트합니다</h2>
+        <ul>
+          <li>유력안: 8월 1째주 일정으로 다녀오고 주말에 충분히 쉬는 흐름</li>
+          <li>정확한 출발/복귀 날짜</li>
+          <li>최종 숙소 확정</li>
+          <li>세부 메뉴/역할 분담</li>
+          <li>최종 1인 분담금</li>
+        </ul>
+        <div style="margin-top:12px;">
+          <span class="tag tbd">상태: 계속 업데이트 중</span>
+        </div>
+      </article>
+      <footer class="footer">
+        <div>9 / 9 · 미정 항목</div>
+        <div class="credit">이미지: Unsplash / Marcos Paulo Prado</div>
+      </footer>
+    </section>
+    <div class="footer controls-bar" style="position: absolute; left: 0; right: 0; bottom: 8px; margin: 0 6vw; z-index: 12;">
+      <div class="controls">
+        <button id="prevBtn" type="button">이전</button>
+        <button id="nextBtn" type="button">다음</button>
+      </div>
+      <div id="pageLabel">1 / 9</div>
+    </div>
+
+    <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+  </main>
+  <div class="rotate-overlay" id="rotateOverlay">
+    <div class="rotate-card">
+      화면을 가로로 돌리면 더 보기 편해요.<br>
+      모바일 브라우저 특성상 자동 회전 강제가 항상 동작하지 않아,<br>
+      가로 보기로 전환해 주세요.
+    </div>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const progress = document.getElementById("progress");
+    const pageLabel = document.getElementById("pageLabel");
+    let index = 0;
+
+    slides.forEach((slide) => {
+      const bg = slide.dataset.bg;
+      if (bg) slide.style.backgroundImage = `url("${bg}")`;
+    });
+
+    function render() {
+      slides.forEach((slide, i) => slide.classList.toggle("active", i === index));
+      pageLabel.textContent = `${index + 1} / ${slides.length}`;
+      progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+    }
+
+    function next() {
+      index = Math.min(slides.length - 1, index + 1);
+      render();
+    }
+
+    function prev() {
+      index = Math.max(0, index - 1);
+      render();
+    }
+
+    nextBtn.addEventListener("click", next);
+    prevBtn.addEventListener("click", prev);
+
+    async function tryLockLandscape() {
+      if (window.screen && screen.orientation && screen.orientation.lock) {
+        try {
+          await screen.orientation.lock("landscape");
+        } catch (_error) {
+          // 브라우저 정책상 실패할 수 있음 (특히 iOS Safari)
+        }
+      }
+    }
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") next();
+      if (event.key === "ArrowLeft" || event.key === "PageUp") prev();
+    });
+
+    window.addEventListener("click", tryLockLandscape, { once: true });
+    window.addEventListener("touchstart", tryLockLandscape, { once: true });
+
+    render();
+  </script>
+</body>
+</html>
