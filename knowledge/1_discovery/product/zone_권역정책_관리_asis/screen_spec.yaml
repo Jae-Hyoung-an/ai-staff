@@ -1,0 +1,458 @@
+# ZONE 권역정책 관리 — 화면 명세 (구조화 데이터)
+# 목적: 목업 자동 생성 / 코드 작성 시 기계 판독용
+# 조사일: 2026-07-29 / 환경: 운영 intra-lite.vroong.com
+# 서술형 설명은 01_화면별_상세_명세.md 참조
+
+meta:
+  surveyed_at: 2026-07-29
+  surveyed_by: "@jaehyoung.an"
+  environment: production
+  base_url: "https://intra-lite.vroong.com"
+  menu_path: "세트 관리 > ZONE 권역정책 관리"
+  theme: dark
+  # 주의: 저장/예약저장/삭제 동작은 운영 데이터 보호를 위해 미실행
+  not_verified:
+    - 저장 동작
+    - 예약 저장의 적용 시작일 입력 UI
+    - 활성/비활성 전환 경로
+    - 유효성 검증 에러 문구
+    - 정책 삭제 기능
+
+# ---------------------------------------------------------------
+# 공통 규격
+# ---------------------------------------------------------------
+common:
+  colors:
+    primary: "#34a5ff"          # 확인된 값 (토글 color 속성)
+    section_title: primary      # h3 섹션 제목
+    reset_button: "분홍/빨강 계열"
+    weekday_header_bg: "카키/올리브 계열"
+    diff_value: "금색/앰버 계열" # 버전 비교 모달의 값 텍스트
+    error: "빨강"
+
+  layout:
+    sidebar: { collapsible: true, collapse_button_label: "접기" }
+    body_scroll: "본문 내부 스크롤 컨테이너 (하단 버튼 바는 고정)"
+    section_divider: "가로 구분선"
+
+  helper_text_pattern: "올바른 {필드명}입니다."   # 정상 입력 시 하단 표시
+  required_marker: "●"                            # 필드 라벨 뒤 점 표시
+
+# ---------------------------------------------------------------
+# 화면 1. 목록
+# ---------------------------------------------------------------
+screens:
+  - id: list
+    title: "ZONE 권역정책 관리"
+    url: "/vendor/operation-policies"
+    query_params: [name, page, status]
+    breadcrumb: ["세트 관리", "ZONE 권역정책 관리"]
+    header_right: [{ type: button, label: "초기화" }]
+    tabs: null
+
+    sections:
+      - id: search
+        title: "검색 조건"
+        label_position: left
+        fields:
+          - name: 정책명
+            type: text
+            placeholder: "정책명으로 검색"
+            default: ""
+          - name: 상태
+            type: custom_select     # 네이티브 select 아님 (ul > li)
+            width: 160px
+            default: "전체"
+            options: ["전체", "활성", "비활성"]
+          - name: (검색)
+            type: icon_button
+            icon: magnifier
+            style: "파란 pill"
+            align: right
+
+      - id: table
+        type: table
+        columns:
+          - { name: "관리정책명", width: 240px }
+          - { name: "생성일", width: 160px, format: "YYYY-MM-DD" }
+          - { name: "마지막 수정일", width: 160px, format: "YYYY-MM-DD" }
+        row_click:
+          action: navigate
+          target: "/vendor/operation-policies/{id}"
+          note: "td 클릭 핸들러 방식 (anchor 아님 → 새 탭 열기 불가)"
+        hover: "행 배경 강조"
+
+    footer:
+      left: [{ type: button, label: "관리정책 생성", icon: plus, style: primary }]
+      center: pagination           # « ‹ 1 › »
+      right: "총 {N}건"
+
+# ---------------------------------------------------------------
+# 화면 2. 생성
+# ---------------------------------------------------------------
+  - id: create
+    title: "ZONE 권역정책 추가"
+    url: "/vendor/operation-policies/add"
+    breadcrumb: ["세트 관리", "ZONE 권역정책 관리", "ZONE 권역정책 추가"]
+    header_right: [{ type: text, value: "● 필수 입력 사항" }]
+    tabs: null
+    footer_buttons:
+      - { label: "목록으로", style: secondary }
+      - { label: "저장", style: primary }
+    # 예약 저장 버튼 없음
+    sections: [basic_info_create, zone_select, reward_condition, reward_amount,
+               set_composition, unit_volume_matrix]
+    validation_messages:
+      - location: "관리정책명 하단"
+        text: "관리정책명은 필수 입력값입니다."
+      - location: "요일별 단위물량 테이블 하단"
+        text: "세트 물량 구성을 확인해주세요."
+        style: error
+
+# ---------------------------------------------------------------
+# 화면 3. 상세 (조회)
+# ---------------------------------------------------------------
+  - id: detail
+    title: "ZONE 권역정책 조회 - {정책명}"
+    title_style: "앞부분 파란 굵은 글씨 + 정책명 밝은 회색"
+    url: "/vendor/operation-policies/{id}"
+    breadcrumb: ["세트 관리", "ZONE 권역정책 관리", "ZONE 권역정책 조회"]
+    header_right:
+      type: meta_line
+      value: "● 필수 입력 사항 | 등록: {YYYY-MM-DD HH:mm} | 등록자: {등록자}"
+    tabs:
+      - { id: basic, label: "기본정보", hash: null, default: true }
+      - { id: history, label: "변경 이력", hash: "#ChangeHistory" }
+
+    tab_basic:
+      sections: [basic_info_detail, zone_select, reward_condition, reward_amount,
+                 set_composition, unit_volume_matrix]
+      footer_buttons:
+        - { label: "목록으로", style: secondary }
+        - { label: "예약 저장", style: secondary }
+        - { label: "저장", style: primary }
+
+    tab_history:
+      section: change_history
+      footer_buttons:
+        - { label: "목록으로", style: secondary }
+
+# ---------------------------------------------------------------
+# 섹션 정의 (화면에서 참조)
+# ---------------------------------------------------------------
+sections:
+  basic_info_create:
+    title: "기본 정보"
+    layout: "관리정책명 단독 → 정책 설명 (전체 폭)"
+    fields:
+      - { name: 관리정책명, type: text, required: true, placeholder: "관리정책명", default: "" }
+      - { name: 정책 설명, type: textarea, required: false, placeholder: "정책 설명 (선택)", default: "" }
+    # 상태 필드 없음
+
+  basic_info_detail:
+    title: "기본 정보"
+    layout: "관리정책명 + 상태 (좌우 2단) → 정책 설명 (전체 폭)"
+    fields:
+      - { name: 관리정책명, type: text, required: true, placeholder: "관리정책명", editable: true }
+      - { name: 상태, type: text, disabled: true, values: ["활성", "비활성"],
+          note: "읽기전용. 화면에서 전환 경로 없음 → 개선포인트 #4" }
+      - { name: 정책 설명, type: textarea, required: false, placeholder: "정책 설명 (선택)" }
+
+  zone_select:
+    title: "적용 ZONE 선택"
+    guide_text:
+      create: "> 관리정책은 복수의 ZONE에 적용할 수 있습니다. 정책 생성 시 함께 연결합니다."
+      detail: "> 관리정책은 복수의 ZONE에 적용할 수 있습니다."
+    table:
+      columns:
+        - { name: "#", width: null }
+        - { name: "ZONE명", width: null }
+        - { name: "", type: action, action: { label: "삭제", style: "빨간 pill" } }
+    footer:
+      left: [{ type: button, label: "ZONE 추가", icon: plus }]
+      center: pagination
+      right: "총 {N}개"
+    modal_trigger: zone_search
+    cardinality: "관리정책 1 : N ZONE (실제 운영은 전부 1:1)"
+
+  reward_condition:
+    title: "보상 조건"
+    layout: "좌우 2단"
+    fields:
+      - { name: 수락률, type: text, default_on_create: 0, unit_shown: false,
+          unit_actual: "%", note: "라벨에 단위 없음 → 개선포인트 #1" }
+      - { name: 성공 슬롯 수, type: text, default_on_create: 0,
+          alias_in_diff_modal: "최소 목표 슬롯",
+          max_implied: 35, note: "7요일 x 5슬롯 = 35. 상한 안내 없음 → 개선포인트 #2" }
+
+  reward_amount:
+    title: "보상 금액"
+    fields:
+      - { name: 세트당 보상 금액, type: text, default_on_create: 0,
+          thousand_separator: false, unit_actual: "원",
+          note: "300000으로 표시됨 (쉼표 없음) → 개선포인트 #1" }
+
+  set_composition:
+    title: "세트 물량 구성"
+    fields:
+      - { name: 세트당 최대 활성화 기사수, type: text, default_on_create: 5 }
+    note: "용어집은 이것을 '탭'이라 표기하나 실제는 섹션 → 차이 2"
+
+  unit_volume_matrix:
+    title: "요일별 단위물량"
+
+    toolbar:
+      layout: "선택 {N}개  [값 입력]  [선택 셀 입력]  [선택 해제]"
+      background: "별도 배경 박스"
+      elements:
+        - { name: 선택 카운터, type: text, template: "선택 {N}개" }
+        - { name: 값 입력, type: text, disabled_when: "선택된 셀 없음" }
+        - { name: 선택 셀 입력, type: button, disabled_when: "값 비어있음 또는 선택된 셀 없음" }
+        - { name: 선택 해제, type: button, disabled_when: "선택된 셀 없음" }
+      interaction_flow:
+        - "셀 클릭 → 파란 테두리 + 카운터 증가"
+        - "값 입력창 / 선택 해제 활성화"
+        - "값 입력 시 선택 셀 입력 활성화"
+        - "선택 셀 입력 클릭 → 선택된 모든 셀에 동일 값 일괄 반영"
+        - "선택 해제로 초기화"
+
+    table:
+      first_column: { name: "요일", width: 96px, background: "카키색" }
+      rows: [월, 화, 수, 목, 금, 토, 일]
+      slot_columns: 5
+      slot_column_width: 160px
+
+      slot_header:
+        structure: "3단 (이름 → 시간범위 → 사용토글)"
+        fields:
+          - { name: 슬롯 이름, type: text, maxlength: 50, placeholder: "슬롯{N} 이름", width: "100%" }
+          - { name: 시작 시각, type: text, width: 62px, placeholder: "06:00", format: "HH:mm" }
+          - { separator: "~" }
+          - { name: 종료 시각, type: text, width: 62px, placeholder: "11:00", format: "HH:mm" }
+          - { name: 사용 토글, type: toggle, labels: ["사용", "미사용"],
+              exists_for_slots: [2, 3, 4, 5],
+              note: "슬롯1은 토글 없음 + 빨간 경고박스 '첫 번째 슬롯은 미사용할 수 없습니다.'" }
+
+      cell:
+        html: '<td data-cell="{row}:{col}">'
+        coordinate_base: 1        # 1:1 = 월/슬롯1
+        input:
+          type: integer
+          width: 76px
+          min: 0
+          step: 1
+          max: 9007199254740991  # Number.MAX_SAFE_INTEGER
+      totals_shown: false         # 화면에 합계/소계 없음
+
+    defaults_on_create:
+      slots:
+        - { no: 1, name: "슬롯1", from: "06:00", to: "11:00", enabled: true,  toggle: false }
+        - { no: 2, name: "슬롯2", from: "11:00", to: "13:00", enabled: false, toggle: true }
+        - { no: 3, name: "슬롯3", from: "13:00", to: "17:00", enabled: false, toggle: true }
+        - { no: 4, name: "슬롯4", from: "17:00", to: "21:00", enabled: false, toggle: true }
+        - { no: 5, name: "슬롯5", from: "21:00", to: "23:00", enabled: false, toggle: true }
+      matrix: "35칸 전부 0"
+      note: "슬롯2~5가 기본 미사용 → 개선포인트 #8"
+
+  change_history:
+    title: null                   # 별도 섹션 제목 없이 테이블만
+    table:
+      columns:
+        - { name: "버전 번호", format: "v{N}" }
+        - { name: "생성 일시", format: "YYYY-MM-DD HH:mm:ss" }
+        - { name: "생성자", note: "사용자 표시명 (예: 장석 차장 라이더팀)" }
+        - { name: "상태", values: ["현재 적용", "이전 버전"] }
+        - { name: "적용 시작일", format: "YYYY-MM-DD HH:mm:ss" }
+        - { name: "메모", empty_value: "-" }
+        - { name: "관리", note: "현재 버전 = '현재 버전' 회색 텍스트 / 과거 = '비교' 버튼" }
+    modal_trigger: version_diff
+
+# ---------------------------------------------------------------
+# 모달
+# ---------------------------------------------------------------
+modals:
+  zone_search:
+    title: "ZONE 검색"
+    trigger: "적용 ZONE 선택 섹션의 [+ ZONE 추가]"
+    body:
+      - { name: ZONE명, type: text, placeholder: "ZONE명으로 검색" }
+      - { name: (검색), type: icon_button, icon: magnifier, style: "회색 pill" }
+      - { type: text, template: "검색 결과 ( {N} )" }
+      - type: table
+        columns: ["ZONE ID", "ZONE명"]
+        row_click: select
+      - type: pagination
+    selected_area:
+      title: "현재 선택된 ZONE"
+      background: "본문과 다른 배경색"
+      empty_text: "현재 선택된 ZONE이 없습니다."
+    buttons:
+      - { label: "닫기", style: secondary }
+      - { label: "선택", style: primary }
+    behavior:
+      empty_search: "전체 ZONE 목록 반환"
+      filters_already_linked: false
+      note: "이미 다른 정책에 연결된 ZONE도 그대로 노출됨 → 개선포인트 #3"
+
+  version_diff:
+    title: "권역관리 버전 비교 — v{A} → v{B}"
+    trigger: "변경 이력 탭의 과거 버전 [비교] 버튼"
+    layout: "좌우 2단 비교"
+    column_headers: ["선택 버전", "현재 적용"]
+    blocks:
+      - title: "버전 정보"
+        rows: ["상태", "적용 시작일"]
+      - title: "보상 기준"
+        rows:
+          - { label: "수락률 (%)",              maps_to: "수락률" }
+          - { label: "최소 목표 슬롯",           maps_to: "성공 슬롯 수", note: "라벨 불일치 → 개선포인트 #1" }
+          - { label: "세트당 보상금액 (원)",     maps_to: "세트당 보상 금액" }
+          - { label: "세트당 최대 활성화 기사수", maps_to: "세트당 최대 활성화 기사수" }
+      - title: "세트 물량 구성 (변경된 셀만 강조)"
+        content: "7x5 그리드 좌우 나란히"
+        slot_time_format: "HH:mm:ss"   # 상세 화면은 HH:mm, 여기는 초까지
+        note: "제목은 '변경된 셀만 강조'이나 실제로는 전체 값이 금색 → 구분 안 됨"
+    buttons:
+      - { label: "닫기", style: secondary }
+
+# ---------------------------------------------------------------
+# 데이터 모델 (화면에서 역추론)
+# ---------------------------------------------------------------
+data_model:
+  OperationPolicy:
+    id: { type: int, source: "URL path param" }
+    name: { type: string, required: true }
+    description: { type: string, required: false }
+    status: { type: enum, values: [활성, 비활성], editable_in_ui: false }
+    createdAt: { type: datetime }
+    updatedAt: { type: datetime }
+    createdBy: { type: string }
+    zones: { type: "Zone[]", cardinality: "1:N" }
+    rewardCondition:
+      acceptanceRate: { type: number, unit: "%" }
+      successSlotCount: { type: int, max_implied: 35 }
+    rewardAmount:
+      perSetReward: { type: int, unit: "원" }
+    setComposition:
+      maxActiveRidersPerSet: { type: int }
+    slots: { type: "Slot[5]" }
+    unitVolumeMatrix: { type: "int[7][5]", rows: "월~일", cols: "슬롯1~5" }
+    versions: { type: "PolicyVersion[]" }
+
+  Zone:
+    id: { type: int }
+    name: { type: string }
+
+  Slot:
+    name: { type: string, maxlength: 50 }
+    startTime: { type: time }
+    endTime: { type: time }
+    enabled: { type: bool, note: "슬롯1은 강제 true" }
+
+  PolicyVersion:
+    versionNo: { type: string, format: "v{N}" }
+    createdAt: { type: datetime }
+    createdBy: { type: string }
+    status: { type: enum, values: [현재 적용, 이전 버전] }
+    effectiveFrom: { type: datetime, note: "예약 저장 시 미래 지정 가능" }
+    memo: { type: string }
+
+# ---------------------------------------------------------------
+# 실제 운영 데이터 (2026-07-29 기준, 목업 샘플용)
+# ---------------------------------------------------------------
+sample_data:
+  policies:
+    - { name: "성북 1 zone",         created: 2026-07-21, updated: 2026-07-21, kind: 운영, id: 9 }
+    - { name: "성동 1 zone",         created: 2026-07-21, updated: 2026-07-21, kind: 운영 }
+    - { name: "(BTF) 동대문 1 zone", created: 2026-05-19, updated: 2026-07-14, kind: 운영 }
+    - { name: "QA_GY1(미사용)",       created: 2026-05-19, updated: 2026-05-19, kind: QA잔여 }
+    - { name: "[QA] Test8_정책",      created: 2026-05-19, updated: 2026-05-19, kind: QA잔여 }
+    - { name: "[QA] 테스트 정책1",     created: 2026-05-19, updated: 2026-05-19, kind: QA잔여 }
+    - { name: "[QA] YJ Test - 미사용", created: 2026-05-19, updated: 2026-05-19, kind: QA잔여 }
+    - { name: "QA_TEST3(미사용)",     created: 2026-05-19, updated: 2026-05-19, kind: QA잔여 }
+    - { name: "[QA] 테스트 KH",        created: 2026-05-19, updated: 2026-05-19, kind: QA잔여 }
+  total: 9
+
+  zones:
+    - { id: 20, name: "성북 1",               linked_policy: "성북 1 zone" }
+    - { id: 19, name: "성동 1",               linked_policy: "성동 1 zone" }
+    - { id: 18, name: "[QA] 테스트용 존0616",  linked_policy: null }
+    - { id: 14, name: "QA_Test8_1",           linked_policy: null }
+    - { id: 5,  name: "[QA] 테스트 울릉도 존",  linked_policy: null }
+    - { id: 4,  name: "동대문 1",              linked_policy: "(BTF) 동대문 1 zone" }
+  total: 6
+  note: "ID 비연속 → 삭제된 ZONE 존재"
+
+  # 성북 1 zone v2 (현재 적용, 2026-07-22 06:00부터)
+  seongbuk_1_zone:
+    basic:
+      name: "성북 1 zone"
+      status: 활성
+      description: ""
+      registered_at: "2026-07-21 14:07"
+      registered_by: "안재형 PO팀"
+    zones: ["성북 1"]
+    reward_condition: { 수락률: 90, 성공_슬롯_수: 35 }
+    reward_amount: { 세트당_보상_금액: 300000 }
+    set_composition: { 세트당_최대_활성화_기사수: 10 }
+    slots:
+      - { no: 1, name: "아침",        from: "09:00", to: "10:55", enabled: true }
+      - { no: 2, name: "점심피크",     from: "10:55", to: "14:00", enabled: true }
+      - { no: 3, name: "점심 논피크",  from: "14:00", to: "16:55", enabled: true }
+      - { no: 4, name: "저녁피크",     from: "16:55", to: "20:00", enabled: true }
+      - { no: 5, name: "저녁 논피크",  from: "20:00", to: "00:00", enabled: true }
+    # 컬럼 순서 = 슬롯1~5
+    unit_volume_matrix:
+      월: [4, 15, 18, 36, 10]     # 합 83
+      화: [5, 15, 17, 46, 14]     # 합 97
+      수: [6, 21, 20, 45, 13]     # 합 105
+      목: [8, 24, 21, 49, 11]     # 합 113
+      금: [7, 17, 18, 56, 17]     # 합 115
+      토: [7, 23, 22, 47, 15]     # 합 114
+      일: [11, 28, 23, 51, 11]    # 합 124
+    matrix_totals:                # 화면에는 표시되지 않음 (참고용 계산값)
+      by_slot: { 아침: 48, 점심피크: 143, 점심_논피크: 139, 저녁피크: 330, 저녁_논피크: 91 }
+      grand_total: 751
+      evening_peak_share: "43.9%"
+    versions:
+      - versionNo: v2
+        createdAt: "2026-07-21 15:30:22"
+        createdBy: "장석 차장 라이더팀"
+        status: "현재 적용"
+        effectiveFrom: "2026-07-22 06:00:00"
+        memo: "성북 신규 오픈 (7/22)"
+      - versionNo: v1
+        createdAt: "2026-07-21 14:07:45"
+        createdBy: "안재형 PO팀"
+        status: "이전 버전"
+        effectiveFrom: "2026-07-21 14:07:44"
+        memo: null
+        content_summary: "빈 껍데기 (슬롯1~5 기본명, 월/슬롯1=1 외 전부 0)"
+
+# ---------------------------------------------------------------
+# 개선 포인트 인덱스 (상세는 02번 문서)
+# ---------------------------------------------------------------
+improvement_points:
+  - { no: 1, priority: 높음, title: "같은 필드를 화면마다 다른 이름으로 표기", type: 용어 }
+  - { no: 2, priority: 높음, title: "성공 슬롯 수 35의 의미 불명확 (상한 안내 없음)", type: 검증안내 }
+  - { no: 3, priority: 높음, title: "이미 연결된 ZONE이 선택 목록에서 안 걸러짐", type: 데이터정합성 }
+  - { no: 4, priority: 높음, title: "활성/비활성 전환 경로가 화면에 없음", type: 기능누락 }
+  - { no: 5, priority: 중간, title: "슬롯 경계 시각 겹침 (귀속 규칙 불명)", type: 정책정의 }
+  - { no: 6, priority: 중간, title: "하루 24시간이 커버되지 않음", type: 정책정의 }
+  - { no: 7, priority: 중간, title: "목록 화면 정보량 부족", type: UX }
+  - { no: 8, priority: 낮음, title: "생성 시 슬롯2~5 기본값이 미사용", type: 기본값 }
+
+# ---------------------------------------------------------------
+# 스크린샷
+# ---------------------------------------------------------------
+screenshots:
+  path: "resources/screenshots/260729_zone_권역정책_관리/"
+  files:
+    - { file: "08_목록화면.png",              screen: list }
+    - { file: "01_상세_기본정보_상단.png",     screen: detail, tab: basic, part: 상단 }
+    - { file: "02_상세_요일별_단위물량.png",   screen: detail, tab: basic, part: 하단 }
+    - { file: "03_변경이력_탭.png",            screen: detail, tab: history }
+    - { file: "04_버전비교_모달.png",          modal: version_diff }
+    - { file: "05_생성화면_상단.png",          screen: create, part: 상단 }
+    - { file: "06_생성화면_단위물량.png",      screen: create, part: 하단 }
+    - { file: "07_zone검색_모달.png",          modal: zone_search }

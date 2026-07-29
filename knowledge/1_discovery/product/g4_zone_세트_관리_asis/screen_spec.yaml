@@ -1,0 +1,1545 @@
+# G4 요금 상품 · ZONE 관리 · 세트 관리 — 화면 명세 (구조화 데이터)
+# 목적: 목업 자동 생성 / 코드 작성 시 기계 판독용
+# 조사일: 2026-07-29 / 환경: 운영 intra-lite.vroong.com
+# 서술형 설명은 01_g4_요금상품_화면명세.md, 02_zone_벤더_세트분배_화면명세.md 참조
+# 이슈 코드(B-1, I-2, Q-7 등)는 03_개선포인트_및_확인필요사항.md 참조
+
+meta:
+  surveyed_at: 2026-07-29
+  surveyed_by: "@jaehyoung.an"
+  environment: production
+  base_url: "https://intra-lite.vroong.com"
+  theme: dark
+  menus_covered:
+    - "G4 요금 상품 관리 > ZONE 판가 요금제 관리"
+    - "G4 요금 상품 관리 > ZONE 원가 요금제 관리"
+    - "G4 요금 상품 관리 > ZONE 할증 관리"
+    - "G4 요금 상품 관리 > G4 프로모션 관리"
+    - "영업 관리 > ZONE 관리"
+    - "세트 관리 > 벤더 관리"
+    - "세트 관리 > 세트분배 관리"
+  menus_excluded:
+    - path: "G4 요금 상품 관리 > ZONE 할증 폴리곤 편집기"
+      reason: "요청 범위 외"
+  related_doc:
+    - "knowledge/1_discovery/product/zone_권역정책_관리_asis/  # 세트 관리 3번째 메뉴, 별도 문서"
+
+  # 주의: 운영 데이터 보호를 위해 미실행
+  not_verified:
+    - 저장 / 예약 저장 / 삭제 / 해지 / 운영 중지 동작
+    - 벤더 ↔ ZONE 연결 경로 (Q-7)
+    - 벤더 상태 전이 규칙 (Q-8)
+    - 할증 지역 폴리곤의 배송지 블록 (픽업지만 확인)
+    - 상점 검색 모달의 "코드로 추가" / "엑셀로 추가" 탭
+    - 세트분배 예약 저장의 적용 시작일 입력 UI
+    - 권한별 화면 차이 (PO팀 계정 1개로만 조사)
+
+# ---------------------------------------------------------------
+# 공통 규격
+# ---------------------------------------------------------------
+common:
+  colors:
+    section_title: "파랑"
+    required_marker: "주황"
+    reset_button: "분홍/빨강 계열"
+    delete_button: "빨강"
+    vat_badge: "초록 테두리 pill"
+    error: "빨강"
+    valid: "초록"
+
+  layout:
+    sidebar: { collapsible: true }
+    body_scroll: "본문 내부 스크롤 컨테이너 (하단 버튼 바 고정)"
+    section_divider: "가로 구분선"
+    header_right_list: [{ type: button, label: "초기화" }]
+    header_right_form: [{ type: text, value: "● 필수 입력 사항" }]
+
+  required_marker: "●"
+  helper_text_pattern: "올바른 {필드명}입니다."
+  required_error_pattern: "{필드명}은 필수 입력값입니다."
+  guide_text_prefix: "»"
+
+  components:
+    vat_badge:
+      position: "금액 입력창 오른쪽"
+      template: "VAT포함 {N}원"
+      calc: "입력값 * 1.1"
+      realtime: true
+
+    custom_select:
+      note: "네이티브 <select> 아님. 검색어 입력창이 붙은 리스트"
+      search_input_label: "검색어"
+
+    history_textarea:
+      used_by: [sales_pricing, cost_pricing, extra_fee, promotion]
+      type: textarea
+      disabled: true
+      readonly: true
+      line_format: "[YYYY-MM-DD HH:mm:ss] {액션} (변경유저:{이름}  {팀})"
+      note: "이름과 팀 사이 공백 2칸. 프로모션(외주계정)은 '{이름}.{소속}' 형식 — 표기 불일치"
+
+    history_table:
+      used_by: [vendor, set_allocation]
+      note: "벤더/세트분배는 textarea가 아니라 테이블 + 페이지네이션 정식 감사 로그"
+
+    zone_select_table:
+      columns: ["#", "ZONE명", { type: action, label: "삭제" }]
+      footer: { left: "+ ZONE 추가", center: pagination, right: "총 {N}개" }
+      modal_trigger: zone_search
+
+    date_range:
+      structure: "[시작일] → [종료 안 함] + 캘린더 아이콘 각각"
+      empty_end_means: 무기한
+
+# ---------------------------------------------------------------
+# URL 규칙
+# ---------------------------------------------------------------
+url_conventions:
+  list_to_create:
+    new: [sales_pricing, cost_pricing, extra_fee, promotion, zone]
+    add: [vendor, operation_policy]     # operation_policy는 별도 문서
+    none: [set_allocation]              # ZONE 종속으로 자동 생성
+    issue: "생성 경로가 new/add 두 종류로 갈림 → B-8"
+  detail_identifier:
+    numeric_id: [sales_pricing, cost_pricing, extra_fee, promotion, zone, vendor]
+    uuid: [set_allocation]
+    issue: "식별자 체계 불일치"
+  zone_filter_param:
+    zoneUuid: [sales_pricing, cost_pricing, extra_fee, promotion, vendor]
+    zoneName: [set_allocation]
+    issue: "세트분배만 이름 기반"
+
+code_formats:
+  sales_pricing: "YYYYMM-SP###"     # SP = Sales Pricing
+  cost_pricing:  "YYYYMM-CS###"     # CS = Cost Pricing
+  extra_fee:     "YYYYMM-SC###"     # SC = SurCharge
+  promotion:     "YYYYMM-PM###"     # PM = ProMotion
+  zone:          "숫자 (코드 체계 없음)"
+  vendor:        "숫자 (벤더 코드)"
+
+# ---------------------------------------------------------------
+# 4개 G4 메뉴 공통 섹션 구조
+# ---------------------------------------------------------------
+g4_section_order:
+  sales_pricing: [기본 정보, 요금 정보, 적용 ZONE 선택, 이력 정보]
+  cost_pricing:  [기본 정보, 요금 정보, 적용 ZONE 선택, 이력정보]
+  extra_fee:     [기본 정보, 금액 정보, 할증 설정, 적용 ZONE 선택, 이력정보]
+  promotion:     [기본 정보, 적용 ZONE 선택, 요금 정보, 적용 상점 선택, 이력 정보]
+  issues:
+    - "섹션 제목이 '이력 정보'(판가·프로모션) / '이력정보'(원가·할증)로 갈림"
+    - "프로모션만 적용 ZONE이 2번째 → 섹션 순서 불일치"
+
+# ===============================================================
+# 화면 정의
+# ===============================================================
+screens:
+
+# --- 1. ZONE 판가 요금제 -----------------------------------------
+  - id: sales_pricing_list
+    title: "ZONE 판가 요금제 목록"
+    url: "/zone/sales-pricings"
+    query_params: [page, salesPricingName, zoneUuid]
+    breadcrumb: ["G4 요금 상품 관리", "ZONE 판가 요금제 관리"]
+    header_right: header_right_list
+    screenshots: ["07_판가_목록.png", "08_판가_목록_zone드롭다운.png"]
+    search_fields:
+      - { name: ZONE, type: custom_select, default: 전체, options_ref: zone_options }
+      - { name: 요금제명, type: text, placeholder: "요금제명으로 검색", default: "" }
+      - { name: (검색), type: icon_button, icon: magnifier, style: "파란 pill", align: right }
+    table_columns:
+      - { name: 요금제 코드, align: left, format: "YYYYMM-SP###" }
+      - { name: 요금제명, align: left }
+      - { name: 기본판가, align: right, display: "2줄: {N}원 / (VAT {N}원)" }
+      - { name: 상태, align: left, values: ["○ 활성", "— 비활성"] }
+      - { name: 요금제 설명, align: left, empty_value: "" }
+      - { name: 대상 ZONE, align: right, template: "{N}개", issue: "B-1 항상 0개" }
+    footer: { left: "+ 추가", center: pagination, right: "총 {N}개" }
+
+  - id: sales_pricing_detail
+    title: "ZONE 판가 요금제 조회 - {요금제명}"
+    url: "/zone/sales-pricings/{id}"
+    create_url: "/zone/sales-pricings/new"
+    breadcrumb: ["G4 요금 상품 관리", "ZONE 판가 요금제 관리", "ZONE 판가 요금제 조회"]
+    breadcrumb_issue: "추가 화면도 breadcrumb/H1이 '조회'. 추가 시 제목이 'ZONE 판가 요금제 조회 -' → B-7 관련"
+    header_right: header_right_form
+    tabs: null
+    screenshots: ["09_판가_조회.png", "12_판가_추가.png"]
+    sections: [basic_info_pricing, fee_info_sales, zone_select_sales, history_sales]
+    footer_buttons:
+      - { label: "목록으로", style: secondary }
+      - { label: "저장", style: primary }
+    footer_note: "삭제 버튼 없음 (할증·프로모션과 다름)"
+
+# --- 2. ZONE 원가 요금제 -----------------------------------------
+  - id: cost_pricing_list
+    title: "ZONE 원가 요금제 목록"
+    url: "/zone/cost-pricings"
+    query_params: [page, costPricingName, zoneUuid]
+    breadcrumb: ["G4 요금 상품 관리", "ZONE 원가 요금제 관리"]
+    header_right: header_right_list
+    screenshots: ["13_원가_목록.png"]
+    search_fields: "판가와 동일 (ZONE / 요금제명)"
+    table_columns:
+      - { name: 요금제 코드, format: "YYYYMM-CS###" }
+      - { name: 요금제명 }
+      - { name: 라이더비(기본원가), display: "1줄" }
+      - { name: 관제비, display: "2줄 (VAT 표기)" }
+      - { name: 관리비, display: "2줄 (VAT 표기)" }
+      - { name: 픽업비, display: "1줄" }
+      - { name: 완료비, display: "1줄" }
+      - { name: 상태, values: ["○ 활성", "— 비활성"] }
+      - { name: 요금제 설명 }
+      - { name: 대상 ZONE, template: "{N}개", issue: "B-1 항상 0개" }
+    issue: "관제비·관리비만 VAT 2줄, 나머지는 1줄 → 표기 규칙 혼재"
+
+  - id: cost_pricing_detail
+    title: "ZONE 원가 요금제 조회 - {요금제명}"
+    url: "/zone/cost-pricings/{id}"
+    create_url: "/zone/cost-pricings/new"
+    breadcrumb: ["G4 요금 상품 관리", "ZONE 원가 요금제 관리", "ZONE 원가 요금제 조회"]
+    header_right: header_right_form
+    screenshots: ["14_원가_조회.png"]
+    sections: [basic_info_pricing, fee_info_cost, zone_select_cost, history_cost]
+    footer_buttons:
+      - { label: "목록으로", style: secondary }
+      - { label: "저장", style: primary }
+
+# --- 3. ZONE 할증 -----------------------------------------------
+  - id: extra_fee_list
+    title: "ZONE 할증 목록"
+    url: "/zone/extra-fees"
+    query_params: [page, zoneUuid]
+    breadcrumb: ["G4 요금 상품 관리", "ZONE 할증 관리"]
+    header_right: header_right_list
+    screenshots: ["15_할증_목록.png", "16_할증_목록_종류드롭다운.png"]
+    search_fields:
+      - { name: ZONE, type: custom_select, default: 전체, options_ref: zone_options }
+      - { name: 할증 종류, type: custom_select, default: 전체,
+          options: ["전체", "기상 할증", "요일 및 시간대 할증", "지역 폴리곤 할증", "특수 할증"] }
+      - { name: 할증명, type: text, placeholder: "할증명으로 검색" }
+      - { name: 활성화 상태, type: checkbox_group, options: ["전체", "예정", "진행중", "종료"],
+          default: "전부 체크", issue: "Q-10 '전체'가 상위 토글인지 불명" }
+    table_columns:
+      - { name: 할증코드, format: "YYYYMM-SC###" }
+      - { name: 대상 ZONE, template: "{N}개" }
+      - { name: 할증명 }
+      - { name: 할증 종류 }
+      - { name: 판가, display: "2줄: {N}원 / (VAT {N}원)" }
+      - { name: 원가, display: "2줄" }
+      - { name: 시작일자, format: "YYYY-MM-DD" }
+      - { name: 종료일자, format: "YYYY-MM-DD", empty_value: "-" }
+
+  - id: extra_fee_detail
+    title: "ZONE 할증 조회 - {할증명}"
+    url: "/zone/extra-fees/{id}"
+    create_url: "/zone/extra-fees/new"
+    breadcrumb: ["G4 요금 상품 관리", "ZONE 할증 관리", "ZONE 할증 조회"]
+    header_right: header_right_form
+    screenshots: ["17_할증_조회_요일시간대_상단.png", "18_할증_조회_요일시간대_하단.png",
+                  "19_할증_추가_기상할증.png", "20_할증_추가_지역폴리곤.png"]
+    sections: [basic_info_extra_fee, amount_info_extra_fee, extra_fee_setting,
+               zone_select_extra_fee, history_extra_fee]
+    footer_buttons:
+      - { label: "삭제", style: danger, align: left, issue: "B-4 추가 화면에도 존재" }
+      - { label: "목록으로", style: secondary }
+      - { label: "저장", style: primary }
+
+# --- 4. G4 프로모션 ----------------------------------------------
+  - id: promotion_list
+    title: "G4 프로모션 목록"
+    url: "/zone/promotions"
+    breadcrumb: ["G4 요금 상품 관리", "G4 프로모션 관리"]
+    header_right: header_right_list
+    screenshots: ["22_프로모션_목록.png"]
+    search_fields:
+      - { name: ZONE, type: custom_select, default: 전체, options_ref: zone_options }
+      - { name: 프로모션명, type: text, placeholder: "프로모션명으로 검색" }
+      - { name: 활성화 상태, type: checkbox_group, options: ["전체", "예정", "진행중", "종료"],
+          default: "전부 체크" }
+    table_columns:
+      - { name: 프로모션코드, format: "YYYYMM-PM###" }
+      - { name: 프로모션명 }
+      - { name: 분류, values: ["상점"] }
+      - { name: 시작 일자, format: "YYYY-MM-DD" }
+      - { name: 종료 일자, empty_value: "-" }
+      - { name: 적용 시간, format: "HH:mm ~ HH:mm" }
+      - { name: 프로모션 설명 }
+      - { name: 대상 상점, template: "{N}개" }
+      - { name: 대상 기사, template: "{N}개", issue: "B-5 등록 수단 없음" }
+
+  - id: promotion_detail
+    title: "G4 프로모션 조회 - {프로모션명}"
+    url: "/zone/promotions/{id}"
+    create_url: "/zone/promotions/new"
+    breadcrumb: ["G4 요금 상품 관리", "G4 프로모션 관리", "G4 프로모션 조회"]
+    header_right: header_right_form
+    screenshots: ["23_프로모션_조회_상단.png", "24_프로모션_조회_하단.png"]
+    sections: [basic_info_promotion, zone_select_promotion, fee_info_promotion,
+               store_select, history_promotion]
+    footer_buttons:
+      - { label: "삭제", style: danger, align: left, issue: "B-4" }
+      - { label: "목록으로", style: secondary }
+      - { label: "저장", style: primary }
+
+# --- 5. ZONE 관리 (영업 관리) -------------------------------------
+  - id: zone_list
+    title: "ZONE 관리"
+    url: "/sales/zones"
+    breadcrumb: ["영업 관리", "ZONE 관리"]
+    header_right: header_right_list
+    screenshots: ["01_zone관리_목록.png"]
+    search_fields:
+      - { name: ZONE 이름, type: text, placeholder: "Zone명으로 검색",
+          issue: "라벨 'ZONE' vs placeholder 'Zone' 표기 불일치" }
+      - { name: (검색), type: icon_button, icon: magnifier, align: right }
+    table_columns:
+      - { name: ID, note: "상세 URL path param" }
+      - { name: ZONE 이름 }
+      - { name: 지점명 }
+      - { name: 생성자, format: "{이름} {팀}" }
+    footer: { left: "+ 등록", center: pagination, right: "총 {N}개" }
+    note: "상태 컬럼 없음 (ZONE에 활성/비활성 개념 없음)"
+
+  - id: zone_detail
+    title: "Zone 상세"
+    url: "/sales/zones/{id}"
+    breadcrumb: ["영업 관리", "ZONE 관리", "ZONE 상세"]
+    screenshots: ["02_zone관리_상세_상단.png", "03_zone관리_상세_배송지영역.png"]
+    sections: [zone_basic_info_detail, zone_area_info]
+    footer_buttons:
+      - { label: "삭제", style: danger, align: left }
+      - { label: "목록", style: secondary, issue: "다른 화면은 모두 '목록으로'" }
+      - { label: "저장", style: primary }
+
+  - id: zone_create
+    title: "Zone 상세"
+    title_issue: "B-7 — 등록 화면인데 H1이 '상세'. 탭 제목·breadcrumb는 '등록'으로 올바름"
+    tab_title: "Zone 등록 :: 영업 관리 :: VROONG Intra"
+    url: "/sales/zones/new"
+    breadcrumb: ["영업 관리", "ZONE 관리", "ZONE 등록"]
+    screenshots: ["05_zone관리_등록.png", "06_zone관리_등록_지점드롭다운.png"]
+    sections: [zone_basic_info_create, zone_area_info_empty]
+    footer_buttons:
+      - { label: "취소", style: secondary }
+      - { label: "등록", style: primary }
+    known_error:
+      wrong_path: "/sales/zones/add"
+      result: "COMMON_SYSTEM_ERROR 모달 → B-8"
+      screenshot: "04_zone관리_잘못된경로_시스템에러.png"
+
+# --- 6. 벤더 관리 ------------------------------------------------
+  - id: vendor_list
+    title: "벤더 목록"
+    url: "/vendor/vendors"
+    query_params: [businessName, page, status, zoneUuid]
+    breadcrumb: ["세트 관리", "벤더 관리"]
+    header_right: header_right_list
+    screenshots: ["26_벤더_목록.png"]
+    search_fields:
+      - { name: 소속 Zone, type: custom_select, default: 전체 }
+      - { name: 벤더명, type: text, placeholder: "벤더명으로 검색" }
+      - { name: 상태, type: custom_select, default: 전체 }
+    table_columns:
+      - { name: 벤더 코드, note: "상세 URL path param" }
+      - { name: 사업자명(벤더명) }
+      - { name: 상태, values: [운영중, 운영중지, 대기, 해지] }
+      - { name: 존, empty_value: "-", issue: "ZONE/Zone/존 3가지 표기 혼재" }
+      - { name: 벤더장, empty_value: "" }
+      - { name: 등록일, format: "YYYY-MM-DD" }
+    footer: { left: "+ 추가", center: pagination, right: "총 {N}건" }
+    missing_columns: ["계약 종료일 → I-3"]
+
+  - id: vendor_detail
+    title: "벤더 조회"
+    title_note: "벤더명이 붙지 않음 (G4 메뉴들은 '- {이름}' 형식)"
+    url: "/vendor/vendors/{id}"
+    breadcrumb: ["세트 관리", "벤더 관리", "벤더 조회"]
+    header_right:
+      type: meta_line
+      value: "● 필수 입력 사항 | 등록: {YYYY-MM-DD HH:mm} | 등록자: {등록자}"
+    tabs:
+      - { id: basic, label: "기본정보", default: true }
+      - { id: riders, label: "소속기사" }
+      - { id: history, label: "변경 이력" }
+    screenshots: ["27_벤더_조회_기본정보.png", "28_벤더_조회_소속기사.png", "29_벤더_조회_변경이력.png"]
+    tab_basic:
+      sections: [business_info_detail, settlement_info_detail, contract_info,
+                 vendor_zone, vendor_owner, attachments_detail]
+      footer_buttons:
+        - { label: "운영 중지", style: primary, align: left }
+        - { label: "해지", style: danger, align: left }
+        - { label: "목록으로", style: secondary }
+        - { label: "저장", style: primary }
+      footer_issue: "대기→운영중 전이 버튼 없음 → Q-8"
+    tab_riders:
+      sections: [rider_register, rider_list]
+    tab_history:
+      section: vendor_change_history
+
+  - id: vendor_create
+    title: "벤더 등록"
+    url: "/vendor/vendors/add"
+    breadcrumb: ["세트 관리", "벤더 관리", "벤더 추가"]
+    breadcrumb_issue: "breadcrumb '추가' vs H1 '등록'"
+    screenshots: ["30_벤더_등록.png"]
+    tabs: "조회와 동일 3개 노출 (아직 없는 벤더의 기사/이력)"
+    sections: [business_info_create, settlement_info_create, contract_info,
+               vendor_owner_create, attachments_create]
+    sections_absent: [vendor_zone]
+    sections_absent_issue: "등록 화면에 소속 Zone 섹션이 없음 → Q-7"
+    footer_buttons:
+      - { label: "목록으로", style: secondary }
+      - { label: "저장", style: primary }
+
+# --- 7. 세트분배 관리 --------------------------------------------
+  - id: set_allocation_list
+    title: "세트분배 관리"
+    title_note: "목록 화면인데 '목록'이 안 붙음"
+    url: "/vendor/set-allocations"
+    query_params: [page, zoneName]
+    breadcrumb: ["세트 관리", "세트분배 관리"]
+    header_right: header_right_list
+    screenshots: ["31_세트분배_목록.png"]
+    search_fields:
+      - { name: Zone 이름, type: text, placeholder: "Zone 이름 검색" }
+    table_columns:
+      - { name: Zone 이름 }
+      - { name: 연결 벤더 수, template: "{N}개" }
+      - { name: 수행 세트 수, template: "{N}개" }
+    footer: { left: null, center: pagination, right: "총 {N}건" }
+    footer_note: "추가 버튼 없음 — ZONE 생성 시 레코드 자동 생성 (행 수 = ZONE 수)"
+    sort: "ZONE명 가나다순"
+
+  - id: set_allocation_detail
+    title: "세트분배 관리 - {Zone명}"
+    url: "/vendor/set-allocations/{zone_uuid}"
+    identifier: uuid
+    breadcrumb: ["세트 관리", "세트분배 관리", "세트분배 조회"]
+    tabs:
+      - { id: basic, label: "기본정보", default: true }
+      - { id: history, label: "변경 이력" }
+    screenshots: ["32_세트분배_상세_성북1.png", "35_세트분배_상세_동대문1.png",
+                  "33_세트분배_변경이력.png"]
+    tab_basic:
+      sections: [set_alloc_basic_info, vendor_composition]
+      footer_buttons:
+        - { label: "목록으로", style: secondary }
+        - { label: "예약 저장", style: secondary }
+        - { label: "저장", style: primary }
+    tab_history:
+      section: set_alloc_change_history
+      footer_buttons:
+        - { label: "목록으로", style: secondary }
+
+# ===============================================================
+# 섹션 정의
+# ===============================================================
+sections:
+
+# --- 판가/원가 공통 ----------------------------------------------
+  basic_info_pricing:
+    title: "기본 정보"
+    fields:
+      - { name: 요금제명, type: text, required: true, default_on_create: "" }
+      - { name: 요금제 설명, type: textarea, required: false,
+          placeholder: "100자 이내", maxlength: 100, default_on_create: "" }
+    validation:
+      - { field: 요금제명, valid: "올바른 요금제명입니다.", empty: "요금제명은 필수 입력값입니다." }
+
+  fee_info_sales:
+    title: "요금 정보"
+    fields:
+      - { name: "기본 판가 (VAT 미포함)", type: text, required: true,
+          thousand_separator: true, vat_badge: true, default_on_create: 0 }
+    validation:
+      - { field: "기본 판가 (VAT 미포함)", valid: "올바른 기본 판가 (VAT 미포함)입니다.",
+          range_error: "금액은 1원이상 10만원 이하로 입력해주세요." }
+    sub_blocks: [distance_fee_rows, fee_summary_sales]
+
+  fee_info_cost:
+    title: "요금 정보"
+    layout: "2열 그리드 (라이더비만 3행 단독)"
+    fields:
+      - { name: "관제비 (VAT 미포함)", type: text, required: false, vat_badge: true, default_on_create: 0, grid: "1행 좌" }
+      - { name: "관리비 (VAT 미포함)", type: text, required: false, vat_badge: true, default_on_create: 0, grid: "1행 우" }
+      - { name: "픽업비 (VAT 미포함)", type: text, required: false, vat_badge: true, default_on_create: 0, grid: "2행 좌" }
+      - { name: "완료비 (VAT 미포함)", type: text, required: false, vat_badge: true, default_on_create: 0, grid: "2행 우" }
+      - { name: "라이더비 (기본원가, VAT 미포함)", type: text, required: true, vat_badge: true, default_on_create: 0, grid: "3행 단독" }
+    sub_blocks: [distance_fee_rows, fee_summary_cost]
+
+  distance_fee_rows:
+    type: h4_block
+    title: "거리별 요금"
+    repeatable: true
+    default_row_count_on_create: 0
+    row_layout: "[구간 시작(㎞)] 이상 → [구간 끝(㎞)] 미만 → [요금제▾] [단위거리] [요금(원) (VAT 미포함)] [−] [+]"
+    fixed_texts: { after_start: "이상", after_end: "미만", between: "→" }
+    fields:
+      - { name: "구간 시작(㎞)", required: true, type: text, disabled: true,
+          value_rule: "첫 행 0, 이후 행은 직전 행의 구간 끝 자동 승계" }
+      - { name: "구간 끝(㎞)", required: true, type: text, maxlength: 6,
+          placeholder: "구간 시작 초과", editable: true }
+      - { name: 요금제, required: true, type: custom_select, options: [정액제, 거리별] }
+      - { name: 단위거리, required: true, type: text, maxlength: 6,
+          disabled_when: "요금제 == 정액제", disabled_value: 0 }
+      - { name: "요금(원) (VAT 미포함)", required: true, type: text }
+    row_actions:
+      - { label: "−", style: "빨간 원형 아이콘", action: 행 삭제, exists_on: 모든 행 }
+      - { label: "+", style: "빨간 원형 아이콘", action: 행 추가, exists_on: 마지막 행만 }
+
+  fee_summary_sales:
+    type: gray_box
+    title: "요금 정보 요약"
+    description: "거리별 요금 존재 시 기본판가 + 거리별 요금 최고가의 합산 VAT 포함 금액"
+    right_top_template: "기본판가 {N}원 + 거리별 최고가({요금제}) {N}원"
+    right_bottom_template: "VAT 포함 최대 {N}원"
+    formula: "(기본판가 + 거리별_최고가) * 1.1"
+
+  fee_summary_cost:
+    type: gray_box
+    title: "요금 정보 요약"
+    description: "거리별 요금 존재 시 기본 요금 합계 + 거리별 요금 최고가의 합산 VAT 포함 금액"
+    right_top_template: "픽업비 {N}원 + 완료비 {N}원 + 라이더비 {N}원 + 거리별 최고가({요금제}) {N}원"
+    right_bottom_template: "VAT 포함 최대 {N}원"
+    formula: "(픽업비 + 완료비 + 라이더비 + 거리별_최고가) * 1.1"
+    issue: "관제비·관리비가 합계식에서 제외됨. 문구는 '기본 요금 합계' → Q-3"
+
+  zone_select_sales:
+    inherits: zone_select_table
+    title: "적용 ZONE 선택"
+    guide_text: "» ZONE별로 1개의 판가 요금제만 적용 가능합니다. 요금제는 복수의 ZONE에 적용할 수 있습니다."
+    issue: "조회 시 행 0개로 표시 (실제 매핑 존재) → B-1"
+
+  zone_select_cost:
+    inherits: zone_select_table
+    title: "적용 ZONE 선택"
+    guide_text: "» ZONE별로 1개의 원가 요금제만 적용 가능합니다. 요금제는 복수의 ZONE에 적용할 수 있습니다."
+    issue: "B-1"
+
+  zone_select_extra_fee:
+    inherits: zone_select_table
+    title: "적용 ZONE 선택"
+    guide_text: "» ZONE별로 1개의 원가 요금제만 적용 가능합니다. 요금제는 복수의 ZONE에 적용할 수 있습니다."
+    issue: "B-3 복붙 오류 — 할증 화면에 '원가 요금제' 문구. 실제로는 ZONE당 N개 허용"
+
+  zone_select_promotion:
+    inherits: zone_select_table
+    title: "적용 ZONE 선택"
+    guide_text: "» ZONE별로 1개의 판가 요금제만 적용 가능합니다. 요금제는 복수의 ZONE에 적용할 수 있습니다."
+    issue: "B-3 복붙 오류 — 프로모션 화면에 '판가 요금제' 문구"
+
+  history_sales:
+    title: "이력 정보"
+    inherits: history_textarea
+    exists_on_create: true
+    exists_on_create_issue: "추가 화면에도 빈 섹션 존재"
+    actions: [판가 정책 생성, 판가 정책 수정, 판가 구간 생성, 판가 구간 수정, 판가 정책 Zone 추가]
+
+  history_cost:
+    title: "이력정보"
+    inherits: history_textarea
+    actions: [원가 정책 생성, 원가 정책 수정, 원가 구간 생성, 원가 구간 수정, 원가 정책 Zone 추가]
+
+  history_extra_fee:
+    title: "이력정보"
+    inherits: history_textarea
+    actions: [할증 생성]
+
+  history_promotion:
+    title: "이력 정보"
+    inherits: history_textarea
+    actions: [프로모션 생성, 프로모션 Zone 추가, 프로모션 상점 매핑 추가]
+    line_format_actual: "[YYYY-MM-DD HH:mm:ss] {액션} (변경유저:{이름}.{소속})"
+    issue: "팀 없이 '{이름}.{소속}' 형식 — 다른 메뉴와 불일치"
+
+# --- 할증 전용 --------------------------------------------------
+  basic_info_extra_fee:
+    title: "기본 정보"
+    fields:
+      - { name: 할증명, type: text, required: true, placeholder: "할증 제목을 입력하세요." }
+      - { name: 할증 적용 일자, type: date_range, required: true,
+          placeholders: ["시작일", "종료 안 함"] }
+      - { name: 할증 적용 시간, type: time_range, required: false,
+          placeholders: ["00:00", "23:59"],
+          hidden_when: "할증 종류 == 요일 및 시간대 할증" }
+      - { name: 할증 사유, type: text, required: false }
+    guide_text: "» 하루 중 할증 적용 시간, 미입력 시 00:00 ~ 23:59 적용됩니다."
+    validation:
+      - { field: 할증 적용 일자, empty: "✗ 적용 시작일은 필수 입력값입니다." }
+      - { field: 할증 적용 시간, valid: "○ 올바른 시간입니다." }
+
+  amount_info_extra_fee:
+    title: "금액 정보"
+    fields:
+      - { name: "판가 할증 금액(VAT 미포함)", type: text, required: false, vat_badge: true, default_on_create: 0 }
+      - { name: "원가 할증 금액(VAT 미포함)", type: text, required: false, vat_badge: true, default_on_create: 0 }
+    guide_text: "원가 및 판가 할증 금액 중 1개는 반드시 설정해야 합니다."
+    guide_position: "두 필드 각각 아래"
+    note: "개별 필드에 ● 없으나 둘 중 하나는 조건부 필수"
+
+  extra_fee_setting:
+    title: "할증 설정"
+    fields:
+      - name: 할증 종류
+        type: radio
+        required: true
+        layout: horizontal
+        default: "기상 할증"
+        options: ["기상 할증", "요일 및 시간대 할증", "지역 폴리곤 할증", "특수 할증"]
+    conditional_blocks:
+      기상 할증:  { extra_fields: none, issue: "기상 조건 지정 필드 없음 → Q-4" }
+      특수 할증:  { extra_fields: none, note: "기상 할증과 화면이 완전히 동일" }
+      요일 및 시간대 할증: weekday_time_matrix
+      지역 폴리곤 할증:    polygon_setting
+
+  weekday_time_matrix:
+    section_badge_on_error: "요일 및 시간대 설정에 올바르지 않은 범위가 포함돼있습니다."
+    rows: [월, 화, 수, 목, 금, 토, 일]
+    per_row:
+      time_ranges: 2
+      inputs_per_range: 4     # 시작 HH, MM / 종료 HH, MM
+      clear_button: { label: "✕", appears_when: "값 입력 시" }
+      bulk_apply: { label: "일괄적용", style: "회색 pill",
+                    behavior: "해당 요일 설정을 다른 요일에 복사 (추정)" }
+      timeline:
+        position: right
+        ticks: ["06:00", "12:00", "18:00", "24:00"]
+        max_label: "29:59"
+        max_meaning: "익일 05:59 — 자정 넘김 구간을 익일 시각으로 표현"
+        set_range_style: "파란 선 + 종료시각 텍스트"
+    row_validation_messages:
+      - { text: "○ 올바른 시간대 설정입니다", style: valid }
+      - { text: "✗ 첫 번째 종료 시간이 잘못됐습니다", style: error }
+      - { text: "✗ 두 시간대가 겹칩니다", style: error }
+    issue: "운영 데이터가 검증 통과 못함 → B-2, Q-11"
+
+  polygon_setting:
+    fields:
+      - { name: 폴리곤 할증 구분, type: radio, required: true,
+          options: [픽업지, 배송지, "픽업/배송지"], default: 픽업지 }
+      - name: 픽업지 폴리곤
+        type: table
+        columns: [폴리곤명, 설명]
+        footer: { left: "+ 폴리곤 추가", right: "총 {N}개" }
+        badge: "픽업 폴리곤은 최소 1개 이상 최대 5개 이하 선택해주세요."
+        modal_trigger: polygon_search
+      - { name: (지도), type: naver_map, position: right }
+    not_verified: "배송지 / 픽업·배송지 선택 시의 블록 구성"
+
+# --- 프로모션 전용 -----------------------------------------------
+  basic_info_promotion:
+    title: "기본 정보"
+    fields:
+      - { name: 프로모션명, type: text, required: true }
+      - { name: 프로모션 설명, type: textarea, required: false, placeholder: "100자 이내" }
+      - { name: 프로모션 적용 일자, type: date_range, required: true,
+          placeholders: ["시작일", "종료 안 함"] }
+      - { name: 프로모션 적용 시간, type: time_range, required: false,
+          placeholders: ["00:00", "23:59"] }
+    guide_text: "» 하루 중 프로모션 적용 시간, 미입력 시 00:00 ~ 23:59 적용됩니다."
+
+  fee_info_promotion:
+    title: "요금 정보"
+    fields:
+      - { name: 프로모션 대분류, type: radio, required: true, options: [상점], default: 상점,
+          issue: "B-5 선택지 1개. 기사 옵션 미구현" }
+      - { name: "판가 금액 (VAT 미포함)", type: text, required: true, vat_badge: true }
+
+  store_select:
+    title: "적용 상점 선택"
+    badge_on_create: "적용 상점은 최소 1개 이상 선택해주세요."
+    inline_search:
+      position: "테이블 위 중앙"
+      icon: magnifier
+      placeholder: "검색어를 입력하면 즉시 반영됩니다"
+    table:
+      columns: [상점코드, 상점명, 상점 전화번호, { type: action, label: "삭제" }]
+    footer: { left: "+ 상점 추가", right: "총 {N}개" }
+    modal_trigger: store_search
+    note: "적용 ZONE은 모달만, 적용 상점은 인라인 검색 + 모달 두 방식 공존"
+
+# --- ZONE 관리 --------------------------------------------------
+  zone_basic_info_detail:
+    title: "기본 정보"
+    fields:
+      - { name: ZONE 이름, type: text, editable: true }
+      - { name: 지점 ID, type: custom_select, disabled: true,
+          display_value: "지점명", issue: "라벨은 'ID'인데 표시값은 지점명" }
+    validation:
+      - { field: ZONE 이름, valid: "올바른 ZONE 이름입니다." }
+      - { field: 지점 ID, valid: "올바른 지점 ID입니다." }
+
+  zone_basic_info_create:
+    title: "기본 정보"
+    fields:
+      - { name: ZONE 이름, type: text, required: true, default: "" }
+      - { name: 지점 ID, type: custom_select, required: true, default: "선택없음",
+          options_ref: branch_options }
+    guide_text: "» 벤더존 운영방식의 지점만 매핑 가능합니다. 매핑 후에는 다른 지점으로 교체할 수 없습니다."
+    validation:
+      - { field: ZONE 이름, empty: "ZONE 이름은 필수 입력값입니다." }
+      - { field: 지점 ID, empty: "지점 ID 필수 입력값입니다." }
+    issue: "이미 매핑된 지점이 드롭다운에서 걸러지지 않음 → I-2"
+
+  zone_area_info:
+    title: "권역 정보"
+    fields:
+      - { name: 세일즈 권역, type: text, disabled: true, value_format: "지점판매권역_{범위코드}" }
+      - { name: 공급 권역, type: text, disabled: true, value_format: "지점공급권역_{범위코드}" }
+    note: "지점 선택 시 자동 연결, 이 화면에서 변경 불가"
+    sub_blocks: [zone_map_and_areas]
+
+  zone_area_info_empty:
+    title: "권역 정보"
+    fields:
+      - { name: 세일즈 권역, type: text, disabled: true, value: "지점을 선택하세요." }
+      - { name: 공급 권역, type: text, disabled: true, value: "지점을 선택하세요." }
+    sub_blocks: none
+    note: "지점 선택 전에는 지도·권역 목록 미표시"
+
+  zone_map_and_areas:
+    layout: "2열 (좌: 지도 / 우: 픽업지 블록 → 배송지 블록 수직)"
+    map:
+      provider: NAVER
+      legend: [{ label: "세일즈 권역", color: 파랑 }, { label: 픽업지, color: 노랑 }, { label: 배송지, color: 보라 }]
+      controls: "줌 슬라이더 (+/−)"
+      sticky: false
+      issue: "I-6 배송지 목록 스크롤 시 지도가 사라지고 좌측이 빈 공간"
+    per_block:          # 픽업지 / 배송지 각각
+      count_label: "총 {N}개"
+      polygon_group_table:
+        columns: ["{픽업지|배송지}명"]
+        scroll: true
+      area_type_radio: { options: [행정동, 법정동], default: 법정동 }
+      area_table:
+        columns: [지역종류, "{픽업지|배송지}명"]
+        actual_cell_value: "행정구역명 (예: 길음동)"
+        issue: "B-6 헤더가 잘못됨. '지역명'이 맞음"
+        scroll: true
+        max_height: fixed
+
+# --- 벤더 관리 --------------------------------------------------
+  business_info_detail:
+    title: "사업자 정보"
+    layout: "3열 그리드"
+    fields:
+      - { name: 사업자등록번호, required: true, type: text, editable: false, placeholder: "숫자 10자리" }
+      - { name: 사업자명(벤더명), required: true, type: text, editable: false, placeholder: "사업자명" }
+      - { name: 대표자명, required: true, type: text, editable: false, placeholder: "대표자명" }
+      - { name: 연락처, required: true, type: text, editable: true, placeholder: "연락처" }
+      - { name: 이메일, required: true, type: text, editable: true, placeholder: "예) sample@mail.com" }
+    note: "사업자등록번호·사업자명·대표자명 수정 불가 → Q-6"
+
+  business_info_create:
+    inherits: business_info_detail
+    all_fields_editable: true
+
+  settlement_info_detail:
+    title: "정산 정보"
+    layout: "3열"
+    fields:
+      - { name: 정산 은행, required: true, editable: false }
+      - { name: 정산 계좌번호, required: true, editable: false }
+      - { name: 정산 예금주, required: true, editable: false }
+    issue: "정산 계좌 변경 경로 없음 → Q-6"
+
+  settlement_info_create:
+    title: "정산 정보"
+    fields:
+      - { name: 정산 은행, required: true, type: select, default: "은행명", options_ref: bank_options }
+      - { name: 정산 계좌번호, required: true, type: text }
+      - { name: 정산 예금주, required: true, type: text }
+    validation:
+      - "정산 은행은 필수 입력값입니다."
+      - "정산 계좌번호는 필수 입력값입니다."
+      - "정산 예금주는 필수 입력값입니다."
+
+  contract_info:
+    title: "계약 정보"
+    layout: "2열"
+    fields:
+      - { name: 계약 시작일, required: false, type: date, placeholder: "YYYY-MM-DD" }
+      - { name: 계약 종료일, required: false, type: date, placeholder: "YYYY-MM-DD" }
+    issue: "필수 아님. 만료 알림·목록 컬럼 없음 → I-3, Q-9"
+
+  vendor_zone:
+    title: "소속 Zone"
+    layout: "2열"
+    fields:
+      - { name: Zone 이름, type: text, editable: false }
+      - { name: 상태, type: text, editable: false, note: "'Zone의 상태'인지 '벤더의 상태'인지 라벨 모호" }
+    validation:
+      - { field: Zone 이름, valid: "올바른 Zone 이름입니다." }
+    exists_on_create: false
+    issue: "읽기 전용 + 등록 화면에 없음. 연결 경로 불명 → Q-7 (최우선)"
+
+  vendor_owner:
+    title: "벤더장 (VO) 지정 / 해제"
+    layout: "3열"
+    fields:
+      - { name: 벤더장 선택, type: custom_select, editable: true,
+          option_format: "{이름} ({연락처})" }
+      - { name: 벤더장 연락처, type: text, editable: false }
+      - { name: 벤더장 지정일, type: text, editable: false, format: "YYYY-MM-DD HH:mm" }
+    guide_texts:
+      - "» 벤더 기사로 등록 가능한 기사 중에서만 검색됩니다 (이름 또는 연락처). 타 벤더 VO 기사는 서버에서 선택이 제한됩니다."
+      - "» 운영중(ACTIVE) 상태에서는 VO 해제 불가. 교체만 가능합니다. 해제하려면 먼저 INACTIVE로 변경하세요."
+    issue: "두 번째 문구에 개발 enum 노출 + INACTIVE가 화면 어디에도 없음 → B-9"
+
+  vendor_owner_create:
+    inherits: vendor_owner
+    default: "지정 해제"
+    guide_texts: "첫 번째만 표시"
+
+  attachments_detail:
+    title: "첨부 파일"
+    layout: "2열 x 2행"
+    items: [사업자등록증, 계약서, 통장 사본, 신분증 사본]
+    required: false
+    per_item:
+      filename_display: "업로드된 파일명 또는 placeholder '· 이미지 파일 선택'"
+      filename_format_actual: "난수 문자열 (예: VdC9bu5Pyyg.jpg)"
+      buttons:
+        - { label: "파일 선택", style: "회색 pill", always: true }
+        - { label: "기존 파일 다운로드", style: link, condition: "파일 존재 시만" }
+    guide_text: "» PDF·PNG·JPG·JPEG 파일만 업로드할 수 있습니다. 파일 선택 시 즉시 업로드되며, 저장 시 함께 반영됩니다. 기존 파일이 있으면 다운로드 후 새 파일을 선택하면 교체됩니다."
+    allowed_extensions: [pdf, png, jpg, jpeg]
+    issue: "원본 파일명 유실 → I-5"
+
+  attachments_create:
+    inherits: attachments_detail
+    state: "4종 전부 빈 상태, 다운로드 버튼 없음"
+
+  rider_register:
+    title: "기사 소속 등록"
+    fields:
+      - { name: 기사 검색, type: custom_select, placeholder: "이름 또는 연락처로 검색" }
+      - { name: 소속 등록, type: button, style: "회색 pill", disabled_when: "기사 미선택" }
+    guide_text: "» 벤더 기사로 등록 가능한 기사 중에서만 검색됩니다 (이름 또는 연락처). 타 벤더에 이미 소속된 기사는 서버에서 등록이 제한됩니다."
+
+  rider_list:
+    title: "소속 기사 · 총 {N}명"
+    title_note: "섹션 제목에 인원수 포함"
+    table_columns:
+      - { name: NO, note: "1부터 순번" }
+      - { name: 기사명 }
+      - { name: 연락처, format: "하이픈 없는 11자리" }
+      - { name: 소속 상태, values: [ACTIVE], issue: "B-9 원문 enum 노출" }
+      - { name: 등록일, format: "YYYY-MM-DD" }
+      - { type: action, label: "해제", style: "빨간 pill" }
+
+  vendor_change_history:
+    table_columns:
+      - { name: 일시, format: "YYYY-MM-DD HH:mm" }
+      - { name: 수정자, format: "{이름} {직급} {팀}" }
+      - { name: 변경 내용, type: 자연어 }
+    footer: { center: pagination, right: "총 {N}건" }
+    action_types:
+      - { action: 벤더 신규 등록, format: "벤더 신규 등록 — {벤더명} (사업자번호: {번호})" }
+      - { action: 벤더장 지정,   format: "벤더장 지정 — {이름}" }
+      - { action: 상태 변경,     format: "상태 변경 — {before} → {after} · 사유: {사유}",
+          issue: "상태값이 '활성'. 목록은 '운영중' → B-11" }
+      - { action: 기사 소속 등록, format: "기사 소속 등록 — {이름}" }
+      - { action: 존 연결,       format: "존 연결 — {zone_uuid}",
+          issue: "B-10 ZONE명 대신 UUID 노출" }
+
+# --- 세트분배 관리 -----------------------------------------------
+  set_alloc_basic_info:
+    title: "기본 정보"
+    fields:
+      - { name: Zone 이름, type: text, editable: false }
+
+  vendor_composition:
+    title: "벤더 구성"
+    add_control:
+      position: "섹션 상단 (테이블 밖)"
+      type: custom_select
+      placeholder: "벤더명 검색"
+      filters_already_assigned: true
+      filters_terminated: false
+      filters_other_zone: false
+      issue: "해지 벤더·타 ZONE 소속 벤더가 선택 가능 → I-4"
+    table:
+      columns:
+        - { name: 벤더명 }
+        - { name: 상태, values: [운영중, 운영중지] }
+        - { name: 할당 세트 수, type: number_inline, style: 밑줄형,
+            disabled_when: "상태 == 운영중지" }
+        - { type: action, label: "삭제", style: "빨간 pill" }
+
+  set_alloc_change_history:
+    table_columns:
+      - { name: 버전, format: "v{N}" }
+      - { name: 상태, values_confirmed: ["현재 적용", "취소됨"], note: "그 외 값 미확인" }
+      - { name: 적용 시작일, format: "YYYY-MM-DD HH:mm:ss" }
+      - { name: 메모 }
+      - { name: 생성 일시, format: "YYYY-MM-DD HH:mm:ss" }
+      - { name: 생성자, format: "{이름} {직급} {팀}" }
+      - { name: 관리, note: "과거/취소 = '비교' 버튼 / 현재 = '현재 버전' 텍스트" }
+    modal_trigger: set_alloc_version_diff
+    issue: "버전 번호가 큰 v2가 취소되고 v1이 현재 적용 → Q-12"
+
+# ===============================================================
+# 모달
+# ===============================================================
+modals:
+  zone_search:
+    title: "ZONE 검색"
+    used_by: [sales_pricing, cost_pricing, extra_fee, promotion]
+    trigger: "적용 ZONE 선택 섹션의 [+ ZONE 추가]"
+    screenshots: ["10_판가_zone검색모달_초기.png", "11_판가_zone검색모달_결과6건.png"]
+    body:
+      - { name: ZONE명, type: text, placeholder: "ZONE명으로 검색" }
+      - { name: (검색), type: icon_button, icon: magnifier, align: right }
+      - { type: text, template: "검색 결과 ( {N} )" }
+      - { type: table, columns: ["ZONE ID", "ZONE명"], row_click: select }
+      - type: pagination
+    empty_state:
+      primary: "조건을 선택해 검색해주세요"
+      secondary: "검색 결과가 이곳에 표시됩니다."
+    selected_area:
+      title: "현재 선택된 ZONE"
+      empty_text: "현재 선택된 ZONE이 없습니다."
+    buttons:
+      - { label: "닫기", style: secondary }
+      - { label: "선택", style: primary }
+    behavior:
+      autoload_on_open: false
+      autoload_issue: "ZONE 권역정책 관리의 동일 모달은 자동 조회됨 → 동일 컴포넌트인데 동작 다름"
+      filters_already_linked: false
+      filters_issue: "I-4"
+
+  polygon_search:
+    title: "ZONE 할증 폴리곤 검색"
+    used_by: [extra_fee]
+    trigger: "지역 폴리곤 할증 > [+ 폴리곤 추가]"
+    screenshots: ["21_할증_폴리곤검색모달.png"]
+    header_right: { type: external_link, label: "? ZONE 할증 폴리곤 편집기 ↗", target: new_tab }
+    body:
+      - { type: text_input_with_search }
+      - { type: text, value: "검색 결과: 전체" }
+      - { type: card_list, card_lines: [폴리곤명, 설명] }
+      - { type: naver_map, position: right, scale: "500m" }
+      - type: pagination
+    selected_area: { title: "현재 선택된 폴리곤" }
+    buttons:
+      - { label: "취소", style: secondary }
+      - { label: "입력", style: primary }
+    buttons_issue: "다른 모달은 '닫기'/'선택' — 라벨 불일치"
+
+  store_search:
+    title: "상점 추가"
+    used_by: [promotion]
+    trigger: "적용 상점 선택 > [+ 상점 추가]"
+    screenshots: ["25_프로모션_상점검색모달.png"]
+    tabs:
+      - { id: search, label: "검색", default: true }
+      - { id: by_code, label: "코드로 추가", verified: false }
+      - { id: by_excel, label: "엑셀로 추가", verified: false }
+    tab_search_fields:
+      - { name: 상점 운영 상태, type: checkbox_group, options: [비활성화, 운영중, 운영중지], default: "전부 체크" }
+      - { name: 프랜차이즈, type: select, default: 전체 }
+      - { name: 프랜차이즈 유형, type: radio, options: [전체, 직영, 가맹], default: 전체 }
+      - { name: 검색 조건, type: select, default: 상점명 }
+      - { name: 검색어, type: text, placeholder: "검색어" }
+      - { name: 관리구분, type: select, default: 전체 }
+      - { name: 영업구분, type: select, default: 전체 }
+      - { name: 관제 지점, type: select, default: 전체 }
+      - { name: 상점 주소, type: text, placeholder: "상점주소" }
+      - { name: 태그, type: text, placeholder: "최대 8개" }
+      - { name: (검색), type: icon_button, align: right }
+    result:
+      header: "검색 결과"
+      columns: [상점명, 상점 전화번호]
+      columns_issue: "상점코드 없음 (본문 테이블에는 있음) → I-8"
+      empty_state:
+        primary: "조건을 입력하여 검색해주세요."
+        secondary: "검색 결과가 이곳에 표시됩니다."
+    selected_area:
+      title: "현재 선택된 상점"
+      empty_text: "현재 선택된 상점이 없습니다."
+    buttons:
+      - { label: "취소", style: secondary }
+      - { label: "선택", style: primary }
+
+  set_alloc_version_diff:
+    title: "세트분배 버전 비교 — v{A} → v{B}"
+    used_by: [set_allocation]
+    trigger: "변경 이력 탭의 [비교] 버튼"
+    screenshots: ["34_세트분배_버전비교모달.png"]
+    column_headers: ["선택 버전", "현재 적용"]
+    blocks:
+      - { title: "버전 정보", rows: [상태, 적용 시작일, 메모] }
+      - title: "벤더별 세트 분배 (변경된 행만 강조)"
+        columns: [벤더명, 선택 버전 세트, 현재 적용 세트, 변경]
+        change_values_confirmed: [동일]
+        change_values_note: "증감·추가·삭제 표기 미확인 → Q-12"
+    buttons:
+      - { label: "닫기", style: secondary }
+
+# ===============================================================
+# 데이터 모델 (화면에서 역추론)
+# ===============================================================
+data_model:
+  Zone:
+    id: { type: int, source: "URL path param" }
+    uuid: { type: uuid, note: "세트분배 URL·필터 파라미터에 사용" }
+    name: { type: string, required: true }
+    branchId: { type: int, required: true, immutable_after_create: true,
+                constraint: "벤더존 운영방식 지점만, 1:1" }
+    salesArea: { type: string, readonly: true, format: "지점판매권역_{코드}" }
+    supplyArea: { type: string, readonly: true, format: "지점공급권역_{코드}" }
+    pickupPolygons: { type: "PolygonGroup[]" }
+    deliveryPolygons: { type: "PolygonGroup[]" }
+    createdBy: { type: string }
+    # status 필드 없음
+
+  SalesPricing:
+    id: { type: int }
+    code: { type: string, format: "YYYYMM-SP###" }
+    name: { type: string, required: true }
+    description: { type: string, maxlength: 100 }
+    basePrice: { type: int, unit: 원, vat_excluded: true, range: "1 ~ 100000" }
+    distanceFees: { type: "DistanceFee[]" }
+    status: { type: enum, values: [활성, 비활성], editable_in_ui: false }
+    zones: { type: "Zone[]", cardinality: "1:N (ZONE 입장에서는 1:1)" }
+    history: { type: "string[]" }
+
+  CostPricing:
+    id: { type: int }
+    code: { type: string, format: "YYYYMM-CS###" }
+    name: { type: string, required: true }
+    description: { type: string, maxlength: 100 }
+    controlFee: { type: int, unit: 원 }        # 관제비
+    managementFee: { type: int, unit: 원 }     # 관리비
+    pickupFee: { type: int, unit: 원 }         # 픽업비
+    completeFee: { type: int, unit: 원 }       # 완료비
+    riderFee: { type: int, unit: 원, required: true }  # 라이더비 (기본원가)
+    distanceFees: { type: "DistanceFee[]" }
+    status: { type: enum, values: [활성, 비활성] }
+    zones: { type: "Zone[]" }
+
+  DistanceFee:
+    fromKm: { type: number, readonly: true, note: "직전 구간의 toKm 자동 승계" }
+    toKm: { type: number, required: true }
+    feeType: { type: enum, values: [정액제, 거리별] }
+    unitDistance: { type: number, disabled_when: "feeType == 정액제" }
+    fee: { type: int, unit: 원, vat_excluded: true }
+
+  ExtraFee:
+    id: { type: int }
+    code: { type: string, format: "YYYYMM-SC###" }
+    name: { type: string, required: true }
+    startDate: { type: date, required: true }
+    endDate: { type: date, nullable: true, null_means: 무기한 }
+    startTime: { type: time, default: "00:00" }
+    endTime: { type: time, default: "23:59" }
+    reason: { type: string }
+    salesSurcharge: { type: int, unit: 원 }
+    costSurcharge: { type: int, unit: 원 }
+    conditional_required: "salesSurcharge 또는 costSurcharge 중 1개 필수"
+    type: { type: enum, values: [기상 할증, "요일 및 시간대 할증", 지역 폴리곤 할증, 특수 할증] }
+    weekdaySchedules: { type: "WeekdaySchedule[7]", when: "type == 요일 및 시간대 할증" }
+    polygonType: { type: enum, values: [픽업지, 배송지, "픽업/배송지"], when: "type == 지역 폴리곤 할증" }
+    polygons: { type: "Polygon[]", constraint: "1 ~ 5개", when: "type == 지역 폴리곤 할증" }
+    zones: { type: "Zone[]", cardinality: "1:N (ZONE당 N개 허용 — 실데이터로 확인)" }
+    status: { type: enum, values: [예정, 진행중, 종료], derived_from: "startDate/endDate (추정) → Q-10" }
+
+  WeekdaySchedule:
+    weekday: { type: enum, values: [월, 화, 수, 목, 금, 토, 일] }
+    range1: { start: time, end: time }
+    range2: { start: time, end: time }
+    time_max: "29:59"
+    time_max_meaning: "익일 05:59"
+    validation: ["종료 > 시작", "range1과 range2 미중첩"]
+
+  Promotion:
+    id: { type: int }
+    code: { type: string, format: "YYYYMM-PM###" }
+    name: { type: string, required: true }
+    description: { type: string, maxlength: 100 }
+    startDate: { type: date, required: true }
+    endDate: { type: date, nullable: true }
+    startTime: { type: time, default: "00:00" }
+    endTime: { type: time, default: "23:59" }
+    category: { type: enum, values_in_ui: [상점], values_implied: [상점, 기사], issue: "B-5" }
+    salesAmount: { type: int, unit: 원, required: true }
+    zones: { type: "Zone[]" }
+    stores: { type: "Store[]", constraint: "최소 1개" }
+    riders: { type: "Rider[]", note: "목록 컬럼만 존재, 등록 UI 없음 → B-5" }
+
+  Vendor:
+    id: { type: int, alias: 벤더 코드 }
+    businessNumber: { type: string, length: 10, required: true, immutable: true }
+    businessName: { type: string, required: true, immutable: true }
+    representativeName: { type: string, required: true, immutable: true }
+    phone: { type: string, required: true, editable: true }
+    email: { type: string, required: true, editable: true }
+    settlementBank: { type: enum, required: true, immutable_in_ui: true, options_ref: bank_options }
+    settlementAccount: { type: string, required: true, immutable_in_ui: true }
+    settlementHolder: { type: string, required: true, immutable_in_ui: true }
+    contractStartDate: { type: date, required: false }
+    contractEndDate: { type: date, required: false }
+    zone: { type: Zone, cardinality: "N:1", readonly_in_ui: true, link_path_unknown: true }
+    status:
+      type: enum
+      values_in_ui: [대기, 운영중, 운영중지, 해지]
+      values_in_history: [활성]
+      values_in_rider_tab: [ACTIVE]
+      issue: "B-11 표기 3종"
+    owner: { type: Rider, cardinality: "1:1", alias: "벤더장(VO)" }
+    ownerAssignedAt: { type: datetime, readonly: true }
+    riders: { type: "Rider[]", cardinality: "1:N", constraint: "기사는 1개 벤더만" }
+    attachments: { type: "Attachment[4]", items: [사업자등록증, 계약서, 통장 사본, 신분증 사본], required: false }
+    changeHistory: { type: "VendorHistory[]" }
+
+  VendorHistory:
+    occurredAt: { type: datetime, format: "YYYY-MM-DD HH:mm" }
+    modifiedBy: { type: string, format: "{이름} {직급} {팀}" }
+    content: { type: string, note: "자연어. 액션 종류는 sections.vendor_change_history 참조" }
+
+  SetAllocation:
+    zoneUuid: { type: uuid, source: "URL path param" }
+    zoneName: { type: string, readonly: true }
+    allocations: { type: "VendorAllocation[]" }
+    versions: { type: "SetAllocationVersion[]" }
+    note: "ZONE 생성 시 자동 생성 (별도 생성 화면 없음)"
+
+  VendorAllocation:
+    vendorName: { type: string }
+    vendorStatus: { type: enum, values: [운영중, 운영중지] }
+    setCount: { type: int, editable: true, disabled_when: "vendorStatus == 운영중지" }
+
+  SetAllocationVersion:
+    versionNo: { type: string, format: "v{N}" }
+    status: { type: enum, values_confirmed: [현재 적용, 취소됨] }
+    effectiveFrom: { type: datetime }
+    memo: { type: string }
+    createdAt: { type: datetime }
+    createdBy: { type: string }
+
+# ===============================================================
+# 옵션 목록
+# ===============================================================
+options:
+  zone_options:            # 판가/원가/할증/프로모션의 ZONE 드롭다운
+    note: "가나다순 아님. QA → 실운영 순 (아래가 실제 표시 순서)"
+    items:
+      - 전체
+      - "[QA] 테스트 울릉도 존"
+      - "[QA] 테스트용 존0616"
+      - QA_Test8_1
+      - 동대문 1
+      - 성동 1
+      - 성북 1
+
+  branch_options:          # Zone 등록의 지점 ID 드롭다운 (9개)
+    default: 선택없음
+    search_input: true
+    issue: "9개 중 6개가 이미 매핑됨. 필터링 없음 → I-2"
+    items:
+      - { name: "(btf) 동대문 zone 1", already_mapped: true }
+      - { name: "(btf) 성동 zone 1",   already_mapped: true }
+      - { name: "(btf) 성북 zone 1",   already_mapped: true }
+      - { name: "QA_Test12_NVP 테스트", already_mapped: false }
+      - { name: "QA_Test12_벤더Test",   already_mapped: false }
+      - { name: "QA_Test19",           already_mapped: true }
+      - { name: "QA_Test21(벤더 지점)", already_mapped: false }
+      - { name: "QA_Test8(VEN)",       already_mapped: true }
+      - { name: "QA_Test920",          already_mapped: true }
+
+  bank_options:            # 벤더 등록의 정산 은행
+    count: 32
+    default: 은행명
+    sort: "영문 우선 + 한글 가나다순 (아래가 실제 표시 순서)"
+    issue: "국내 벤더 대상인데 외국계가 상단 → I-7"
+    items:
+      - BOA
+      - HSBC
+      - JP모간
+      - SC은행
+      - 경남은행
+      - 광주은행
+      - 국민은행
+      - 기업은행
+      - 농협은행
+      - 대구은행
+      - 도이치
+      - 부산은행
+      - 비엔피파리바은행
+      - 산림조합
+      - 산업은행
+      - 새마을금고
+      - 수협
+      - 신한은행
+      - 신협
+      - 우리은행
+      - 우체국
+      - 저축은행
+      - 전북은행
+      - 제주은행
+      - 중국건설은행
+      - 중국공상은행
+      - 지역농축협
+      - 카카오뱅크
+      - 케이뱅크
+      - 토스뱅크
+      - 하나은행
+      - 한국씨티은행
+
+# ===============================================================
+# 카디널리티 (화면 문구·실데이터로 확인)
+# ===============================================================
+cardinality:
+  - { from: 지점, to: Zone, rel: "1:1", constraint: "매핑 후 교체 불가", source: "ZONE 등록 안내문구" }
+  - { from: Zone, to: SalesPricing, rel: "1:1", source: "ZONE별로 1개의 판가 요금제만 적용 가능" }
+  - { from: Zone, to: CostPricing,  rel: "1:1", source: "ZONE별로 1개의 원가 요금제만 적용 가능" }
+  - { from: SalesPricing, to: Zone, rel: "1:N", source: "요금제는 복수의 ZONE에 적용할 수 있습니다" }
+  - { from: CostPricing,  to: Zone, rel: "1:N", source: 동일 }
+  - { from: Zone, to: ExtraFee,  rel: "1:N", source: "실데이터 (동대문 1에 할증 5건)" }
+  - { from: Zone, to: Promotion, rel: "1:N" }
+  - { from: Zone, to: Vendor, rel: "1:N", source: "실데이터 (동대문 1에 벤더 4개)" }
+  - { from: Vendor, to: Zone, rel: "N:1", source: "벤더 상세의 소속 Zone은 단일값" }
+  - { from: Vendor, to: Rider, rel: "1:1", role: "벤더장(VO)", source: "단일 드롭다운" }
+  - { from: Vendor, to: Rider, rel: "1:N", role: 소속기사, source: "실데이터 (백호 11명)" }
+  - { from: Rider, to: Vendor, rel: "1:1", constraint: "타 벤더에 이미 소속된 기사는 등록 제한" }
+  - { from: ExtraFee, to: Polygon, rel: "1:1~5", source: "최소 1개 이상 최대 5개 이하" }
+
+# ===============================================================
+# 실제 운영 데이터 (2026-07-29 기준, 목업 샘플용)
+# ===============================================================
+sample_data:
+
+  zones:
+    total: 6
+    items:
+      - { id: 20, name: "성북 1",              branch: "(btf) 성북 zone 1", createdBy: "안재형 PO팀",
+          uuid: "4b755c79-d35c-43be-a1ab-f13f633fa281", kind: 운영 }
+      - { id: 19, name: "성동 1",              branch: "(btf) 성동 zone 1", createdBy: "안재형 PO팀",
+          uuid: "c0324d05-fa99-4577-b649-b7766ae4568a", kind: 운영 }
+      - { id: 18, name: "[QA] 테스트용 존0616", branch: "QA_Test19",        createdBy: "노웅언 QA팀", kind: QA }
+      - { id: 14, name: "QA_Test8_1",          branch: "QA_Test8(VEN)",    createdBy: "강민성.와이즈스톤", kind: QA }
+      - { id: 5,  name: "[QA] 테스트 울릉도 존", branch: "QA_Test920",       createdBy: "권구희 팀장 QA팀", kind: QA }
+      - { id: 4,  name: "동대문 1",             branch: "(btf) 동대문 zone 1", createdBy: "안재형 PO팀",
+          uuid: "b9e222db-feca-4d29-b501-62801d6c7e57", kind: 운영 }
+    note: "ID 비연속 → 삭제된 ZONE 존재"
+
+  zone_setup_completeness:      # 운영 ZONE 3건
+    성북 1:
+      권역정책: "성북 1 zone"
+      판가_요금제: null          # → Q-1
+      원가_요금제: null
+      할증: 미확인
+      연결_벤더: [백호]
+      수행_세트: 1
+      라이브: 2026-07-22
+    성동 1:
+      권역정책: "성동 1 zone"
+      판가_요금제: null          # → Q-1
+      원가_요금제: 미확인
+      할증: 미확인
+      연결_벤더: [알파고, 엠솔루션]
+      수행_세트: 1
+      라이브: 2026-07-21
+      note: "벤더 2개인데 세트 1개 → 1개 벤더는 세트 0"
+    동대문 1:
+      권역정책: "(BTF) 동대문 1 zone"
+      판가_요금제: { name: 동대문1zone, status: 활성 }
+      원가_요금제: { name: 동대문1zone, status: 활성 }
+      할증: { name: "동대문 1_주말전체", status: 진행중 }
+      연결_벤더: [다뺀다, 쿠키퍼, 타다, "드림푸드 (Dream Food)"]
+      수행_세트: 4
+
+  # 성북 1 Zone 상세 (지리 정보 샘플)
+  zone_20_detail:
+    name: "성북 1"
+    branch: "(btf) 성북 zone 1"
+    salesArea: "지점판매권역_21329-33774"
+    supplyArea: "지점공급권역_09940-14443"
+    pickup:
+      polygon_groups: ["성북 1 zone", YOGIYO_OD, YOGIYO_DIRECT]
+      area_type: 법정동
+      area_count: 36
+      sample_areas: [길음동, 돈암동]
+    delivery:
+      polygon_groups: ["성북 1 zone", YOGIYO_OD, YOGIYO_DIRECT]
+      area_type: 법정동
+      area_count: 246
+      sample_areas: [가회동, 견지동, 경운동]
+      note: "픽업지의 약 7배 — 성북 픽업 → 서울 전역 배송 구조"
+
+  sales_pricings:
+    total: 5
+    items:
+      - { code: 202606-SP002, name: "QA_TEST8_7/1_판가", base: 1000, status: 비활성, zones: 0 }
+      - { code: 202606-SP001, name: QA_TEST8_판가,       base: 3500, status: 비활성, zones: 0 }
+      - { code: 202605-SP001, name: 동대문1zone,          base: 4300, status: 활성,
+          description: "동대문 존 적용을 위한 판가 요금제", zones_displayed: 0, zones_actual: ["동대문 1"] }
+      - { code: 202603-SP002, name: "[QA] 판가 테스트 요금제1", base: 4000, status: 활성, zones: 0 }
+      - { code: 202603-SP001, name: "QA_판가TEST(GY)",    base: 3500, status: 활성, zones: 0 }
+    issue: "대상 ZONE 전부 0개 표시 → B-1"
+
+  cost_pricings:
+    total: 5
+    items:
+      - { code: 202606-CS002, name: "QA_TEST8_7/1_판가", rider: 1000, control: 0, mgmt: 0, pickup: 0, complete: 0, status: 비활성 }
+      - { code: 202606-CS001, name: QA_TEST8_원가,       rider: 3500, control: 0, mgmt: 0, pickup: 0, complete: 0, status: 비활성 }
+      - { code: 202605-CS001, name: 동대문1zone,          rider: 4200, control: 0, mgmt: 0, pickup: 0, complete: 0, status: 활성,
+          description: "동대문 존 원가 요금제 적용" }
+      - { code: 202603-CS002, name: "QA_원가TEST(GY)",    rider: 3500, control: 100, mgmt: 0, pickup: 0, complete: 100, status: 활성 }
+      - { code: 202603-CS001, name: "[QA] Zone 요금제 test1", rider: 3500, control: 0, mgmt: 0, pickup: 0, complete: 0, status: 활성 }
+    note: "202606-CS002는 원가인데 이름에 '판가' 포함 (QA 네이밍 실수)"
+
+  # 동대문 1 요금 구조 (유일한 완성 사례)
+  dongdaemun_fee_structure:
+    sales:
+      base: 4300
+      distance_fees:
+        - { from: 0,   to: 1,  type: 정액제, unit: 0,   fee: 0 }
+        - { from: 1,   to: 10, type: 거리별, unit: 0.1, fee: 100 }
+      max_distance_fee: 9000          # (10-1)/0.1*100
+      vat_included_max: 14630         # (4300+9000)*1.1
+    cost:
+      rider: 4200
+      control: 0
+      mgmt: 0
+      pickup: 0
+      complete: 0
+      distance_fees:
+        - { from: 0,   to: 1.5, type: 정액제, unit: 0,   fee: 0 }
+        - { from: 1.5, to: 10,  type: 거리별, unit: 0.1, fee: 230 }
+      max_distance_fee: 19550         # (10-1.5)/0.1*230
+      vat_included_max: 26125         # (4200+19550)*1.1
+    observations:
+      - "거리별 단가 원가 230원 vs 판가 100원 = 2.3배 → Q-2"
+      - "구간 경계 판가 1㎞ / 원가 1.5㎞로 불일치"
+
+  extra_fees:
+    total: 7
+    items:
+      - { code: 202607-SC001, name: "QA_TEST8_7/2", type: 특수 할증, sales: 100, cost: 100, start: 2026-07-01, end: null }
+      - { code: 202606-SC001, name: "동대문 1_주말전체", type: "요일 및 시간대 할증", sales: 0, cost: 200, start: 2026-06-10, end: null, kind: 운영 }
+      - { code: 202605-SC005, name: "○○○", type: 기상 할증, sales: 500, cost: 600, start: 2026-05-05, end: 2026-06-22 }
+      - { code: 202605-SC004, name: "동대문 1_PD", type: "요일 및 시간대 할증", sales: 0, cost: 200, start: 2026-05-15, end: 2026-06-09 }
+      - { code: 202605-SC003, name: "동대문 1_D_주말", type: "요일 및 시간대 할증", sales: 0, cost: 600, start: 2026-05-15, end: 2026-06-09 }
+      - { code: 202605-SC002, name: "동대문 1_D_주중", type: "요일 및 시간대 할증", sales: 0, cost: 400, start: 2026-05-15, end: 2026-06-09 }
+      - { code: 202605-SC001, name: "동대문 1_M+L+PL", type: "요일 및 시간대 할증", sales: 0, cost: 300, start: 2026-05-15, end: 2026-06-09 }
+    observations:
+      - "지역 폴리곤 할증 등록 0건 (폴리곤 마스터도 QA 1건뿐) → 실질 미사용"
+      - "동대문 할증 4건이 2026-06-09 종료, 6/10부터 '동대문 1_주말전체' 하나로 통합"
+      - "동대문 할증 전부 판가 0원 / 원가만 부여 = 상점 미청구, 기사만 지급"
+
+  # 동대문 1_주말전체 (id=25) 요일별 시간대 — 검증 오류 상태
+  extra_fee_25_weekday:
+    name: "동대문 1_주말전체"
+    start_date: 2026-06-10
+    end_date: null
+    cost_surcharge: 200
+    sales_surcharge: 0
+    history: "[2026-06-15 17:33:29] 할증 생성 (변경유저:김수진  PO팀)"
+    history_note: "시작일 6/10 < 생성 6/15 → 소급 생성"
+    schedules:
+      월: { range1: "00:00 ~ 03:00", range2: null, validation: "✗ 첫 번째 종료 시간이 잘못됐습니다" }
+      화: { range1: null, range2: null, validation: "○ 올바른 시간대 설정입니다" }
+      수: { range1: null, range2: null, validation: "○ 올바른 시간대 설정입니다" }
+      목: { range1: null, range2: null, validation: "○ 올바른 시간대 설정입니다" }
+      금: { range1: null, range2: null, validation: "○ 올바른 시간대 설정입니다" }
+      토: { range1: "06:00 ~ 23:59", range2: null, validation: "○ 올바른 시간대 설정입니다" }
+      일: { range1: "06:00 ~ 23:59", range2: "00:00 ~ 03:00", validation: "✗ 두 시간대가 겹칩니다" }
+    intended: "주말(토·일) 06:00 ~ 익일 03:00"
+    correct_input: "24:00 ~ 27:00 (익일 표기)"
+    issue: "B-2, Q-11"
+
+  promotions:
+    total: 5
+    all_qa: true
+    items:
+      - { code: 202606-PM003, name: "QA_TEST8_7/1_프로모션", category: 상점, start: 2026-06-01, stores: 1, riders: 0 }
+      - { code: 202606-PM002, name: QATEST_GY1,             category: 상점, start: 2026-06-16, stores: 1, riders: 0 }
+      - { code: 202606-PM001, name: QA_TEST8_프로모션,       category: 상점, start: 2026-06-01, stores: 1, riders: 0 }
+      - { code: 202603-PM002, name: QA_프로모션,             category: 상점, start: 2026-03-24, stores: 1, riders: 0,
+          sales_amount: 500, store: { code: 222714, name: QA_Test78, phone: "-" } }
+      - { code: 202603-PM001, name: "[qa] 테스트 프로모션1",  category: 상점, start: 2026-03-03, stores: 1, riders: 0 }
+    note: "실운영 0건. 모두 적용시간 00:00~23:59, 종료일 무기한"
+
+  vendors:
+    total: 26
+    operational_count: 8
+    qa_or_terminated_count: 18
+    operational:
+      - { code: 28, name: 알파고,                  status: 운영중,   zone: "성동 1", owner: 윤정수, registered: 2026-07-24 }
+      - { code: 25, name: 엠솔루션,                status: 운영중,   zone: "성동 1", owner: 장석2,  registered: 2026-07-21 }
+      - { code: 24, name: 백호,                    status: 운영중,   zone: "성북 1", owner: 김성일, registered: 2026-07-21 }
+      - { code: 21, name: "드림푸드 (Dream Food)", status: 운영중,   zone: "동대문 1", owner: 김문호, registered: 2026-07-13 }
+      - { code: 18, name: 타다,                    status: 운영중,   zone: "동대문 1", owner: 박성진, registered: 2026-06-12 }
+      - { code: 15, name: 쿠키퍼,                  status: 운영중지, zone: "동대문 1", owner: null,   registered: 2026-05-19 }
+      - { code: 14, name: 서울라이더스,            status: 운영중,   zone: null,      owner: 채종민, registered: 2026-05-19,
+          issue: "Q-5 운영중인데 ZONE 없음" }
+      - { code: 13, name: 다뺀다,                  status: 운영중,   zone: "동대문 1", owner: 김진용, registered: 2026-05-19 }
+    duplicate_warning:
+      issue: "I-4 드롭다운에서 육안 구분 불가. 사업자정보 수정 불가로 인한 재등록 추정 → Q-6"
+      items:
+        - { code: 20, name: "드림푸드(Dream Food)",  status: 해지,   note: "공백 없음" }
+        - { code: 21, name: "드림푸드 (Dream Food)", status: 운영중, note: "공백 있음" }
+
+  # 백호 (code=24) 벤더 상세 샘플
+  vendor_24_detail:
+    business:
+      businessNumber: "4088618580"
+      businessName: 백호
+      representativeName: 김성일
+      phone: "01035084669"
+      email: "rlatjddlf147@naver.com"
+    settlement:
+      bank: 국민은행
+      account: "01670104225267"
+      holder: "주식회사 백호"
+    contract:
+      startDate: 2026-07-22
+      endDate: 2026-08-21
+      issue: "I-3 조사일(7/29) 기준 23일 뒤 만료. 알림·컬럼 없음"
+    zone: { name: "성북 1", status: 운영중 }
+    owner: { name: 김성일, phone: "01035084669", assignedAt: "2026-07-21 15:22" }
+    attachments: { 사업자등록증: 있음, 계약서: 있음, 통장 사본: 있음, 신분증 사본: 있음 }
+    attachment_filename_sample: ["VdC9bu5Pyyg.jpg", "qnQis03YEjA.pdf"]
+    registered: { at: "2026-07-21 15:22", by: "장석 차장 라이더팀" }
+    riders:
+      total: 11
+      items:
+        - { no: 1,  name: 김성일, registered: 2026-07-21, status: ACTIVE, note: 벤더장 }
+        - { no: 2,  name: 최정태, registered: 2026-07-21, status: ACTIVE }
+        - { no: 3,  name: 윤예원, registered: 2026-07-21, status: ACTIVE }
+        - { no: 4,  name: 이정규, registered: 2026-07-21, status: ACTIVE }
+        - { no: 5,  name: 안승일, registered: 2026-07-21, status: ACTIVE }
+        - { no: 6,  name: 박호,   registered: 2026-07-21, status: ACTIVE }
+        - { no: 7,  name: 송영호, registered: 2026-07-21, status: ACTIVE }
+        - { no: 8,  name: 백민화, registered: 2026-07-21, status: ACTIVE }
+        - { no: 9,  name: 손상범, registered: 2026-07-22, status: ACTIVE }
+        - { no: 10, name: 장동훈, registered: 2026-07-23, status: ACTIVE }
+        - { no: 11, name: 방병건, registered: 2026-07-24, status: ACTIVE }
+    change_history:
+      total: 14
+      key_events:
+        - { at: "2026-07-21 15:22", by: "장석 차장 라이더팀", content: "벤더 신규 등록 — 백호 (사업자번호: 4088618580)" }
+        - { at: "2026-07-21 15:22", by: "장석 차장 라이더팀", content: "벤더장 지정 — 김성일" }
+        - { at: "2026-07-21 15:22", by: "장석 차장 라이더팀", content: "상태 변경 — 대기 → 활성 · 사유: 성북 신규 라이브 (7/22)" }
+        - { at: "2026-07-21 18:28", by: "김가연 라이더팀",     content: "존 연결 — 4b755c79-d35c-43be-a1ab-f13f633fa281" }
+        - { at: "2026-07-24 15:54", by: "장석 차장 라이더팀", content: "기사 소속 등록 — 방병건" }
+
+  set_allocations:
+    total: 6
+    items:
+      - { zone: "[QA] 테스트 울릉도 존", vendors: 1, sets: 1 }
+      - { zone: "[QA] 테스트용 존0616",  vendors: 1, sets: 2 }
+      - { zone: QA_Test8_1,             vendors: 1, sets: 1 }
+      - { zone: "동대문 1",              vendors: 4, sets: 4 }
+      - { zone: "성동 1",                vendors: 2, sets: 1, note: "1개 벤더는 세트 0" }
+      - { zone: "성북 1",                vendors: 1, sets: 1 }
+    note: "행 수 = ZONE 수 (자동 생성)"
+
+  set_allocation_seongbuk:
+    zone: "성북 1"
+    zone_uuid: "4b755c79-d35c-43be-a1ab-f13f633fa281"
+    allocations:
+      - { vendor: 백호, status: 운영중, sets: 1 }
+    versions:
+      - { versionNo: v2, status: 취소됨,   effectiveFrom: "2026-07-22 06:00:00", memo: "신규 라이브",
+          createdAt: "2026-07-21 15:22:54", createdBy: "장석 차장 라이더팀" }
+      - { versionNo: v1, status: 현재 적용, effectiveFrom: "2026-07-21 18:28:43", memo: null,
+          createdAt: "2026-07-21 18:28:43", createdBy: "김가연 라이더팀" }
+    issue: "v2(큰 번호) 취소, v1 현재 적용 → Q-12. v1 생성 시각이 벤더 '존 연결' 이력과 일치 → Q-7 단서"
+
+  set_allocation_dongdaemun:
+    zone: "동대문 1"
+    zone_uuid: "b9e222db-feca-4d29-b501-62801d6c7e57"
+    allocations:
+      - { vendor: 다뺀다, status: 운영중, sets: 2 }
+      - { vendor: 쿠키퍼, status: 운영중지, sets: 0, input_disabled: true }
+      - { vendor: 타다,   status: 운영중, sets: 1 }
+      - { vendor: "드림푸드 (Dream Food)", status: 운영중, sets: 1 }
+    add_dropdown_option_count: 22
+    add_dropdown_note: "전체 26 − 배정 4 = 22. 해지 16건 포함, 타 ZONE 소속 알파고·엠솔루션 포함 → I-4"
+
+# ===============================================================
+# 이슈 인덱스 (상세는 03번 문서)
+# ===============================================================
+issues:
+  bugs:
+    - { id: B-1,  priority: 높음, title: "판가·원가의 적용 ZONE이 항상 0개로 표시", type: 표시오류, screens: [sales_pricing, cost_pricing] }
+    - { id: B-2,  priority: 높음, title: "운영 중인 할증이 검증 규칙 위반 상태", type: 데이터정합성, screens: [extra_fee] }
+    - { id: B-3,  priority: 중간, title: "안내문구 복사·붙여넣기 오류 (할증·프로모션)", type: 문구, screens: [extra_fee, promotion] }
+    - { id: B-4,  priority: 낮음, title: "추가 화면에 삭제 버튼 존재", type: UI, screens: [extra_fee, promotion] }
+    - { id: B-5,  priority: 중간, title: "기사 프로모션 컬럼만 있고 등록 수단 없음", type: 기능누락, screens: [promotion] }
+    - { id: B-6,  priority: 낮음, title: "Zone 상세 지역 목록 테이블 헤더 오류", type: 문구, screens: [zone_detail] }
+    - { id: B-7,  priority: 낮음, title: "Zone 등록 화면 H1이 'Zone 상세'", type: 문구, screens: [zone_create] }
+    - { id: B-8,  priority: 낮음, title: "/sales/zones/add 접근 시 시스템 에러", type: 에러처리, screens: [zone_create] }
+    - { id: B-9,  priority: 중간, title: "개발 enum(ACTIVE/INACTIVE) 화면 노출", type: 문구, screens: [vendor_detail] }
+    - { id: B-10, priority: 중간, title: "벤더 이력의 '존 연결'에 UUID 노출", type: 표시오류, screens: [vendor_detail] }
+    - { id: B-11, priority: 낮음, title: "벤더 상태 표기 3종 혼재 (운영중/활성/ACTIVE)", type: 용어, screens: [vendor_detail, vendor_list] }
+
+  improvements:
+    - { id: I-1, priority: 높음, title: "ZONE 오픈에 사이드바 3곳 8단계 왕복 필요", type: UX }
+    - { id: I-2, priority: 중간, title: "지점 드롭다운이 이미 매핑된 지점을 안 걸러냄", type: 데이터정합성 }
+    - { id: I-3, priority: 높음, title: "벤더 계약 만료 임박을 알 방법 없음", type: 기능누락 }
+    - { id: I-4, priority: 높음, title: "ZONE·벤더 선택 목록이 부적격 대상을 안 걸러냄", type: 데이터정합성 }
+    - { id: I-5, priority: 낮음, title: "벤더 첨부파일이 난수 파일명", type: UX }
+    - { id: I-6, priority: 낮음, title: "Zone 상세 지도가 sticky 아님", type: UX }
+    - { id: I-7, priority: 낮음, title: "정산 은행 드롭다운 상단이 외국계 은행", type: UX }
+    - { id: I-8, priority: 낮음, title: "상점 검색 모달 결과에 상점코드 없음", type: UX }
+
+  questions:
+    - { id: Q-1,  priority: 최우선, title: "성북·성동에 G4 판가·원가 요금제가 없음" }
+    - { id: Q-2,  priority: 높음,   title: "원가 거리별 단가가 판가의 2.3배인 것은 의도인가" }
+    - { id: Q-3,  priority: 중간,   title: "원가 요약 합계식에서 관제비·관리비 제외가 의도인가" }
+    - { id: Q-4,  priority: 중간,   title: "기상 할증의 기상 조건은 어디서 설정하나" }
+    - { id: Q-5,  priority: 중간,   title: "서울라이더스가 운영중인데 ZONE 없음" }
+    - { id: Q-6,  priority: 중간,   title: "벤더 정산 계좌 변경 방법" }
+    - { id: Q-7,  priority: 최우선, title: "벤더 ↔ ZONE 연결 경로가 화면에 없음" }
+    - { id: Q-8,  priority: 높음,   title: "벤더 상태 전이 규칙" }
+    - { id: Q-9,  priority: 중간,   title: "벤더 계약 만료 시 자동 처리 여부" }
+    - { id: Q-10, priority: 낮음,   title: "활성화 상태(예정/진행중/종료) 결정 방식" }
+    - { id: Q-11, priority: 높음,   title: "할증 시간대 24:00~29:59의 백엔드 해석" }
+    - { id: Q-12, priority: 중간,   title: "세트분배 예약 저장·버전 관리 동작" }
+
+# ===============================================================
+# 스크린샷
+# ===============================================================
+screenshots:
+  path: "resources/screenshots/260729_g4존세트_관리/"
+  count: 35
+  files:
+    - { file: "01_zone관리_목록.png",                    screen: zone_list }
+    - { file: "02_zone관리_상세_상단.png",                screen: zone_detail, part: 상단 }
+    - { file: "03_zone관리_상세_배송지영역.png",           screen: zone_detail, part: 배송지 }
+    - { file: "04_zone관리_잘못된경로_시스템에러.png",      screen: zone_create, issue: B-8 }
+    - { file: "05_zone관리_등록.png",                     screen: zone_create, issue: B-7 }
+    - { file: "06_zone관리_등록_지점드롭다운.png",          screen: zone_create, detail: branch_options }
+    - { file: "07_판가_목록.png",                         screen: sales_pricing_list }
+    - { file: "08_판가_목록_zone드롭다운.png",             screen: sales_pricing_list, detail: zone_options }
+    - { file: "09_판가_조회.png",                         screen: sales_pricing_detail, mode: 조회 }
+    - { file: "10_판가_zone검색모달_초기.png",             modal: zone_search, state: 초기 }
+    - { file: "11_판가_zone검색모달_결과6건.png",          modal: zone_search, state: 결과 }
+    - { file: "12_판가_추가.png",                         screen: sales_pricing_detail, mode: 추가 }
+    - { file: "13_원가_목록.png",                         screen: cost_pricing_list }
+    - { file: "14_원가_조회.png",                         screen: cost_pricing_detail, mode: 조회 }
+    - { file: "15_할증_목록.png",                         screen: extra_fee_list }
+    - { file: "16_할증_목록_종류드롭다운.png",             screen: extra_fee_list, detail: 할증 종류 }
+    - { file: "17_할증_조회_요일시간대_상단.png",           screen: extra_fee_detail, type: 요일및시간대, part: 상단 }
+    - { file: "18_할증_조회_요일시간대_하단.png",           screen: extra_fee_detail, type: 요일및시간대, part: 하단, issue: B-2 }
+    - { file: "19_할증_추가_기상할증.png",                 screen: extra_fee_detail, mode: 추가, type: 기상 }
+    - { file: "20_할증_추가_지역폴리곤.png",               screen: extra_fee_detail, mode: 추가, type: 지역폴리곤 }
+    - { file: "21_할증_폴리곤검색모달.png",                modal: polygon_search }
+    - { file: "22_프로모션_목록.png",                     screen: promotion_list }
+    - { file: "23_프로모션_조회_상단.png",                 screen: promotion_detail, part: 상단 }
+    - { file: "24_프로모션_조회_하단.png",                 screen: promotion_detail, part: 하단 }
+    - { file: "25_프로모션_상점검색모달.png",              modal: store_search }
+    - { file: "26_벤더_목록.png",                         screen: vendor_list }
+    - { file: "27_벤더_조회_기본정보.png",                 screen: vendor_detail, tab: basic }
+    - { file: "28_벤더_조회_소속기사.png",                 screen: vendor_detail, tab: riders }
+    - { file: "29_벤더_조회_변경이력.png",                 screen: vendor_detail, tab: history, issue: B-10 }
+    - { file: "30_벤더_등록.png",                         screen: vendor_create }
+    - { file: "31_세트분배_목록.png",                     screen: set_allocation_list }
+    - { file: "32_세트분배_상세_성북1.png",                screen: set_allocation_detail, tab: basic, zone: "성북 1" }
+    - { file: "33_세트분배_변경이력.png",                  screen: set_allocation_detail, tab: history }
+    - { file: "34_세트분배_버전비교모달.png",              modal: set_alloc_version_diff }
+    - { file: "35_세트분배_상세_동대문1.png",              screen: set_allocation_detail, tab: basic, zone: "동대문 1" }
