@@ -12,6 +12,7 @@ knowledge/
 ├── 2_planning/           # 기획 & 설계 (핵심 산출물)
 ├── 3_strategy/           # 전략 & 목표 (상위 레벨)
 ├── 4_communication/      # 커뮤니케이션 자료 (선택: 필요 시 생성)
+├── handoff/              # 세션/PC 인계 (Claude·다른 컴퓨터)
 ├── work_log/             # 업무 로그 (진행 기록/메모)
 ├── references/           # 참조자료 (Input)
 └── domain/               # 도메인 지식 (부릉 특화)
@@ -76,6 +77,16 @@ PO의 핵심 산출물. 기획서와 실험 설계 문서.
 
 ---
 
+## 🔄 handoff/ - 세션·PC 인계
+
+다른 세션/컴퓨터/Claude Desktop에서 컨텍스트를 복원하는 공간.
+
+- 인덱스: `handoff/README.md`
+- 작업 스레드 요약 + MCP/환경 마이그레이션 문서 포함
+- Claude 진입점은 repo 루트 `CLAUDE.md`
+
+---
+
 ## 📚 references/ - 참조자료
 
 업무에 참고하는 자료. 직접 작성한 것이 아닌 Input.
@@ -126,4 +137,4 @@ YYYYMMDD_제목.md
 
 ---
 
-*마지막 업데이트: 2026-01-21*
+*마지막 업데이트: 2026-08-06 (handoff/ 추가)*

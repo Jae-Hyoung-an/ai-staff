@@ -1,0 +1,37 @@
+{
+  "_comment": "Claude Desktop용 MCP 템플릿. preferences는 기존 설정을 유지하고 mcpServers만 병합하세요. YOUR_* 자리를 로컬 시크릿으로 채우고, 이 파일을 그대로 커밋하지 마세요.",
+  "mcpServers": {
+    "metabase": {
+      "command": "npx",
+      "args": ["-y", "@cognitionai/metabase-mcp-server"],
+      "env": {
+        "METABASE_URL": "https://metabase-prod.ds2.meshdev.io/",
+        "METABASE_API_KEY": "YOUR_METABASE_API_KEY"
+      }
+    },
+    "Notion": {
+      "url": "https://mcp.notion.com/mcp",
+      "headers": {}
+    },
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "YOUR_GITHUB_PAT"
+      }
+    },
+    "Atlassian-MCP-Server": {
+      "type": "http",
+      "url": "https://mcp.atlassian.com/v1/mcp",
+      "headers": {}
+    },
+    "Slack": {
+      "type": "http",
+      "url": "https://server.smithery.ai/slack",
+      "headers": {}
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    }
+  }
+}

@@ -439,6 +439,7 @@ AI는 대상에 따라 **톤과 포맷을 자동 조절**합니다:
 | knowledge/ 문서 작업 | `rules/writing.md` |
 | tools/ 스크립트 작업 | `rules/tools.md` |
 | 데이터 조회 (상점/지점/오더, Metabase) | `rules/data_query.md` |
+| MCP 설정·이전 (Cursor/Claude) | `rules/mcp.md` |
 | projects/ 산출물 작업 | `rules/projects.md` |
 | 특정 프로젝트/영역 | `rules/{영역}.md` |
 

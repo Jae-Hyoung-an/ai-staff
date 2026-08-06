@@ -25,6 +25,17 @@
 
 ---
 
+## 묶음 인덱스 (2026-08 기준)
+
+| 묶음 | 안내 파일 | 비고 |
+|------|-----------|------|
+| partner4563 픽업·도착 | `202607_partner4563_픽업도착품질/README.md` | CSV는 아직 `_scratch` 루트에 있음 |
+| 성동 GeoJSON | `seongdong.geojson`, `seongdong_geojson_map.html` | adhoc 지도 |
+| p1054A 할증 | `260803_p1054A_할증149835_조사.md` | 핸드오프 스레드 C |
+
+---
+
 ## So What / Next Step
 
 - `_scratch`를 임시 작업 버퍼로 유지하면 파일 탐색 속도가 빨라지고, 다른 PC에서도 맥락 파악이 쉬워집니다.
+- Claude PC 이전 시: `knowledge/handoff/` + 이 인덱스로 adhoc 산출물 위치를 먼저 확인하세요.
