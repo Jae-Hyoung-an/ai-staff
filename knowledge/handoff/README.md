@@ -14,7 +14,9 @@
 | 3 | [Agent 대화 인덱스](./agent_conversations_index.md) | Cursor Agent 제목·ID 매핑 (**전문 아님**) |
 | 참고 | [20260730 이전 핸드오프](./20260730_작업_컨텍스트_핸드오프.md) | 과거 스냅샷 (필요 시만) |
 
-> **Agent 채팅 전문은 인계 파일에 포함되지 않습니다.** 로컬 Cursor에만 있고, repo에는 요약·인덱스만 둡니다.
+> **Agent 채팅 전문은 git에 넣지 않습니다.**  
+> repo 밖 백업: `C:\Users\jaehyoung.an\Claude\cursor-agent-transcripts-backup\20260812_ax-leadership-sample\`  
+> repo에는 요약·인덱스만 둡니다. 폴더 이관 ≠ Claude 자동 복원.
 
 ---
 

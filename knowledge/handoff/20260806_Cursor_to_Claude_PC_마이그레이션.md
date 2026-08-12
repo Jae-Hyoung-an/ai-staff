@@ -167,11 +167,12 @@ MCP는 Metabase/Notion을 우선 쓰고, Cursor Browser/Canvas는 없다고 가�
 
 | 포함? | 내용 |
 |-------|------|
-| ❌ | Cursor Agent 채팅 전문 (`.jsonl`) — 로컬 전용, git 비포함 |
+| ❌ git | Cursor Agent 채팅 전문 (`.jsonl`) |
+| ✅ repo 밖 백업 | `C:\Users\jaehyoung.an\Claude\cursor-agent-transcripts-backup\20260812_ax-leadership-sample\` (2026-08-12, 104파일) |
 | ✅ | 스레드별 목표·확정·미결·파일 경로 (`20260803_…핸드오프`) |
 | ✅ | Agent 제목·ID·스레드 매핑 (`agent_conversations_index.md`) |
 
-Claude는 Cursor 채팅을 이어 열 수 없으므로, **핸드오프 요약이 인계 SoT**입니다.
+**폴더만 이관해도 Claude가 대화를 “전부 파악”하진 않습니다.** 원문 보관용이며, 업무 연속성 SoT는 핸드오프 요약입니다.
 
 ---
 

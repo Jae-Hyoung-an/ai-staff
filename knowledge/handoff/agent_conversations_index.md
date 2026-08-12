@@ -1,7 +1,8 @@
 # Cursor Agent 대화 인덱스 (요약만)
 
-> 작성일: 2026-08-06  
-> **전체 채팅 로그는 이 repo에 들어가지 않습니다.** Cursor Agent 대화는 로컬에만 있습니다.
+> 작성일: 2026-08-06 · 갱신: 2026-08-12  
+> **전체 채팅 로그는 이 repo에 들어가지 않습니다.**  
+> 원문 백업(폴더 이관)은 repo 밖 `Claude\cursor-agent-transcripts-backup\`에 있습니다.
 
 ---
 
@@ -9,21 +10,45 @@
 
 | 질문 | 답 |
 |------|----|
-| Agent별 대화 전문이 인계파일에 들어가나? | **아니오** |
-| 그럼 뭐가 넘어가나? | 핸드오프의 **스레드 요약** + 아래 **대화 인덱스**(제목·ID·연결 스레드) |
-| 전문은 어디? | 이 PC의 Cursor 로컬: `%USERPROFILE%\.cursor\projects\...\agent-transcripts\` |
+| Agent별 대화 전문이 인계파일에 들어가나? | **아니오** (git 비포함) |
+| 폴더 이관하면 전부 파악 가능한가? | **원문 보관은 가능, Claude가 자동 파악은 불가** (아래 §전문 이관) |
+| 그럼 뭐가 넘어가나? | 핸드오프 **스레드 요약** + 이 **인덱스** + (선택) repo 밖 원문 백업 |
+| 전문 백업 위치 (2026-08-12) | `C:\Users\jaehyoung.an\Claude\cursor-agent-transcripts-backup\20260812_ax-leadership-sample\` |
 
-Claude PC에서는 Cursor 채팅을 이어서 열 수 없습니다.  
-**결정·미결·파일 경로**는 `20260803_작업_컨텍스트_핸드오프.md`를 SoT로 보고, 필요 시 이 인덱스에서 “어떤 Agent에서 뭘 했는지”만 추적하세요.
+Claude Desktop은 Cursor 채팅을 이어서 열 수 없습니다.  
+**결정·미결·파일 경로**는 `20260803_작업_컨텍스트_핸드오프.md`를 SoT로 보세요.
+
+---
+
+## 전문 이관 — 가능한 것 / 불가능한 것
+
+| 가능 | 불가능 |
+|------|--------|
+| `.jsonl` 104개(~8.7MB) 파일 복사·보관 | Claude가 채팅 UI로 이어서 열기 |
+| ID·날짜로 특정 대화 파일 찾기 | 폴더만 두고 “전부 파악해줘”에 자동 복원 |
+| 필요 시 사람이 열어 복기 / AI에 일부 붙여넣기 | Cursor `SearchConversations` 인덱스까지 이식 |
+
+원문 형식은 `role` + `message`(텍스트·tool_use 혼합)라 **읽기 부담이 큽니다.**  
+업무 연속성은 핸드오프 요약이 맞고, 원문은 “증거·복기용 아카이브”로 두는 것이 맞습니다.
+
+---
+
+## 원문 백업 (2026-08-12 archive)
+
+| 항목 | 값 |
+|------|-----|
+| 원본 (Cursor 로컬) | `%USERPROFILE%\.cursor\projects\c-Users-jaehyoung-an-Downloads-ax-leadership-sample-ax-leadership-sample\agent-transcripts\` |
+| 백업 | `C:\Users\jaehyoung.an\Claude\cursor-agent-transcripts-backup\20260812_ax-leadership-sample\agent-transcripts\` |
+| 목록 | 같은 폴더의 `README.md` (파일 104개, ~8.7MB) |
+| git | **비포함** (repo 밖 · 시크릿/수치 혼입 가능) |
 
 ---
 
 ## 왜 전문을 커밋하지 않나
 
-1. 용량이 크고(대화 100개+), 중간중간 **토큰·개인정보·사내 수치**가 섞일 수 있음  
-2. Claude Desktop이 Cursor `.jsonl` 대화를 네이티브로 이어받지 못함  
+1. 중간중간 **토큰·개인정보·사내 수치**가 섞일 수 있음  
+2. Claude Desktop이 Cursor `.jsonl`을 네이티브로 이어받지 못함  
 3. 인계에 필요한 것은 대화 전문이 아니라 **목표 / 확정 / 미결 / 파일 경로**
-
 ---
 
 ## 최근 주요 Agent ↔ 핸드오프 스레드 매핑
