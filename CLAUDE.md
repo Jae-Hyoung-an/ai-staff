@@ -11,7 +11,8 @@
 2. `AGENTS.md` — AI 협업 규칙·금지사항·폴더 구조
 3. `rules/user.md` — 사용자(안재형) 프로필·선호
 4. `knowledge/handoff/README.md` — 최신 핸드오프 인덱스
-5. 진행 중인 작업 스레드의 핵심 파일 (핸드오프에 경로 명시)
+5. `TASKS.md` — 현재 할 일 보드 (오늘/이번주/진행중/대기/백로그)
+6. 진행 중인 작업 스레드의 핵심 파일 (핸드오프에 경로 명시)
 
 데이터 조회가 필요하면 추가로 `rules/data_query.md`, MCP 설정은 `rules/mcp.md`를 봅니다.
 
@@ -30,6 +31,8 @@
 | `inbox/` | 외부 문서 임시 보관 → knowledge로 정리 |
 | `resources/` | PDF 등 바이너리 원본 |
 | `docs/` | GitHub Pages 공유용 |
+
+> 할 일 관리는 루트 `TASKS.md`에서 합니다 (상태별 보드 + `[개발]/[개인]/[팀]/[정기]` 태그).
 
 ---
 
