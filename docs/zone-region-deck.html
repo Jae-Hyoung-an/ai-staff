@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>존·권역 구조 개편 — CEO 보고</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@700;800;900&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="zone-region-deck.css">
+</head>
+<body>
+<div class="stage"><div class="deck-slide" style="--ar:1.7778"><div class="slide cover" style="--accent:var(--supply)"><div class="body" style="justify-content:center"><div class="masthead">
+<p class="kicker">CEO 보고 · 2026년 8월</p>
+<h1><span class="r">영업</span>과 <span class="b">공급</span>을<br>서로 다른 지도로 나눕니다</h1>
+<p class="lede">지금은 지도 위 상자 하나가 “어디서 주문받을지”와 “누가 배달할지”를 동시에 결정합니다. 권역 밖으로 나간 기사는 빈손으로 돌아와야 하니 그 오더를 잡지 않습니다. 이 상자를 둘로 나눕니다.</p>
+<div class="meta">
+<span class="tag">본편 12장 · 약 32분</span>
+<span class="tag">부록 3장 · 질문 시</span>
+<span class="tag">오픈 목표 2026.10 초~중순</span>
+<span class="tag">PRD v1.5 기준</span>
+</div>
+</div></div></div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--ink2)">
+<span class="s-num">01 / 12</span>
+<p class="eyebrow">한 장 요약</p>
+<h2>배송 구조를 판가 축과 원가 축으로 나눕니다</h2>
+<div class="body">
+<div class="g4" style="flex:1; align-content:center">
+<div class="cell"><span class="lab">무엇을</span><p>하나의 ZONE이 쥐고 있던 <b>판가와 원가를 분리</b>해, 영업과 공급이 각자의 지도를 그립니다.</p></div>
+<div class="cell w"><span class="lab">왜 지금</span><p><b>송파·강남 고밀도 지역 진출 전</b>에 끝내야 합니다.<span class="need">근거 보강</span></p></div>
+<div class="cell b"><span class="lab">언제</span><p><b>2026년 10월 초 ~ 중순</b> 오픈 목표. 현재 상세 설계 단계입니다.</p></div>
+<div class="cell r"><span class="lab">무엇이 좋아지나</span><p>① 권역 외 오더의 수락률 회복과 할증 소모 감소<br>② 벤더별 원가 계약 가능<br>③ 기사 공급 음영 축소</p></div>
+</div>
+<div class="band">
+<span class="k">한 문장</span>
+<span class="v">판가(영업)와 원가(공급)가 같은 단위에 묶여 있는 것 — 이것 하나를 푸는 프로젝트입니다.</span>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--sales)">
+<span class="s-num">02 / 12</span>
+<p class="eyebrow">왜 하는가</p>
+<h2>나가면 빈손으로 돌아옵니다</h2>
+<div class="body">
+<div class="g-split">
+<figure>
+<svg viewBox="0 0 320 180" role="img" aria-label="기사가 권역 안에서 출발해 권역 밖으로 배송하면, 돌아올 때 태울 오더가 없어 빈손으로 복귀한다. 그래서 기사가 권역 외 오더를 잡지 않는다.">
+<defs>
+<marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="var(--c-out)"/>
+</marker>
+<marker id="ax2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="currentColor" opacity=".45"/>
+</marker>
+</defs>
+<rect x="10" y="34" width="180" height="98" rx="6" fill="var(--supply-soft)" stroke="var(--supply)" stroke-width="1.5"/>
+<text x="20" y="52" font-size="11" fill="var(--supply)" font-weight="600">우리 권역</text>
+<text x="162" y="24" font-size="10.5" fill="var(--c-out)" text-anchor="middle">배송 — 권역 밖으로 나간다</text>
+<circle cx="58" cy="78" r="6" fill="currentColor"/>
+<text x="58" y="97" font-size="10.5" fill="currentColor" text-anchor="middle">출발</text>
+<circle cx="268" cy="78" r="6" fill="none" stroke="var(--c-out)" stroke-width="1.8"/>
+<text x="268" y="97" font-size="10.5" fill="currentColor" text-anchor="middle">도착</text>
+<line x1="68" y1="78" x2="256" y2="78" stroke="var(--c-out)" stroke-width="1.9" marker-end="url(#ax)"/>
+<line x1="258" y1="116" x2="80" y2="116" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 4" opacity=".45" marker-end="url(#ax2)"/>
+<g stroke="var(--c-out)" stroke-width="2.4">
+<line x1="161" y1="108" x2="177" y2="124"/><line x1="177" y1="108" x2="161" y2="124"/>
+</g>
+<text x="169" y="145" font-size="10.5" fill="currentColor" text-anchor="middle" opacity=".75">돌아올 때 태울 오더가 없다</text>
+<text x="160" y="171" font-size="12" fill="var(--c-out)" text-anchor="middle" font-weight="600">그래서 기사는 권역 외 오더를 잡지 않는다</text>
+</svg>
+<figcaption>복귀 오더 개념이 없어, 권역 밖 배송은 기사에게 편도 손실이 된다.</figcaption>
+</figure>
+<table class="t">
+<tr><td class="n">01</td><td><b>권역 밖으로 나가면 빈손으로 돌아온다</b><br><span style="color:var(--ink2)">복귀 오더 개념이 없어 권역 외 오더를 잡을 동인이 없다</span></td><td class="hit">기사가 안 잡는다</td></tr>
+<tr><td class="n">02</td><td><b>권역끼리 겹칠 수 없다</b><br><span style="color:var(--ink2)">경계 인접 지역은 후보 벤더가 한 곳뿐이라 공급이 얇다</span></td><td class="hit">경계의 공급 음영</td></tr>
+<tr><td class="n">03</td><td><b>상점 배송 반경과 시스템 전제가 어긋난다</b><br><span style="color:var(--ink2)">B존은 상점별 N km 기준인데 시스템은 권역 단일 전제</span></td><td class="hit">현장과 시스템의 불일치</td></tr>
+</table>
+</div>
+<div class="band">
+<span class="k">원인</span>
+<span class="v">판가(영업)와 원가(공급)가 같은 단위에 묶여 있습니다.</span>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--c-out)">
+<span class="s-num">03 / 12</span>
+<p class="eyebrow">왜 하는가 · 실측</p>
+<h2>권역 외 오더는 네 지표 전부 불리합니다</h2>
+<div class="body">
+<div class="legend">
+<b><i style="background:var(--c-in)"></i>권역 내 18,625건 (83.3%)</b>
+<b><i style="background:var(--c-out)"></i>권역 외 3,740건 (16.7%)</b>
+</div>
+<div class="mgrid">
+<div class="mpanel">
+<span class="mname">배차 거절률<br><span style="font-weight:400; color:var(--ink3); font-size:1.3cqi">벤더 기사가 제안을 명시적으로 거절한 비율</span></span>
+<div class="brow"><span class="blab">권역 내</span><div class="btrack"><i class="bfill in" style="width:11.6%" title="권역 내 2.3% (0~20% 기준) · 수락률 97.7%"></i></div><span class="bval">2.3%</span></div>
+<div class="brow"><span class="blab">권역 외</span><div class="btrack"><i class="bfill out" style="width:92.3%" title="권역 외 18.4% (0~20% 기준) · 수락률 81.6%"></i></div><span class="bval">18.4%</span></div>
+<span class="delta">8.0배</span>
+</div>
+<div class="mpanel">
+<span class="mname">오더당 배차 라운드<br><span style="font-weight:400; color:var(--ink3); font-size:1.3cqi">한 오더에 배차를 다시 돌린 횟수</span></span>
+<div class="brow"><span class="blab">권역 내</span><div class="btrack"><i class="bfill in" style="width:50.0%" title="권역 내 2.00회 (0~4회 기준)"></i></div><span class="bval">2.00</span></div>
+<div class="brow"><span class="blab">권역 외</span><div class="btrack"><i class="bfill out" style="width:69.8%" title="권역 외 2.79회 (0~4회 기준)"></i></div><span class="bval">2.79</span></div>
+<span class="delta">+40% · 다시 돌린다</span>
+</div>
+<div class="mpanel">
+<span class="mname">픽업 요청시간 준수율<br><span style="font-weight:400; color:var(--ink3); font-size:1.3cqi">&nbsp;</span></span>
+<div class="brow"><span class="blab">권역 내</span><div class="btrack"><i class="bfill in" style="width:63.5%" title="권역 내 63.5%"></i></div><span class="bval">63.5%</span></div>
+<div class="brow"><span class="blab">권역 외</span><div class="btrack"><i class="bfill out" style="width:50.4%" title="권역 외 50.4%"></i></div><span class="bval">50.4%</span></div>
+<span class="delta">−13.1%p</span>
+</div>
+<div class="mpanel">
+<span class="mname">40분 내 완료율<br><span style="font-weight:400; color:var(--ink3); font-size:1.3cqi">&nbsp;</span></span>
+<div class="brow"><span class="blab">권역 내</span><div class="btrack"><i class="bfill in" style="width:86.7%" title="권역 내 86.7%"></i></div><span class="bval">86.7%</span></div>
+<div class="brow"><span class="blab">권역 외</span><div class="btrack"><i class="bfill out" style="width:76.7%" title="권역 외 76.7%"></i></div><span class="bval">76.7%</span></div>
+<span class="delta">−10.0%p</span>
+</div>
+</div>
+<div class="band">
+<span class="k">지점별</span>
+<span class="v" style="font-weight:400">동대문·성북·성동 <b>세 지점 모두 같은 방향</b>입니다. 권역 외 비중은 동대문 12.1% · 성북 30.4% · 성동 17.6%.</span>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--c-out)">
+<span class="s-num">04 / 12</span>
+<p class="eyebrow">왜 하는가 · 비용</p>
+<h2>돈을 더 쓰고도 격차는 벌어집니다</h2>
+<div class="body">
+<div class="hero">
+<div class="h cost">
+<span class="lab">수행 유도에 쓰는 돈</span>
+<span class="big">약 180만원</span>
+<span class="sub">권역 외 오더를 어떻게든 수행시키려고 <b>건당 500원</b>을 얹고 있습니다. 23일간 벤더 기사의 권역 외 수행 3,599건.</span>
+</div>
+<div class="h cm">
+<span class="lab">그런데 건당 CM 격차는</span>
+<span class="big neg">−753원</span>
+<span class="sub">권역 외 오더는 건당 CM이 권역 내보다 <b>753원</b> 나쁩니다. 할증 500원을 다 쓰고 난 뒤의 격차입니다. 23일간 3,599건이면 <b>약 271만원</b>.</span>
+</div>
+<div class="h q">
+<span class="lab">그럼에도 품질은</span>
+<div class="qrow">
+<span>배차 거절률 <i>8.0배</i></span>
+<span>오더당 배차 라운드 <i>+40%</i></span>
+<span>픽업 요청시간 준수 <i>−13.1%p</i></span>
+<span>40분 내 완료 <i>−10.0%p</i></span>
+</div>
+<span class="sub">앞 장 그대로입니다. 돈을 더 썼는데 네 지표 전부 불리합니다.</span>
+</div>
+</div>
+<div class="band">
+<span class="k">그래서</span>
+<span class="v">할증으로는 구조를 살 수 없습니다. 기사가 원하는 건 500원이 아니라 <b>돌아올 오더</b>입니다.</span>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--supply)">
+<span class="s-num">05 / 12</span>
+<p class="eyebrow">달라지는 점 ① · 분리</p>
+<h2>영업과 배송이 서로 타협하지 않습니다</h2>
+<div class="body">
+<figure style="flex:1; justify-content:center">
+<svg viewBox="0 0 940 268" role="img" aria-label="AS-IS에서는 ZONE 하나가 판가·원가·영업권역·공급권역 넷을 모두 소유한다. TO-BE에서는 겹칠 수 없는 판가 축(영업존·판가 요금제·판가 할증)과 겹쳐도 되는 원가 축(벤더 배송권역·배송권역 정책·원가 요금제)으로 나뉜다.">
+<defs>
+<marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+</marker>
+<marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="var(--sales)"/>
+</marker>
+<marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="var(--supply)"/>
+</marker>
+</defs>
+<text x="14" y="16" font-size="11.5" font-weight="600" letter-spacing="1.4" fill="currentColor" opacity=".55">AS-IS</text>
+<rect x="118" y="42" width="130" height="44" rx="5" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".85"/>
+<text x="183" y="69" font-size="14" font-weight="600" fill="currentColor" text-anchor="middle">ZONE</text>
+<g stroke="currentColor" stroke-width="1.2" opacity=".55" marker-end="url(#a1)" fill="none">
+<path d="M183 86 C 183 128, 53 122, 53 158"/>
+<path d="M183 86 C 183 128, 140 124, 140 158"/>
+<path d="M183 86 C 183 128, 227 124, 227 158"/>
+<path d="M183 86 C 183 128, 314 122, 314 158"/>
+</g>
+<g fill="none" stroke="currentColor" stroke-width="1" opacity=".45">
+<rect x="16" y="164" width="74" height="34" rx="4"/>
+<rect x="103" y="164" width="74" height="34" rx="4"/>
+<rect x="190" y="164" width="74" height="34" rx="4"/>
+<rect x="277" y="164" width="74" height="34" rx="4"/>
+</g>
+<g font-size="12" fill="currentColor" text-anchor="middle" opacity=".9">
+<text x="53" y="186">판가</text><text x="140" y="186">원가</text>
+<text x="227" y="186">영업권역</text><text x="314" y="186">공급권역</text>
+</g>
+<text x="183" y="228" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".6">하나가 넷을 소유합니다</text>
+<text x="183" y="246" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".6">권역끼리 겹칠 수 없습니다</text>
+<line x1="392" y1="120" x2="438" y2="120" stroke="currentColor" stroke-width="1.6" opacity=".5" marker-end="url(#a1)"/>
+<text x="486" y="16" font-size="11.5" font-weight="600" letter-spacing="1.4" fill="currentColor" opacity=".55">TO-BE</text>
+<g>
+<rect x="486" y="42" width="180" height="38" rx="5" fill="var(--sales-soft)" stroke="var(--sales)" stroke-width="1.5"/>
+<text x="576" y="66" font-size="13" font-weight="600" fill="var(--sales)" text-anchor="middle">영업존</text>
+<line x1="576" y1="80" x2="576" y2="96" stroke="var(--sales)" stroke-width="1.4" marker-end="url(#a2)"/>
+<rect x="486" y="100" width="180" height="38" rx="5" fill="none" stroke="var(--sales)" stroke-width="1.2"/>
+<text x="576" y="124" font-size="13" fill="var(--sales)" text-anchor="middle">판가 요금제</text>
+<line x1="576" y1="138" x2="576" y2="154" stroke="var(--sales)" stroke-width="1.4" marker-end="url(#a2)"/>
+<rect x="486" y="158" width="180" height="38" rx="5" fill="none" stroke="var(--sales)" stroke-width="1.2"/>
+<text x="576" y="182" font-size="13" fill="var(--sales)" text-anchor="middle">판가 할증</text>
+<text x="576" y="228" font-size="12" font-weight="600" fill="var(--sales)" text-anchor="middle">판가 축 — 영업</text>
+<text x="576" y="246" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".6">겹칠 수 없습니다</text>
+</g>
+<g>
+<rect x="700" y="42" width="180" height="38" rx="5" fill="var(--supply-soft)" stroke="var(--supply)" stroke-width="1.5"/>
+<text x="790" y="66" font-size="13" font-weight="600" fill="var(--supply)" text-anchor="middle">벤더 배송권역</text>
+<line x1="790" y1="80" x2="790" y2="96" stroke="var(--supply)" stroke-width="1.4" marker-end="url(#a3)"/>
+<rect x="700" y="100" width="180" height="38" rx="5" fill="none" stroke="var(--supply)" stroke-width="1.2"/>
+<text x="790" y="124" font-size="13" fill="var(--supply)" text-anchor="middle">배송권역 정책</text>
+<line x1="790" y1="138" x2="790" y2="154" stroke="var(--supply)" stroke-width="1.4" marker-end="url(#a3)"/>
+<rect x="700" y="158" width="180" height="38" rx="5" fill="none" stroke="var(--supply)" stroke-width="1.2"/>
+<text x="790" y="182" font-size="13" fill="var(--supply)" text-anchor="middle">원가 요금제</text>
+<text x="790" y="228" font-size="12" font-weight="600" fill="var(--supply)" text-anchor="middle">원가 축 — 공급</text>
+<text x="790" y="246" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".6">겹쳐도 됩니다</text>
+</g>
+</svg>
+<figcaption>ZONE 하나가 소유하던 네 가지가 서로 독립적으로 움직이는 두 축으로 갈라진다. 두 축은 서로를 막지 않는다.</figcaption>
+</figure>
+<div class="band">
+<span class="k">따라오는 것</span>
+<span class="v" style="font-weight:400">판가·원가 <b>요금제와 할증이 각각 갈라지고</b>, 파란 축이 원가를 소유하므로 <b>벤더마다 다른 단가</b>를 줄 수 있습니다.</span>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--supply)">
+<span class="s-num">06 / 12</span>
+<p class="eyebrow">달라지는 점 ② · 중첩</p>
+<h2>징검다리처럼 이어 붙여 권역 외를 줄입니다</h2>
+<div class="body">
+<figure style="flex:1; justify-content:center">
+<svg viewBox="0 0 940 210" role="img" aria-label="AS-IS에서는 배송권역이 영업존과 같은 경계로 잘려 있어 경계를 넘는 오더가 반드시 권역 외가 된다. TO-BE에서는 영업존은 그대로 두고 배송권역만 서로 겹치게 이어 붙여, 같은 오더가 하나의 배송권역 안에 들어와 권역 내로 처리된다.">
+<defs>
+<marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--c-out)"/></marker>
+<marker id="c2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--supply)"/></marker>
+</defs>
+<text x="10" y="14" font-size="11.5" font-weight="600" letter-spacing="1.4" fill="currentColor" opacity=".55">AS-IS</text>
+<rect x="10" y="30" width="205" height="30" rx="4" fill="var(--sales-soft)" stroke="var(--sales)" stroke-width="1.3"/>
+<rect x="225" y="30" width="205" height="30" rx="4" fill="var(--sales-soft)" stroke="var(--sales)" stroke-width="1.3"/>
+<text x="112" y="50" font-size="11.5" fill="var(--sales)" text-anchor="middle" font-weight="600">영업존 A</text>
+<text x="327" y="50" font-size="11.5" fill="var(--sales)" text-anchor="middle" font-weight="600">영업존 B</text>
+<rect x="10" y="76" width="205" height="58" rx="5" fill="var(--supply-soft)" stroke="var(--supply)" stroke-width="1.4"/>
+<rect x="225" y="76" width="205" height="58" rx="5" fill="var(--supply-soft)" stroke="var(--supply)" stroke-width="1.4"/>
+<text x="112" y="92" font-size="10.5" fill="var(--supply)" text-anchor="middle">배송권역 A</text>
+<text x="327" y="92" font-size="10.5" fill="var(--supply)" text-anchor="middle">배송권역 B</text>
+<line x1="220" y1="22" x2="220" y2="142" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4" opacity=".35"/>
+<circle cx="150" cy="115" r="5" fill="currentColor"/>
+<circle cx="300" cy="115" r="5" fill="none" stroke="var(--c-out)" stroke-width="1.7"/>
+<line x1="158" y1="115" x2="290" y2="115" stroke="var(--c-out)" stroke-width="1.8" marker-end="url(#c1)"/>
+<rect x="196" y="152" width="52" height="17" rx="8.5" fill="var(--c-out)"/>
+<text x="222" y="164.5" font-size="10" fill="var(--slide)" text-anchor="middle" font-weight="600">권역 외</text>
+<text x="220" y="192" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".7">배송권역이 영업존과 같은 경계로 잘려 있다</text>
+<text x="500" y="14" font-size="11.5" font-weight="600" letter-spacing="1.4" fill="currentColor" opacity=".55">TO-BE</text>
+<rect x="500" y="30" width="205" height="30" rx="4" fill="var(--sales-soft)" stroke="var(--sales)" stroke-width="1.3"/>
+<rect x="715" y="30" width="205" height="30" rx="4" fill="var(--sales-soft)" stroke="var(--sales)" stroke-width="1.3"/>
+<text x="602" y="50" font-size="11.5" fill="var(--sales)" text-anchor="middle" font-weight="600">영업존 A</text>
+<text x="817" y="50" font-size="11.5" fill="var(--sales)" text-anchor="middle" font-weight="600">영업존 B</text>
+<text x="710" y="24" font-size="10" fill="currentColor" text-anchor="middle" opacity=".5">그대로</text>
+<line x1="710" y1="22" x2="710" y2="148" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4" opacity=".35"/>
+<g fill="var(--supply)" fill-opacity=".15" stroke="var(--supply)" stroke-width="1.4">
+<rect x="500" y="70" width="182" height="54" rx="5"/>
+<rect x="618" y="86" width="182" height="54" rx="5"/>
+<rect x="736" y="70" width="182" height="54" rx="5"/>
+</g>
+<g font-size="9.5" fill="var(--supply)" opacity=".85">
+<text x="512" y="83">배송권역 1</text><text x="630" y="99">배송권역 2</text><text x="748" y="83">배송권역 3</text>
+</g>
+<text x="650" y="63" font-size="9.5" fill="var(--supply)" text-anchor="middle" font-weight="600">중첩</text>
+<text x="768" y="63" font-size="9.5" fill="var(--supply)" text-anchor="middle" font-weight="600">중첩</text>
+<path d="M618 66 L618 70 M682 66 L682 70 M618 68 L682 68" stroke="var(--supply)" stroke-width="1" fill="none" opacity=".7"/>
+<path d="M736 66 L736 70 M800 66 L800 70 M736 68 L800 68" stroke="var(--supply)" stroke-width="1" fill="none" opacity=".7"/>
+<circle cx="640" cy="115" r="5" fill="currentColor"/>
+<circle cx="790" cy="115" r="5" fill="none" stroke="var(--supply)" stroke-width="1.7"/>
+<line x1="648" y1="115" x2="780" y2="115" stroke="var(--supply)" stroke-width="2.2" marker-end="url(#c2)"/>
+<rect x="688" y="152" width="52" height="17" rx="8.5" fill="var(--supply)"/>
+<text x="714" y="164.5" font-size="10" fill="var(--slide)" text-anchor="middle" font-weight="600">권역 내</text>
+<text x="710" y="192" font-size="11.5" fill="var(--supply)" text-anchor="middle" font-weight="600">배송권역만 겹쳐서 이어 붙인다</text>
+</svg>
+<figcaption>같은 오더다. 영업존은 손대지 않고 배송권역만 겹치게 배치하면, 경계를 넘던 오더가 하나의 배송권역 안으로 들어온다.</figcaption>
+</figure>
+<div class="band">
+<span class="k">효과</span>
+<span class="v">권역 외 오더를 <b>더 잘 수행시키는 게 아니라, 애초에 권역 외가 아니게 만듭니다.</b></span>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--supply)">
+<span class="s-num">07 / 12</span>
+<p class="eyebrow">달라지는 점 ③ · 회귀</p>
+<h2>남는 권역 외 오더는 돌아올 길을 줍니다</h2>
+<div class="body">
+<figure style="flex:1; justify-content:center">
+<svg viewBox="0 0 900 168" role="img" aria-label="오더 3분류. 권역 내는 출발과 도착이 모두 권역 안, 권역 외는 출발만 권역 안, 회귀는 도착만 권역 안이며 권역 밖 기사를 태워서 데려온다.">
+<defs>
+<marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+<marker id="b2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--warn)"/></marker>
+<marker id="b3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--supply)"/></marker>
+</defs>
+<text x="16" y="14" font-size="12.5" font-weight="600" fill="currentColor">권역 내</text>
+<rect x="40" y="28" width="200" height="76" rx="6" fill="var(--supply-soft)" stroke="var(--supply)" stroke-width="1.3"/>
+<circle cx="82" cy="66" r="5.5" fill="currentColor"/>
+<circle cx="198" cy="66" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<line x1="91" y1="66" x2="187" y2="66" stroke="currentColor" stroke-width="1.5" marker-end="url(#b1)"/>
+<text x="16" y="130" font-size="11.5" fill="currentColor" opacity=".7">출발·도착 모두 권역 안</text>
+<text x="16" y="148" font-size="11.5" fill="currentColor" opacity=".7">→ 일반 제안</text>
+<text x="326" y="14" font-size="12.5" font-weight="600" fill="currentColor">권역 외</text>
+<rect x="336" y="28" width="170" height="76" rx="6" fill="var(--supply-soft)" stroke="var(--supply)" stroke-width="1.3"/>
+<circle cx="378" cy="66" r="5.5" fill="currentColor"/>
+<circle cx="560" cy="66" r="5.5" fill="none" stroke="var(--warn)" stroke-width="1.8"/>
+<line x1="387" y1="66" x2="549" y2="66" stroke="var(--warn)" stroke-width="1.6" marker-end="url(#b2)"/>
+<text x="326" y="130" font-size="11.5" fill="currentColor" opacity=".7">출발만 권역 안</text>
+<text x="326" y="148" font-size="11.5" fill="var(--warn)">→ 원가에 정액 할증 · 판가 미반영</text>
+<text x="636" y="14" font-size="12.5" font-weight="700" fill="var(--supply)">회귀</text>
+<rect x="672" y="12" width="34" height="15" rx="7.5" fill="var(--supply)"/>
+<text x="689" y="23.5" font-size="9.5" fill="var(--slide)" text-anchor="middle" font-weight="600">신규</text>
+<rect x="714" y="28" width="170" height="76" rx="6" fill="var(--supply-soft)" stroke="var(--supply)" stroke-width="1.8"/>
+<circle cx="656" cy="66" r="5.5" fill="var(--supply)"/>
+<circle cx="824" cy="66" r="5.5" fill="none" stroke="var(--supply)" stroke-width="1.8"/>
+<line x1="665" y1="66" x2="813" y2="66" stroke="var(--supply)" stroke-width="2.2" marker-end="url(#b3)"/>
+<text x="636" y="130" font-size="11.5" fill="currentColor" opacity=".7">도착만 권역 안</text>
+<text x="636" y="148" font-size="11.5" fill="var(--supply)" font-weight="600">→ 권역 밖 기사를 태워서 데려온다</text>
+</svg>
+<figcaption>세 분류는 후보 벤더마다 상대적으로 판정된다. 같은 오더도 벤더에 따라 권역 내이기도, 회귀이기도 하다.</figcaption>
+</figure>
+<div class="band">
+<span class="k">회귀</span>
+<span class="v">권역 밖에 있는 기사에게 <b>자기 권역으로 돌아오는 오더</b>를 제안합니다. 지금은 이 오더가 아예 추천되지 않습니다.</span>
+</div>
+<p class="srcline">권역 외 할증이 신설됩니다 — 출발은 권역 안, 도착은 권역 밖인 오더에 <b>정액으로 원가에만</b> 가산합니다. <b>판가에는 반영하지 않으므로 상점 부담은 늘지 않습니다.</b> 지금 쓰는 건당 500원 유도 할증을 정식 제도로 대체하는 자리입니다.</p>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--supply)">
+<span class="s-num">08 / 12</span>
+<p class="eyebrow">달라지는 점 ④ · 가시성</p>
+<h2>한 지역이 어떻게 운영되는지 한눈에 봅니다</h2>
+<div class="body">
+<div class="g-split">
+<figure>
+<svg viewBox="0 0 330 205" role="img" aria-label="인트라 권역 시각화 화면. 빨간 폴리곤은 영업존, 파란 폴리곤은 서로 겹치는 벤더 배송권역이며, 어느 배송권역도 덮지 않는 공급 음영 구간이 지도에서 바로 보인다.">
+<rect x="1" y="1" width="328" height="176" rx="5" fill="none" stroke="var(--line)" stroke-width="1"/>
+<g fill="var(--sales)" fill-opacity=".1" stroke="var(--sales)" stroke-width="1.3">
+<path d="M18,26 L104,18 L112,78 L26,88 Z"/>
+<path d="M108,18 L198,24 L204,84 L116,78 Z"/>
+<path d="M22,92 L112,82 L120,144 L30,152 Z"/>
+<path d="M116,82 L204,88 L210,148 L124,144 Z"/>
+</g>
+<g fill="var(--supply)" fill-opacity=".16" stroke="var(--supply)" stroke-width="1.4">
+<path d="M38,50 L148,40 L160,114 L48,126 Z"/>
+<path d="M130,46 L244,54 L250,124 L138,116 Z"/>
+<path d="M58,106 L174,98 L182,164 L66,174 Z"/>
+</g>
+<circle cx="199" cy="136" r="13" fill="none" stroke="var(--c-out)" stroke-width="1.8" stroke-dasharray="3 3"/>
+<text x="216" y="163" font-size="10" fill="var(--c-out)" text-anchor="middle" font-weight="600">공급 음영</text>
+<g font-size="9.5">
+<rect x="14" y="188" width="10" height="10" rx="2" fill="var(--sales)" fill-opacity=".25" stroke="var(--sales)" stroke-width="1.2"/>
+<text x="29" y="196.5" fill="currentColor" opacity=".8">영업존</text>
+<rect x="76" y="188" width="10" height="10" rx="2" fill="var(--supply)" fill-opacity=".3" stroke="var(--supply)" stroke-width="1.2"/>
+<text x="91" y="196.5" fill="currentColor" opacity=".8">벤더 배송권역 (중첩)</text>
+<circle cx="217" cy="193" r="5.5" fill="none" stroke="var(--c-out)" stroke-width="1.4" stroke-dasharray="2.5 2.5"/>
+<text x="227" y="196.5" fill="currentColor" opacity=".8">덮이지 않은 구간</text>
+</g>
+</svg>
+<figcaption>인트라에 <b>권역 관리 › 권역 시각화</b> 메뉴가 새로 생긴다.</figcaption>
+</figure>
+<ul class="tick" style="--mk:var(--supply)">
+<li><b>어디가 비었는지</b> 보입니다 — 영업은 하는데 배송권역이 덮지 않는 구간이 지도에서 드러납니다</li>
+<li><b>어디가 겹쳤는지</b> 보입니다 — 징검다리가 실제로 이어져 있는지 눈으로 확인합니다</li>
+<li><b>영업존과 배송권역의 어긋남</b>이 보입니다 — 빨강과 파랑을 겹쳐 놓고 봅니다</li>
+<li>지점·벤더로 <b>필터</b>하고, 폴리곤을 <b>클릭해 상세</b>로 바로 들어갑니다</li>
+</ul>
+</div>
+<div class="band">
+<span class="k">왜 필요한가</span>
+<span class="v">징검다리를 그리려면 <b>지금 상태가 먼저 보여야 합니다.</b> 지금은 지도 없이 목록으로만 관리합니다.</span>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--ink2)">
+<span class="s-num">09 / 12</span>
+<p class="eyebrow">성공 판단</p>
+<h2>무엇이 좋아져야 하고, 무엇은 그대로여야 하는가</h2>
+<div class="body">
+<div class="g2" style="flex:1; align-content:start">
+<div>
+<span class="lab" style="display:block; font-family:'IBM Plex Mono',monospace; font-size:1.3cqi; letter-spacing:.12em; text-transform:uppercase; color:var(--supply); margin-bottom:1.2cqi">핵심 지표 — 좁혀야 할 격차</span>
+<table class="t">
+<tr><td>권역 외 오더 비중</td><td class="hit b">16.7%</td></tr>
+<tr><td>배차 거절률 (내 → 외)</td><td class="hit b">2.3% → 18.4%</td></tr>
+<tr><td>픽업 요청시간 준수 (내 → 외)</td><td class="hit b">63.5% → 50.4%</td></tr>
+<tr><td>40분 내 완료 (내 → 외)</td><td class="hit b">86.7% → 76.7%</td></tr>
+<tr><td>건당 CM 격차</td><td class="hit b">−753원</td></tr>
+</table>
+<p style="margin:1.4cqi 0 0; color:var(--ink2); font-size:1.5cqi">03·04장에서 잰 값이 그대로 베이스라인입니다. <b>목표 수치는 오픈 전 확정</b>합니다.<span class="need">확정 기한 미작성</span></p>
+</div>
+<div>
+<span class="lab" style="display:block; font-family:'IBM Plex Mono',monospace; font-size:1.3cqi; letter-spacing:.12em; text-transform:uppercase; color:var(--ink3); margin-bottom:1.2cqi">가드레일 — 바뀌면 안 되는 것</span>
+<ul class="tick">
+<li>기존 G1~G3·A존 배차 성공률과 정산 정합성 — <b>영향 없음</b></li>
+<li>벤더 정산 오차 — <b>증가 없음</b> (원가 확정 시점이 바뀝니다)</li>
+<li>프렌즈 오더 수락률 — <b>하락 없음</b></li>
+<li>권역 판정 연산 응답 성능 — 기존 수준 유지</li>
+</ul>
+</div>
+</div>
+<div class="band">
+<span class="k">읽는 법</span>
+<span class="v" style="font-weight:400">왼쪽은 <b>권역 내·외의 격차</b>를 좁히는 것이 목표입니다. 절대 수준이 아니라 격차입니다.</span>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--ink2)">
+<span class="s-num">10 / 12</span>
+<p class="eyebrow">영향 범위</p>
+<h2>결제·정산·배차를 관통하는 개편입니다</h2>
+<div class="body">
+<div class="g4" style="flex:1; align-content:center">
+<div class="cell b"><span class="lab">권역·벤더</span><p><b>권역 서버 · vendorset</b><br><span style="color:var(--ink2)">권역과 벤더 소속의 기준 자체가 바뀝니다</span></p></div>
+<div class="cell b"><span class="lab">배차</span><p><b>dispatch · 라스트마일</b><br><span style="color:var(--ink2)">오더 3분류와 후보 기사 조회가 새로 생깁니다</span></p></div>
+<div class="cell r"><span class="lab">요금·정산</span><p><b>pricing-policy · 정산</b><br><span style="color:var(--ink2)">원가 확정 시점과 집계 축이 바뀝니다</span></p></div>
+<div class="cell"><span class="lab">주문·화면</span><p><b>delivery · Intra · 플러스앱</b><br><span style="color:var(--ink2)">설정 화면과 기사 앱 표기가 따라옵니다</span></p></div>
+</div>
+<div class="band">
+<span class="k">규모</span>
+<span class="v" style="font-weight:400">시스템 <b>9개</b>, 검토 팀 <b>4그룹</b>(권역 서버 / 핀테크 / 벤더·라스트마일 / 배차·AI배차·앱). 작은 변경이 아닙니다.<span class="need">투입 인원×기간 미작성</span></span>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--supply)">
+<span class="s-num">11 / 12</span>
+<p class="eyebrow">일정</p>
+<h2>무엇을 만들지는 정했고,<br>어떻게 만들지를 정하는 중입니다</h2>
+<div class="body">
+<div class="tl" style="margin:auto 0">
+<div><span class="d">7월 초</span><span class="t">개념 합의<br>영업/공급 분리</span></div>
+<div><span class="d">7~8월</span><span class="t">요구사항 정의<br>무엇을 만들지 확정</span></div>
+<div class="now"><span class="d">8월 — 현재</span><span class="t">설계·영향 분석<br>어느 시스템을 어디까지<br>고칠지 확정</span></div>
+<div><span class="d">9월</span><span class="t">개발</span></div>
+<div><span class="d">10월 초~중순</span><span class="t">오픈<br>송파·강남 진출 전</span></div>
+</div>
+<div class="band">
+<span class="k">관문</span>
+<span class="v">9월에 개발을 시작하려면 <b>이 작업이 8월 안에 끝나야</b> 합니다.</span>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.7778"><div class="slide" style="--accent:var(--ink2)">
+<span class="s-num">12 / 12</span>
+<p class="eyebrow">범위</p>
+<h2>범위를 좁혀서 10월에 끝냅니다</h2>
+<div class="body">
+<div class="g2" style="flex:1; align-content:center">
+<div>
+<span class="lab" style="display:block; font-family:'IBM Plex Mono',monospace; font-size:1.3cqi; letter-spacing:.12em; text-transform:uppercase; color:var(--supply); margin-bottom:1.4cqi">이번에 한다</span>
+<ul class="tick" style="--mk:var(--supply)">
+<li>권역·요금 구조 개편 (영업존 · 벤더 배송권역 분리)</li>
+<li>오더 3분류와 배정 시점 원가 확정</li>
+<li>AI 배차에 분류·원가 반영</li>
+<li>G1 원가 일원화</li>
+<li>권역 시각화 (빨강·파랑 폴리곤 지도)</li>
+</ul>
+</div>
+<div>
+<span class="lab" style="display:block; font-family:'IBM Plex Mono',monospace; font-size:1.3cqi; letter-spacing:.12em; text-transform:uppercase; color:var(--ink3); margin-bottom:1.4cqi">이번에 하지 않는다</span>
+<ul class="tick no">
+<li>OD 권역 (요기요·땡기요)</li>
+<li>관제지점 분리 — 영향도 과다</li>
+<li>웹계약 개편 — 싱크만</li>
+<li>우선배차(허니문) — VIP 상점 설정과 중복</li>
+<li>정책서 v3.0 · Phase2 병합 — 별건</li>
+</ul>
+</div>
+</div>
+<div class="band">
+<span class="k">현행 유지 시</span>
+<span class="v" style="font-weight:400"><span class="need" style="margin-left:0">비교 항목 미작성</span> — 권역 외 오더 지속 / 500원 할증 소모 고착 / 품질·CM 격차 지속. 각각에 03·04장의 숫자를 붙일 것.</span>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:2.0"><div class="slide" style="--accent:var(--sales)">
+<span class="s-num">A1</span>
+<p class="eyebrow">운영 변화</p>
+<h2>영업과 공급이 각자의 화면을 씁니다</h2>
+<div class="body">
+<p class="ask">“현장 운영은 어떻게 바뀌나?”</p>
+<div class="g2" style="flex:1">
+<div class="cell"><span class="lab">지금</span><p>한 사람이 ZONE 하나를 만지면 판가와 원가가 <b>같이 움직입니다.</b> 원가를 바꾸려면 영업 설정을 건드려야 합니다.</p></div>
+<div class="cell r"><span class="lab">앞으로</span><p>영업 담당자는 <b style="color:var(--sales)">영업존·판가</b>만, 공급 담당자는 <b style="color:var(--supply)">벤더 배송권역·원가</b>만 만집니다. 권한과 책임이 분리됩니다.</p></div>
+</div>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:1.6162"><div class="slide" style="--accent:var(--c-out)">
+<span class="s-num">A2 · 준본편</span>
+<p class="eyebrow">실측 상세</p>
+<h2>지점별로도 같은 방향입니다</h2>
+<div class="body">
+<p class="ask">“세 지점이 다 그런가?” · “거절률은 어떻게 셌나?”</p>
+<table class="det" style="flex:1">
+<tr>
+<th>지점</th><th>오더 내 / 외</th><th>권역 외 비중</th>
+<th>거절률 내→외</th><th>배수</th><th>오더당 라운드</th><th>픽업 준수</th><th>40분 완료</th>
+</tr>
+<tr><td>동대문 <span style="color:var(--ink3); font-family:'IBM Plex Mono',monospace; font-size:1.25cqi">p1054A</span></td><td>11,362 / 1,563</td><td>12.1%</td><td><span style="color:var(--c-in); font-weight:600">0.9</span> → <span style="color:var(--c-out); font-weight:600">25.8%</span></td><td style="color:var(--c-out); font-weight:600">30배</td><td><span style="color:var(--c-in); font-weight:600">1.96</span> → <span style="color:var(--c-out); font-weight:600">3.24회</span></td><td><span style="color:var(--c-in); font-weight:600">62.4</span> → <span style="color:var(--c-out); font-weight:600">49.5%</span></td><td><span style="color:var(--c-in); font-weight:600">87.1</span> → <span style="color:var(--c-out); font-weight:600">76.4%</span></td></tr>
+<tr><td>성북 <span style="color:var(--ink3); font-family:'IBM Plex Mono',monospace; font-size:1.25cqi">p1055A</span></td><td>2,818 / 1,230</td><td>30.4%</td><td><span style="color:var(--c-in); font-weight:600">7.0</span> → <span style="color:var(--c-out); font-weight:600">13.9%</span></td><td style="color:var(--c-out); font-weight:600">2.0배</td><td><span style="color:var(--c-in); font-weight:600">2.24</span> → <span style="color:var(--c-out); font-weight:600">2.74회</span></td><td><span style="color:var(--c-in); font-weight:600">50.0</span> → <span style="color:var(--c-out); font-weight:600">39.4%</span></td><td><span style="color:var(--c-in); font-weight:600">83.6</span> → <span style="color:var(--c-out); font-weight:600">72.2%</span></td></tr>
+<tr><td>성동 <span style="color:var(--ink3); font-family:'IBM Plex Mono',monospace; font-size:1.25cqi">p1056A</span></td><td>4,445 / 947</td><td>17.6%</td><td><span style="color:var(--c-in); font-weight:600">3.0</span> → <span style="color:var(--c-out); font-weight:600">9.2%</span></td><td style="color:var(--c-out); font-weight:600">3.0배</td><td><span style="color:var(--c-in); font-weight:600">1.97</span> → <span style="color:var(--c-out); font-weight:600">2.07회</span></td><td><span style="color:var(--c-in); font-weight:600">74.8</span> → <span style="color:var(--c-out); font-weight:600">66.0%</span></td><td><span style="color:var(--c-in); font-weight:600">87.3</span> → <span style="color:var(--c-out); font-weight:600">82.8%</span></td></tr>
+<tr class="tot"><td>합계</td><td>18,625 / 3,740</td><td>16.7%</td>
+<td><span style="color:var(--c-in)">2.3</span> → <span style="color:var(--c-out)">18.4%</span></td>
+<td style="color:var(--c-out)">8.0배</td>
+<td><span style="color:var(--c-in)">2.00</span> → <span style="color:var(--c-out)">2.79회</span></td>
+<td><span style="color:var(--c-in)">63.5</span> → <span style="color:var(--c-out)">50.4%</span></td>
+<td><span style="color:var(--c-in)">86.7</span> → <span style="color:var(--c-out)">76.7%</span></td></tr>
+</table>
+<p class="srcline"><b>모수</b> — 벤더 기사 수행분만. 프렌즈 오더 6,915건은 권역에 영향받지 않아 제외했습니다. <b>거절률 정의</b> — 사내 수락률 대시보드와 동일하게 벤더셋 배차 기록에서 (기사·오더)별 최신 제안 1건만 남기고, 세트 운영시간 내 <b>수락/거절만</b>으로 계산했습니다(만료는 분모 제외). 수락률로는 권역 내 97.7% → 권역 외 81.6%. 다만 대시보드의 <code>resolved_at IS NOT NULL</code> 조건은 뺐습니다 — 이 값이 7월 중순 이후 기록되지 않아 그대로 두면 8월 데이터가 전부 사라집니다(별도 확인 필요). <b>오더당 라운드</b> — 한 오더에 5초 이내로 나간 제안을 한 라운드로 묶어 셌습니다. <b>권역 외 판정</b> — 동대문: 도착지 시군구 ≠ 동대문구 / 성북·성동: 도착지가 협의 문서의 권역 행정동 밖(도착지 동이 법정동이라 협의 행정동을 법정동으로 매핑. 정릉동은 정릉3·4동이 소폭 과대 포함될 수 있습니다).</p>
+</div>
+</div></div>
+<div class="deck-slide" style="--ar:2.0"><div class="slide" style="--accent:var(--c-out)">
+<span class="s-num">A3</span>
+<p class="eyebrow">비용 상세</p>
+<h2>지점별 판가·원가·CM</h2>
+<div class="body">
+<p class="ask">“CM 절대값은 얼마인가?” · “지점별로는?” · “동대문 후정산은 어떻게 반영했나?”</p>
+<table class="det" style="flex:1">
+<tr><th>지점</th><th>수행 내 / 외</th><th>판가 내→외</th><th>원가 내→외</th><th>건당 CM 내→외</th><th>CM 격차</th></tr>
+<tr><td>동대문 <span style="color:var(--ink3); font-family:'IBM Plex Mono',monospace; font-size:1.25cqi">p1054A</span></td><td>11,120 / 1,520</td><td><span style="color:var(--c-in); font-weight:600">4,507</span> → <span style="color:var(--c-out); font-weight:600">4,833</span></td><td><span style="color:var(--c-in); font-weight:600">4,770</span> → <span style="color:var(--c-out); font-weight:600">6,273</span></td><td><span style="color:var(--c-in); font-weight:600">−264</span> → <span style="color:var(--c-out); font-weight:600">−1,439</span></td><td style="color:var(--c-out); font-weight:600">−1,175원</td></tr>
+<tr><td>성북 <span style="color:var(--ink3); font-family:'IBM Plex Mono',monospace; font-size:1.25cqi">p1055A</span></td><td>2,672 / 1,165</td><td><span style="color:var(--c-in); font-weight:600">4,494</span> → <span style="color:var(--c-out); font-weight:600">4,802</span></td><td><span style="color:var(--c-in); font-weight:600">4,418</span> → <span style="color:var(--c-out); font-weight:600">5,182</span></td><td><span style="color:var(--c-in); font-weight:600">+76</span> → <span style="color:var(--c-out); font-weight:600">−380</span></td><td style="color:var(--c-out); font-weight:600">−456원</td></tr>
+<tr><td>성동 <span style="color:var(--ink3); font-family:'IBM Plex Mono',monospace; font-size:1.25cqi">p1056A</span></td><td>4,180 / 914</td><td><span style="color:var(--c-in); font-weight:600">4,145</span> → <span style="color:var(--c-out); font-weight:600">4,523</span></td><td><span style="color:var(--c-in); font-weight:600">4,432</span> → <span style="color:var(--c-out); font-weight:600">5,468</span></td><td><span style="color:var(--c-in); font-weight:600">−287</span> → <span style="color:var(--c-out); font-weight:600">−945</span></td><td style="color:var(--c-out); font-weight:600">−658원</td></tr>
+<tr class="tot"><td>합계</td><td>17,972 / 3,599</td>
+<td><span style="color:var(--c-in)">4,421</span> → <span style="color:var(--c-out)">4,744</span></td>
+<td><span style="color:var(--c-in)">4,639</span> → <span style="color:var(--c-out)">5,715</span></td>
+<td><span style="color:var(--c-in)">−219</span> → <span style="color:var(--c-out)">−971</span></td>
+<td style="color:var(--c-out)">−753원</td></tr>
+</table>
+<p class="srcline">단위 원 · 배달완료·<b>벤더 기사 수행분</b> 2026.8.1~8.23 (프렌즈 제외) · <b>동대문 권역 외 원가·CM에는 후정산 500원/건을 가산</b>했습니다(조정 전 원가 5,773 · CM −939). 성북·성동은 할증 내역에 이미 포함돼 조정하지 않았습니다. 평균 배송거리는 권역 내 0.95km · 권역 외 1.44km로, 권역 외는 판가도 323원 더 받지만 원가가 1,076원 올라 순증이 손실입니다. 세 존 모두 신규 진입 구간이라 권역 내 CM도 음수이며(성북만 +76원), 프렌즈를 포함하면 절대값은 더 낮아집니다.</p>
+</div>
+</div></div></div>
+<div class="nav prev" title="이전"></div><div class="nav next" title="다음"></div>
+<div class="bar"><i id="bar"></i></div>
+<div class="hud">
+<span><kbd>←</kbd><kbd>→</kbd> 이동</span>
+<span><kbd>F</kbd> 전체화면</span><span><kbd>T</kbd> 테마</span><span><kbd>Esc</kbd> 목차</span>
+<b id="cnt"></b>
+</div>
+<div class="grid" id="grid"></div>
+<script>
+const S=[...document.querySelectorAll('.deck-slide')], T=["표지", "배송 구조를 판가 축과 원가 축으로 나눕니다", "나가면 빈손으로 돌아옵니다", "권역 외 오더는 네 지표 전부 불리합니다", "돈을 더 쓰고도 격차는 벌어집니다", "영업과 배송이 서로 타협하지 않습니다", "징검다리처럼 이어 붙여 권역 외를 줄입니다", "남는 권역 외 오더는 돌아올 길을 줍니다", "한 지역이 어떻게 운영되는지 한눈에 봅니다", "무엇이 좋아져야 하고, 무엇은 그대로여야 하는가", "결제·정산·배차를 관통하는 개편입니다", "무엇을 만들지는 정했고,어떻게 만들지를 정하는 중입니다", "범위를 좁혀서 10월에 끝냅니다", "영업과 공급이 각자의 화면을 씁니다", "지점별로도 같은 방향입니다", "지점별 판가·원가·CM"];
+let i=0;
+const bar=document.getElementById('bar'), cnt=document.getElementById('cnt'),
+      gr=document.getElementById('grid');
+function show(k){
+  i=Math.max(0,Math.min(S.length-1,k));
+  S.forEach((s,x)=>s.classList.toggle('on',x===i));
+  bar.style.width=((i)/(S.length-1)*100)+'%';
+  cnt.textContent=(i)+' / '+(S.length-1);
+  try{location.hash=i?('#'+i):'';}catch(e){}
+}
+T.forEach((t,x)=>{const b=document.createElement('button');
+  b.innerHTML='<span class="n">'+(x? String(x).padStart(2,'0'):'표지')+'</span><span class="t">'+t+'</span>';
+  b.onclick=()=>{gr.classList.remove('open'); show(x);}; gr.appendChild(b);});
+addEventListener('keydown',e=>{
+  const k=e.key;
+  if(k==='ArrowRight'||k==='PageDown'||k===' '){e.preventDefault();show(i+1);}
+  else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){e.preventDefault();show(i-1);}
+  else if(k==='Home'){show(0);} else if(k==='End'){show(S.length-1);}
+  else if(k==='f'||k==='F'||k==='ㄹ'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+  else if(k==='t'||k==='T'||k==='ㅅ'){const d=document.documentElement;
+    d.dataset.theme = d.dataset.theme==='dark'?'light':'dark';}
+  else if(k==='Escape'){gr.classList.toggle('open');}
+});
+document.querySelector('.nav.next').onclick=()=>show(i+1);
+document.querySelector('.nav.prev').onclick=()=>show(i-1);
+document.querySelector('.stage').onclick=e=>{if(!e.target.closest('a'))show(i+1);};
+let x0=null;
+addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+addEventListener('touchend',e=>{if(x0===null)return;const d=e.changedTouches[0].clientX-x0;
+  if(Math.abs(d)>44)show(i+(d<0?1:-1)); x0=null;},{passive:true});
+(function(){const q=new URLSearchParams(location.search).get('theme');
+  if(q==='dark'||q==='light')document.documentElement.dataset.theme=q;})();
+show(parseInt(location.hash.slice(1))||0);
+</script>
+</body>
+</html>
