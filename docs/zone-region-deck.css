@@ -285,7 +285,7 @@ display:none; width:min(95vw, calc(88vh * var(--ar,1.7778)));
 box-shadow:0 2px 6px rgba(0,0,0,.06), 0 24px 60px -28px rgba(0,0,0,.35);
 }
 .deck-slide.on{display:block}
-.deck-slide .slide{width:100%; border-radius:8px; margin:0}
+.deck-slide .slide{width:100%; aspect-ratio:var(--ar,1.7778); border-radius:8px; margin:0}
 .slide.cover .masthead{border:0; padding:0; margin:0}
 .slide.cover .kicker{font-size:1.5cqi; margin-bottom:2.2cqi}
 .slide.cover h1{font-size:6.6cqi; line-height:1.14; margin-bottom:2.2cqi}
