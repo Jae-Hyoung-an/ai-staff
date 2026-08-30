@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>존·권역 인트라 화면 목업 v1.5</title>
+<meta name="description" content="존/권역 구조 개편 v1.5 — 인트라 메뉴 10개, 목록·상세 17화면, 변경점 주석 레이어">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="nav">
+    <div class="brand">
+      <b>부릉 인트라</b>
+      <span>ZONE / REGION v1.5 MOCKUP</span>
+    </div>
+    <div class="navgrp">
+      <h4>권역 관리</h4>
+      <div id="nav-region"></div>
+    </div>
+    <div class="navgrp">
+      <h4>요금 상품 관리</h4>
+      <div id="nav-price"></div>
+    </div>
+    <div class="navgrp">
+      <h4>벤더 정책 관리</h4>
+      <div id="nav-vendor"></div>
+    </div>
+    <div class="navfoot">
+      <button class="btn sm" id="theme">테마 전환</button>
+      <a class="btn sm" href="../" style="text-decoration:none;text-align:center">문서 목록으로</a>
+      <div style="font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.04em;line-height:1.6">
+        DRAFT 2026-08-30<br>화면 목업 · 실제 동작 아님
+      </div>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <div class="crumb"><span>인트라</span><span>›</span><span id="cb-grp">권역 관리</span><span>›</span><b id="cb-menu">영업존 관리</b></div>
+      <span class="sid" id="cb-sid">SCR_EZ_001</span>
+      <div class="spacer"></div>
+      <button class="tgl" id="notetgl" aria-pressed="false"><span class="dot"></span>변경점 주석</button>
+    </header>
+    <div class="wrap">
+      <div class="canvas" id="canvas"></div>
+      <aside class="panel" id="panel"></aside>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
