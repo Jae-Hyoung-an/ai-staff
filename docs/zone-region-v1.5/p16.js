@@ -36,7 +36,7 @@ S.set2 = {
       + `</div>`
       + `<div style="padding:11px 15px;border-top:1px solid var(--line-2);display:flex;gap:8px;justify-content:flex-end"><span class="btn sm">취소</span><span class="btn pri">확인</span></div>`
       + `</div>`
-      + `<div class="hint">» <b>인원 수와 지점만 적고 기사 명단은 나열하지 않는다</b> — 수백 명이 되면 모달이 읽힐지 않는다.<br>» 벤더를 <b>제거</b>하는 경우에는 <code>기사 N명은 소속 지점을 그대로 유지합니다</code> 로 적는다. 벤더가 권역에서 분리되면 기존 지점을 유지하기 때문이다.<br>» <b>예약 저장</b>이면 발효 일시를 함께 적고 「그 시점에 이동합니다」로 표현한다.<br>» <code>취소</code> 하면 아무것도 저장되지 않는다 — <b>부분 저장은 없다.</b><br>» <b>이동 이력은 이번 범위에서 제외</b>했다. 과거 실적이 어느 지점 기준이었는지 되짚을 입구는 후속으로 미룬다 (13 U-6).</div>`)
+      + `<div class="hint">» <b>인원 수와 지점만 적고 기사 명단은 나열하지 않는다</b> — 수백 명이 되면 모달을 읽을 수 없다.<br>» 벤더를 <b>제거</b>하는 경우에는 <code>기사 N명은 소속 지점을 그대로 유지합니다</code> 로 적는다. 벤더가 권역에서 분리되면 기존 지점을 유지하기 때문이다.<br>» <b>예약 저장</b>이면 발효 일시를 함께 적고 「그 시점에 이동합니다」로 표현한다.<br>» <code>취소</code> 하면 아무것도 저장되지 않는다 — <b>부분 저장은 없다.</b><br>» <b>이동 이력은 이번 범위에서 제외</b>했다. 과거 실적이 어느 지점 기준이었는지 되짚을 입구는 후속으로 미룬다 (13 U-6).</div>`)
   + plain({title:"벤더 추가",tag:"선택 목록",mk:3},`<div class="body">
       <div class="pick">
         <div class="r"><span class="radio"></span><b>서울퀵서비스</b><span class="mono">기사 22</span><span class="pill ok">선택 가능</span></div>
