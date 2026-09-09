@@ -57,7 +57,8 @@ S.set2 = {
     {t:"고를 수 있는 벤더", d:"<b>어느 권역에도 연결되지 않은 벤더만</b> 고를 수 있다. 해지 · 운영중지 벤더는 후보에 나오지 않는다. 다른 권역에 연결된 벤더는 <b>목록에는 보여주되 고르는 순간 차단 모달</b>을 띄운다 (SCR_SET_005).", r:"10 SET-5 · §4.4"},
     {t:"할당 세트 수 0을 넣을 수 있다", d:"연결은 되어 있지만 세트를 받지 않는 상태다. 막지 않는다.", r:"10 §4.3 섹션2"},
     {t:"저장은 두 단계를 거친다", d:"<b>① 영향 고지</b>(벤더 연결이 바뀐 때만) → <b>② 사유 입력</b>(모든 저장). 세트 수만 고친 저장은 ①을 건너뛰고 바로 ②로 간다. <b>①에서 확인을 눌러도 ②에서 취소하면 전부 취소된다</b> — 부분 저장은 없다.", r:"10 §4.3 섹션2-1 · SET-8"},
-    {t:"예약 저장 — 권역당 하나", d:"발효 일시를 지정해 둔다. 벤더를 다른 권역으로 옮길 때 <b>두 권역의 발효 시각을 같게 맞춰</b> 공백을 없앤다. 화면에 두 권역을 한 번에 바꾸는 장치는 새로 넣지 않는다.", r:"10 §4.3 섹션3 · S-2"}
+    {t:"예약 저장 — 권역당 하나", d:"발효 일시를 지정해 둔다. 벤더를 다른 권역으로 옮길 때 <b>두 권역의 발효 시각을 같게 맞춰</b> 공백을 없앤다. 화면에 두 권역을 한 번에 바꾸는 장치는 새로 넣지 않는다.", r:"10 §4.3 섹션3 · S-2"},
+    {t:"벤더명은 링크다 (신설)", d:"<b>누르면 11. 벤더 관리의 그 벤더 상세로 이동한다</b>(새 탭). 세트 수를 정하기 전에 그 벤더가 어떤 곳인지 — 상태 · 소속 기사 수 · 연락처 — 를 확인할 입구다. 권역 정보 네 항목과 같은 규칙이다.", r:"10 §4.3 섹션2 · → 11"}
   ],
   render(){ return head({
       h:"강남 벤더 배송권역 A",
@@ -88,11 +89,11 @@ S.set2 = {
   + plain({title:"벤더 구성",mk:5,axis:"cost"}, `<div class="body" style="padding-bottom:0">
       <div class="frow" style="max-width:760px"${note(6)}><dt>벤더 추가${mk(6)}</dt><dd><div style="display:flex;gap:10px;align-items:flex-end"><div class="field ph" style="flex:1">벤더명 검색 <span style="float:right;color:var(--dim)">⌄</span></div><button class="btn pri">벤더 추가</button></div><div class="hint">셀렉트에서 벤더를 고른 뒤 <span class="kbd">벤더 추가</span>를 눌러야 행이 붙는다. <b>QA2는 고르는 즉시 행이 생기는 형태</b>라 개발에 맞춰야 할 차이다</div></dd></div>
       </div>`
-      + tbl([{t:"벤더명"},{t:"상태"},{t:"할당 세트 수",num:1,mk:7},{t:""}],[
-        ["부릉 강남 벤더",'<span class="pill ok">운영중</span>','<span class="volcell">5</span>','<button class="btn sm">삭제</button>'],
-        ["강남 라이더스",'<span class="pill ok">운영중</span>','<span class="volcell">4</span>','<button class="btn sm">삭제</button>'],
-        ["논현 딜리버리",'<span class="pill ok">운영중</span>','<span class="volcell">3</span>','<button class="btn sm">삭제</button>'],
-        ['<span class="pill new">추가</span> 역삼 물류',NEW,'<span class="volcell">0</span>','<button class="btn sm">삭제</button>']
+      + tbl([{t:"벤더명",mk:10},{t:"상태"},{t:"할당 세트 수",num:1,mk:7},{t:""}],[
+        [ext("부릉 강남 벤더"),'<span class="pill ok">운영중</span>','<span class="volcell">5</span>','<button class="btn sm">삭제</button>'],
+        [ext("강남 라이더스"),'<span class="pill ok">운영중</span>','<span class="volcell">4</span>','<button class="btn sm">삭제</button>'],
+        [ext("논현 딜리버리"),'<span class="pill ok">운영중</span>','<span class="volcell">3</span>','<button class="btn sm">삭제</button>'],
+        ['<span class="pill new">추가</span> '+ext("역삼 물류"),NEW,'<span class="volcell">0</span>','<button class="btn sm">삭제</button>']
       ])
       + `<div class="body" style="padding-top:12px"><div class="hint"><b>할당 세트 수 0</b>도 넣을 수 있다 — 연결은 되어 있지만 세트를 받지 않는 상태다. 행을 빼고 저장하면 그 벤더는 <b>어느 권역에도 속하지 않는 상태</b>로 돌아가고, 소속 기사의 지점은 그대로 유지된다.</div></div>`)
   + `</div>`
@@ -116,7 +117,7 @@ S.set2 = {
     ]))
   + `</div>`
   + bar([{t:"목록으로"},{t:"예약 저장"},{t:"저장",pri:1}])
-  + `<div class="foot"><span><b>탭</b> 기본정보 / 변경 이력</span><span><b>액션</b> 목록으로 · 예약 저장 · 저장</span><span class="strike">기본 정보 — Zone 이름 섹션</span><span class="strike">세트 분배 삭제</span></div>`;}
+  + `<div class="foot"><span><b>탭</b> 기본정보 / 변경 이력</span><span><b>액션</b> 목록으로 · 예약 저장 · 저장</span><span class="strike">기본 정보 — Zone 이름 섹션</span><span class="strike">세트 분배 삭제</span><span><b>신설</b> 벤더명 링크 → 11. 벤더 관리</span></div>`;}
 };
 
 /* ---------------- SCR_SET_003 저장 ① 영향 고지 모달 (§4.3 섹션2-1) ---------------- */
@@ -192,7 +193,7 @@ S.set5 = {
     {t:"감추는 것은 따로 있다", d:"<b>해지 · 운영중지 벤더</b>는 후보에 아예 나오지 않는다. 이쪽은 어디서 빼올 수 있는 것이 아니라 벤더 자체가 쓸 수 없는 상태이기 때문이다.", r:"10 SET-5 · §4.3 저장 검사 2"},
     {t:"권역명을 반드시 적는다", d:"<span class='kbd'>이 벤더는 이미 {벤더 배송권역명}에 연결되어 있어 추가할 수 없습니다.</span> — 권역명이 이 모달의 존재 이유다. 이것만 알면 그 권역을 열어 벤더를 묄 수 있다.", r:"10 §4.4"},
     {t:"옮기는 것은 2단계다", d:"한 벤더는 권역 <b>1곳에만</b> 속하므로(SET-3) 한 번에 바꿀 수 없다. ① 원래 권역에서 빼고 저장 ② 새 권역에서 추가하고 저장. <b>그 사이에 공백이 생기고</b> 그 벤더의 기사는 배차 후보에서 빠진다 — 예약 저장으로 두 권역의 발효 시각을 같게 맞춘다.", r:"10 S-2 · SET-3"},
-    {t:"버튼은 확인 하나", d:"막는 모달이므로 진행할 선택지를 주지 않는다. <span class='kbd'>확인</span>을 누르면 닫히고 벤더는 추가되지 않는다.", r:"10 §4.4"}
+    {t:"버튼은 확인 하나", d:"막는 모달이므로 진행할 선택지를 주지 않는다. <span class='kbd'>확인</span>을 누르면 닫힐고 벤더는 추가되지 않는다.", r:"10 §4.4"}
   ],
   render(){ return head({
       h:"벤더 추가 불가 모달",
@@ -201,7 +202,7 @@ S.set5 = {
   + modal({title:"벤더 추가 불가",tag:"신규",tagk:"stop",actions:[{t:"확인",pri:1}]},
       `<div class="hint g" style="margin:0 0 12px"${note(3)}>» 이 벤더는 이미 <b>서초 벤더 배송권역</b>에 연결되어 있어 추가할 수 없습니다.${mk(3)}</div>
       ${tbl([{t:"고른 벤더"},{t:"현재 소속 권역"},{t:"그 권역의 정책"}],[
-        ["<b>강남 라이더스</b>",'<span class="lnk">서초 벤더 배송권역</span>',ext("수도권 벤더 운영정책 v3")]
+        [ext("강남 라이더스"),'<span class="lnk">서초 벤더 배송권역</span>',ext("수도권 벤더 운영정책 v3")]
       ])}
       <div class="statemsg" style="margin-top:12px"${note(4)}>옮기려면 <b>서초 벤더 배송권역</b>에서 이 벤더를 <b>삭제하고 저장</b>한 뒤, 이 권역에서 다시 추가한다. 두 권역의 <b>예약 발효 시각을 같게</b> 맞추면 공백이 생기지 않는다 (S-2).${mk(4)}</div>`)
   + card({title:"후보에 나오는가",mk:1}, tbl([{t:"벤더 상태"},{t:"후보 목록"},{t:"고르면"}],[
