@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>통제권을 되찾는 일 — R&amp;D 본부 공유</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@700;800;900&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="rnd-deck.css">
+</head>
+<body>
+<div class="stage"></div>
+<div class="nav prev" title="이전"></div><div class="nav next" title="다음"></div>
+<div class="bar"><i id="bar"></i></div>
+<div class="hud">
+<span><kbd>←</kbd><kbd>→</kbd> 이동</span><span><kbd>F</kbd> 전체화면</span><span><kbd>Esc</kbd> 목차</span>
+<span id="tt" style="cursor:pointer" title="라이트 / 다크 전환 (T)"><kbd>T</kbd> <b id="ttl">라이트로</b></span>
+<b id="cnt"></b>
+</div>
+<div class="grid" id="grid"></div>
+<script>
+let S=[]; const T=["통제권을 되찾는 일", "무엇을 잃었고, 무엇을 만들었고, 무엇이 남았는가", "물량은 우리 것이고, 배송은 지점 것이었다", "통제를 잃었다", "품질과 돈이 연결되어 있지 않았다", "되찾아야 할 것은 통제권이었다", "역할을 다시 그었다", "사람이 아니라 구조가 하게", "기사가 고르는 대신, 우리가 제안한다", "얼마나 필요한지를 먼저 계산한다", "잘게 쪼개서 발주하고, 주 단위로 평가한다", "기다리는 시간이 사라졌다", "그러자 물량이 따라왔다", "하방을 지키니 상방이 열렸다", "나가면 빈손으로 돌아옵니다", "돈을 더 쓰는데도 네 지표 모두 불리합니다", "영업과 배송이 서로 타협하지 않습니다", "징검다리처럼 이어 붙여 권역 외를 줄입니다", "남는 권역 외 오더는 돌아올 길을 줍니다", "같은 오더도 벤더마다 다르게 판정됩니다", "가장 싼 후보가 가장 빠른 후보는 아닙니다", "무엇이 좋아져야 하고, 무엇은 그대로여야 하는가", "Q&amp;A"], L=["표지", "목차", "01 / 20", "02 / 20", "03 / 20", "04 / 20", "05 / 20", "06 / 20", "07 / 20", "08 / 20", "09 / 20", "10 / 20", "11 / 20", "12 / 20", "13 / 20", "14 / 20", "15 / 20", "16 / 20", "17 / 20", "18 / 20", "19 / 20", "20 / 20", "Q&amp;A"];
+let i=0;
+const bar=document.getElementById('bar'), cnt=document.getElementById('cnt'),
+      gr=document.getElementById('grid');
+function show(k){
+  if(!S.length) return;
+  i=Math.max(0,Math.min(S.length-1,k));
+  S.forEach((s,x)=>s.classList.toggle('on',x===i));
+  bar.style.width=((i)/(S.length-1)*100)+'%';
+  cnt.textContent=(i+1)+' / '+S.length;
+  try{location.hash=i?('#'+i):'';}catch(e){}
+}
+T.forEach((t,x)=>{const b=document.createElement('button');
+  b.innerHTML='<span class="n">'+(L[x]||'')+'</span><span class="t">'+t+'</span>';
+  b.onclick=()=>{gr.classList.remove('open'); show(x);}; gr.appendChild(b);});
+addEventListener('keydown',e=>{
+  const k=e.key;
+  if(k==='ArrowRight'||k==='PageDown'||k===' '){e.preventDefault();show(i+1);}
+  else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){e.preventDefault();show(i-1);}
+  else if(k==='Home'){show(0);} else if(k==='End'){show(S.length-1);}
+  else if(k==='f'||k==='F'||k==='ㄹ'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+  else if(k==='t'||k==='T'||k==='ㅅ'){setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');}
+  else if(k==='Escape'){gr.classList.toggle('open');}
+});
+document.querySelector('.nav.next').onclick=()=>show(i+1);
+document.querySelector('.nav.prev').onclick=()=>show(i-1);
+document.querySelector('.stage').onclick=e=>{if(!e.target.closest('a'))show(i+1);};
+let x0=null;
+addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+addEventListener('touchend',e=>{if(x0===null)return;const d=e.changedTouches[0].clientX-x0;
+  if(Math.abs(d)>44)show(i+(d<0?1:-1)); x0=null;},{passive:true});
+function setTheme(v){document.documentElement.dataset.theme=v;
+  document.getElementById('ttl').textContent = v==='dark'?'라이트로':'다크로';
+  try{localStorage.setItem('rnddeck-theme',v);}catch(e){}}
+document.getElementById('tt').onclick=e=>{e.stopPropagation();
+  setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');};
+(function(){let v=new URLSearchParams(location.search).get('theme');
+  if(v!=='dark'&&v!=='light'){try{v=localStorage.getItem('rnddeck-theme');}catch(e){v=null;}}
+  setTheme(v==='light'?'light':'dark');})();
+
+(async function(){
+  const stage=document.querySelector('.stage');
+  let html='';
+  for(const f of ['rnd-deck-s1.html','rnd-deck-s2.html']){
+    const r=await fetch(f); html += await r.text();
+  }
+  stage.innerHTML=html;
+  S=[...document.querySelectorAll('.deck-slide')];
+  show(parseInt(location.hash.slice(1))||0);
+})();
+</script>
+</body>
+</html>
