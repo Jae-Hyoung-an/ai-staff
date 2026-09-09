@@ -1,16 +1,15 @@
 /* ================= 메뉴 · 라우터 =================
    메뉴 페이지가 완료될 때마다 해당 메뉴의 screens 에 화면 키를 채운다.
-   버서 있는 메뉴는 「작성 예정」 자리만 보여준다. */
+   비어 있는 메뉴는 「작성 예정」 자리만 보여준다. */
 const MENUS = {
   "nav-region":[
-    {key:"ez",  t:"영업존 관리",        a:"s", doc:"02",   screens:["ez","ez2","ez3"]},
-    {key:"vdr", t:"벤더 배송권역 관리",  a:"c", doc:"03",   screens:[]},
-    {key:"prg", t:"지점 권역 관리",      a:"",  doc:"04",   screens:[]}
+    {key:"ez",  t:"영업존 관리",              a:"s", doc:"02", screens:["ez","ez2","ez3"]},
+    {key:"prg", t:"지점 권역 관리",            a:"",  doc:"04", screens:[]}
   ],
   "nav-vendor":[
-    {key:"pol", t:"배송권역 정책 관리",  a:"c", doc:"09",   screens:[]},
-    {key:"set", t:"세트 분배 관리",      a:"c", doc:"10",   screens:[]},
-    {key:"ven", t:"벤더 관리",          a:"c", doc:"11",   screens:[]}
+    {key:"pol", t:"벤더 배송권역 정책 관리",    a:"c", doc:"09", screens:["pol","pol2","pol3","pol4"]},
+    {key:"set", t:"세트 분배 관리",            a:"c", doc:"10", screens:[]},
+    {key:"ven", t:"벤더 관리",                a:"c", doc:"11", screens:[]}
   ]
 };
 
@@ -28,7 +27,7 @@ Object.entries(MENUS).forEach(([id,items])=>{
 
 function todoScreen(m){
   return head({h:m.t, p:`이 메뉴의 화면은 아직 만들지 않았다. <b>${m.doc}번 페이지</b>가 완료되면 여기에 덧붙인다.`, owner:"—", review:"—"})
-    + card({title:"작성 예정"}, `<div class="hint">v2.0 목업은 <b>메뉴 페이지가 완료될 때마다 한 메뉴씩</b> 덧붙인다. 현재 반영된 것은 <b>02. 영업존 관리</b> 3화면이다.</div>`);
+    + card({title:"작성 예정"}, `<div class="hint">v2.0 목업은 <b>메뉴 페이지가 완료될 때마다 한 메뉴씩</b> 덧붙인다. 현재 반영된 것은 <b>02. 영업존 관리</b>와 <b>09. 벤더 배송권역 정책 관리</b>다.</div>`);
 }
 
 let cur = "ez";
@@ -45,7 +44,7 @@ function go(key){
     window.scrollTo({top:0,behavior:"instant"});
     return;
   }
-  if(menu) key = menu.screens[0];         /* 메뉴를 누를면 처음 화면으로 */
+  if(menu) key = menu.screens[0];         /* 메뉴를 누르면 처음 화면으로 */
   const s = S[key]; if(!s) return;
   cur = key;
   $("#canvas").innerHTML = s.render();
@@ -87,7 +86,7 @@ document.addEventListener("click", e=>{
   if(m){
     if(!document.body.classList.contains("notes-on")) toggleNotes(true);
     const el = document.getElementById("note-"+m.dataset.goto);
-    if(el){ el.scrollIntoView({block:"center",behavior:"smooth"}); el.animate([{background:"var(--new-bg)"},{background:"transparent"}],{duration:1200}); }
+    if(el){ el.scrollIntoView({block:"center",behavior:"smooth"}); el.animate([{background:"var(--surface-3)"},{background:"transparent"}],{duration:1200}); }
   }
 });
 function toggleNotes(on){
@@ -97,12 +96,10 @@ function toggleNotes(on){
 $("#notetgl").addEventListener("click", ()=> toggleNotes(!document.body.classList.contains("notes-on")));
 $("#theme").addEventListener("click", ()=>{
   const r = document.documentElement;
-  const now = r.getAttribute("data-theme");
-  const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  r.setAttribute("data-theme", now ? (now==="dark"?"light":"dark") : (sysDark?"light":"dark"));
+  r.setAttribute("data-theme", r.getAttribute("data-theme")==="light" ? "dark" : "light");
 });
 
-/* ?s=ez2 처럼 화면을 직접 열 수 있게 한다 — 캡처할 때 쓴다 */
+/* ?s=pol2 처럼 화면을 직접 열 수 있게 한다 — 캐프처할 때 쓴다 */
 const want = new URLSearchParams(location.search).get("s");
 if(new URLSearchParams(location.search).get("notes") === "off") toggleNotes(false); else toggleNotes(true);
 go(want && (S[want] || MENU[want]) ? want : "ez");
