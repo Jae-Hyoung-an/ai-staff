@@ -1,4 +1,4 @@
-const MAP_VIS = `<div class="map"><svg viewBox="0 0 640 330" role="img" aria-label="권역 시각화 — 기준 권역은 실선, 운용용 권역은 점선으로 곹츠 그리고, 벤더 기준 권역의 중첩 구간과 연결이 빠진 권역을 함까 표시">
+const MAP_VIS = `<div class="map"><svg viewBox="0 0 640 330" role="img" aria-label="권역 시각화 — 기준 권역은 실선, 운영용 권역은 점선으로 겹쳐 그리고, 벤더 기준 권역의 중첩 구간과 연결이 빠진 권역을 함께 표시">
   <defs><pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
     <rect width="7" height="7" fill="var(--warn)" fill-opacity=".1"/><line x1="0" y1="0" x2="0" y2="7" stroke="var(--warn)" stroke-width="2.4" opacity=".55"/>
   </pattern></defs>
@@ -15,7 +15,7 @@ const MAP_VIS = `<div class="map"><svg viewBox="0 0 640 330" role="img" aria-lab
   <path d="M84 58 L238 48 L266 122 L204 194 L100 176 Z" fill="none" stroke="var(--sales)" stroke-width="2.2"/>
   <path d="M96 68 L258 56 L292 128 L214 184 L112 168 Z" fill="none" stroke="var(--sales)" stroke-width="1.6" stroke-dasharray="6 4" opacity=".75"/>
   <path d="M302 146 L342 158 L328 214 L266 202 Z" fill="var(--surface-3)" stroke="var(--line-2)" stroke-width="1.5" stroke-dasharray="4 4"/>
-  <text x="276" y="184" font-family="IBM Plex Sans KR" font-size="10" fill="var(--faint)">벼 지역</text>
+  <text x="276" y="184" font-family="IBM Plex Sans KR" font-size="10" fill="var(--faint)">빈 지역</text>
   <text x="100" y="84" font-family="IBM Plex Sans KR" font-size="12" font-weight="600" fill="var(--cost)">성북 북부</text>
   <text x="330" y="84" font-family="IBM Plex Sans KR" font-size="12" font-weight="600" fill="var(--cost)">성북 동부</text>
   <text x="146" y="272" font-family="IBM Plex Sans KR" font-size="12" fill="var(--cost)">성북 남부</text>
