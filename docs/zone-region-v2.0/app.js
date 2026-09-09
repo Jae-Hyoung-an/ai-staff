@@ -8,7 +8,7 @@ const MENUS = {
   ],
   "nav-vendor":[
     {key:"pol", t:"벤더 배송권역 정책 관리",    a:"c", doc:"09", screens:["pol","pol2","pol3","pol4"]},
-    {key:"set", t:"세트 분배 관리",            a:"c", doc:"10", screens:["set","set2","set3","set4"]},
+    {key:"set", t:"세트 분배 관리",            a:"c", doc:"10", screens:["set","set2","set3","set4","set5"]},
     {key:"ven", t:"벤더 관리",                a:"c", doc:"11", screens:[]}
   ]
 };
