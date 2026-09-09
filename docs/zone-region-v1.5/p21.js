@@ -1,5 +1,5 @@
-const PARENT = {ez2:"ez",vdr2:"vdr",sp2:"sp",cp2:"cp",pol2:"pol",set2:"set",ven2:"ven"};
-const SUB = {ez:"ez2",vdr:"vdr2",sp:"sp2",cp:"cp2",pol:"pol2",set:"set2",ven:"ven2"};
+const PARENT = {ez2:"ez",vdr2:"vdr",pol2:"pol",set2:"set",ven2:"ven"};
+const SUB = {ez:"ez2",vdr:"vdr2",pol:"pol2",set:"set2",ven:"ven2"};
 
 Object.entries(NAV).forEach(([id,items])=>{
   $("#"+id).innerHTML = items.map(([k,t,a])=>`<button class="navitem" data-go="${k}"><span class="axis ${a}"></span>${t}</button>`).join("");
