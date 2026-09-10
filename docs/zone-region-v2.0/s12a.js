@@ -118,3 +118,4 @@ S.vp = {
     ]))
   + `<div class="foot"${note(6)}><span><b>적용 범위</b> 수락 전 취소가 나오는 모든 자리 — 대시보드와 기사 수행 현황 (VP-4)</span><span class="strike">회귀 오더 상세 정보 표시</span>${mk(6)}</div>`;}
 };
+
