@@ -1,6 +1,6 @@
 /* =====================================================================
    부릉 인트라 화면 목업 v2.0 — 서식
-   색 · 타이포 · 컴포넌트 값은 QA2 인트라(intra.qa2.meshdev.io)에서 뽑아 맞쳬다.
+   색 · 타이포 · 컴포넌트 값은 QA2 인트라(intra.qa2.meshdev.io)에서 뽑아 맞췄다.
    다크가 기본이고, 「테마 전환」으로 라이트를 볼 수 있다.
    ===================================================================== */
 :root{
@@ -191,7 +191,7 @@ dl{margin:0}
 .pick .r>.pill{justify-self:start}
 .radio{width:15px;height:15px;border-radius:50%;border:2px solid var(--line-2);display:block}
 .pick .r.on .radio{border-color:var(--accent);border-width:5px}
-.pick .r.dis .radio{opacity:.45}
+.pick .r.dis .radio{border-style:dashed}
 
 /* ================= 하단 바 ================= */
 .pagebar{display:flex;align-items:center;gap:12px;margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
