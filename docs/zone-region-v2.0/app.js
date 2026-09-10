@@ -9,7 +9,7 @@ const MENUS = {
   "nav-vendor":[
     {key:"pol", t:"벤더 배송권역 정책 관리",    a:"c", doc:"09", screens:["pol","pol2","pol3","pol4"]},
     {key:"set", t:"세트 분배 관리",            a:"c", doc:"10", screens:["set","set2","set3","set4","set5"]},
-    {key:"ven", t:"벤더 관리",                a:"c", doc:"11", screens:[]}
+    {key:"ven", t:"벤더 관리",                a:"c", doc:"11", screens:["ven","ven2","ven3","ven4"]}
   ]
 };
 
@@ -27,7 +27,7 @@ Object.entries(MENUS).forEach(([id,items])=>{
 
 function todoScreen(m){
   return head({h:m.t, p:`이 메뉴의 화면은 아직 만들지 않았다. <b>${m.doc}번 페이지</b>가 완료되면 여기에 덧붙인다.`, owner:"—", review:"—"})
-    + card({title:"작성 예정"}, `<div class="hint">v2.0 목업은 <b>메뉴 페이지가 완료될 때마다 한 메뉴씩</b> 덧붙인다. 현재 반영된 것은 <b>02 영업존 · 09 벤더 배송권역 정책 · 10 세트 분배</b> 세 메뉴다.</div>`);
+    + card({title:"작성 예정"}, `<div class="hint">v2.0 목업은 <b>메뉴 페이지가 완료될 때마다 한 메뉴씩</b> 덧붙인다. 현재 반영된 것은 <b>02 영업존 · 09 벤더 배송권역 정책 · 10 세트 분배 · 11 벤더 관리</b> 네 메뉴다.</div>`);
 }
 
 let cur = "ez";
