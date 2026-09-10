@@ -13,7 +13,7 @@ const MENUS = {
     {key:"prg", t:"지점 권역 관리",            a:"",  doc:"04", screens:[]}
   ],
   "nav-vendor":[
-    {key:"pol", t:"벤더 배송권역 정책 관리",    a:"c", doc:"09", screens:["pol","pol2","pol3","pol4"]},
+    {key:"pol", t:"벤더 배송권역 정책 관리",    a:"c", doc:"09", screens:["pol","pol2","pol3","pol4","pol5"]},
     {key:"set", t:"세트 분배 관리",            a:"c", doc:"10", screens:["set","set2","set3","set4","set5"]},
     {key:"ven", t:"벤더 관리",                a:"c", doc:"11", screens:["ven","ven2","ven3","ven4"]}
   ],
