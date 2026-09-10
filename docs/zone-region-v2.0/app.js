@@ -2,6 +2,9 @@
    메뉴 페이지가 완료될 때마다 해당 메뉴의 screens 에 화면 키를 채운다.
    비어 있는 메뉴는 「작성 예정」 자리만 보여준다. */
 const MENUS = {
+  "nav-mon":[
+    {key:"monm", t:"오더 상세",                a:"",  doc:"12", screens:["mon"]}
+  ],
   "nav-area":[
     {key:"ptn", t:"지점 관리",                a:"",  doc:"03", screens:["pt","pt2","pt3","pt4"]}
   ],
@@ -13,6 +16,10 @@ const MENUS = {
     {key:"pol", t:"벤더 배송권역 정책 관리",    a:"c", doc:"09", screens:["pol","pol2","pol3","pol4"]},
     {key:"set", t:"세트 분배 관리",            a:"c", doc:"10", screens:["set","set2","set3","set4","set5"]},
     {key:"ven", t:"벤더 관리",                a:"c", doc:"11", screens:["ven","ven2","ven3","ven4"]}
+  ],
+  "nav-vp":[
+    {key:"vpd", t:"대시보드",                  a:"c", doc:"12", screens:["vp"]},
+    {key:"vpa", t:"기사 수행 현황",             a:"c", doc:"12", screens:["vp2","vp3"]}
   ]
 };
 
@@ -28,11 +35,11 @@ Object.entries(MENUS).forEach(([id,items])=>{
   }).join("");
 });
 
-const GRP = {"nav-area":"지역 관리","nav-region":"권역 관리","nav-vendor":"벤더 정책 관리"};
+const GRP = {"nav-mon":"관제 관리","nav-area":"지역 관리","nav-region":"권역 관리","nav-vendor":"벤더 정책 관리","nav-vp":"벤더포털"};
 
 function todoScreen(m){
   return head({h:m.t, p:`이 메뉴의 화면은 아직 만들지 않았다. <b>${m.doc}번 페이지</b>가 완료되면 여기에 덧붙인다.`, owner:"—", review:"—"})
-    + card({title:"작성 예정"}, `<div class="hint">v2.0 목업은 <b>메뉴 페이지가 완료될 때마다 한 메뉴씩</b> 덧붙인다. 현재 반영된 것은 <b>03 지점 설정 · 02 영업존 · 09 벤더 배송권역 정책 · 10 세트 분배 · 11 벤더 관리</b> 다섯 메뉴다.</div>`);
+    + card({title:"작성 예정"}, `<div class="hint">v2.0 목업은 <b>메뉴 페이지가 완료될 때마다 한 메뉴씩</b> 덧붙인다. 현재 반영된 것은 <b>03 지점 설정 · 02 영업존 · 09 벤더 배송권역 정책 · 10 세트 분배 · 11 벤더 관리 · 12 벤더포털·관제</b>다.</div>`);
 }
 
 let cur = "ez";
