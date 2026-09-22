@@ -74,6 +74,21 @@
 - **유형**: HTTP — Smithery Slack MCP
 - **인증**: OAuth / Smithery
 
+### 인트라 라이트 (VROONG intra-lite) ⭐ 실시간 조회
+
+- **목적**: 인트라 실시간 데이터 조회 전용 — 오더 상태·타임라인, 기사, 지점, 상점, 관제 현황
+- **트리거**: "이 오더 지금 상태", "관제 현황 몇 건", 기사코드·지점 필터 조회, 오더번호(`20260824235952#1203` 형식) 조회
+- **유형**: 조직 MCP (`intra_lite` 단일 도구, `action`으로 기능 선택). 시작은 `action='capabilities'`
+- **규칙**: 조회 전용. 수정·등록·발송은 `action='validate_change'`로 검증만 하고 웹 화면으로 안내. 집계·순위·추세는 Metabase(또는 #ask-vroong-data-agent). 403은 "현재 계정 권한 밖"
+- **비고**: 8/6 문서의 "인트라 자동화는 Claude에서 불가"를 대체. Cursor Browser 의존 해소 (2026-09 확인)
+
+### 도라에몽
+
+- **목적**: 배송 실패 로그·접수 실패 원인·API 원문·취소 이력·연동사 조회
+- **트리거**: "왜 접수가 안 됐지", "이 오더 배송 실패 로그", "연동사 조회"
+- **유형**: 조직 MCP
+- **규칙**: 창구 선택은 `vroong-data-routing` 스킬이 판단 (아래)
+
 ### context7 (선택)
 
 - **목적**: 라이브러리·프레임워크 최신 문서 조회
@@ -107,22 +122,33 @@ Claude Desktop/Cowork의 `claude_desktop_config.json` `mcpServers`는 **`command
 
 ---
 
-## Cursor 전용 (Claude로 이전 안 함)
+## 조직 스킬 (Claude Desktop)
 
-| 서버 | 이유 |
+| 스킬 | 언제 | 하는 일 |
+|------|------|---------|
+| `vroong-data-routing` | 오더·배송·기사·지점·상점·정산·물량 질문 전부 | 인트라 라이트 / 도라에몽 / VDA 중 창구를 고르고 **직접 호출**. 커넥터 미설치면 설치 안내 |
+| `vooster-review` | 기획서·PRD·배포 계획·SOP 등 문서 작성·검토 시 | 조직 렌즈 갭 리포트. "검토해줘"라도 먼저 적용 여부를 묻고, "부스터로"라고 콕 집으면 바로 적용 |
+| `korean-rrn-protection` | 개인정보 포함 가능 자료 | 주민등록번호 등 감지 시 작업 거부 (조직 정책) |
+
+---
+
+## Cursor 전용 (2026-08-12 이후 미사용)
+
+| 서버 | 대체 |
 |------|------|
-| `cursor-ide-browser` | Cursor 내장 브라우저. 인트라 자동화는 Claude에서 불가 → 수동 |
-| `cursor-app-control` | Cursor UI 제어용 |
+| `cursor-ide-browser` | **인트라 라이트 MCP**로 조회 가능. 수정·발송은 인트라 웹 화면 |
+| `cursor-app-control` | 불필요 |
 
 ---
 
 ## AI 행동 규칙
 
-1. 데이터 조회 → **metabase** + `rules/data_query.md`
-2. 노션 동기화 → **Notion** (로컬 SoT 먼저 수정 후 배포)
+1. 데이터 조회 → 창구는 `vroong-data-routing`이 판단. 집계·분석은 **metabase** + `rules/data_query.md`, 실시간 단건은 **인트라 라이트**
+2. 노션 동기화 → **Notion**. **존/권역 PRD는 노션 v2.0이 정본**(로컬은 v1.4까지). 목업·덱·체크리스트는 repo가 정본
 3. Jira/Confluence → **Atlassian**
 4. MCP 실패 시 → 사용자에게 설정/인증 재연결 안내 (시크릿을 채팅에 출력하지 않음)
 5. 새 MCP 추가 시 → 이 문서에 **목적/트리거/유형**만 등록, 키 값은 로컬만
+6. **config·토큰을 채팅에 붙여넣지 않는다** — Cowork 세션 감사 로그에 평문으로 남는다 (2026-08-12 PAT 노출 사례 → rotate 필요)
 
 ---
 
@@ -139,4 +165,4 @@ Claude Desktop/Cowork의 `claude_desktop_config.json` `mcpServers`는 **`command
 
 > Snowflake는 db_id=12(`Snowflake Admin`). 그 외 조회 가능 DB: (MySQL) lastmile=2, Prime DB=3, PointDB=6.
 
-*마지막 업데이트: 2026-08-12*
+*마지막 업데이트: 2026-09-22 (인트라 라이트·도라에몽·조직 스킬 등록, Cursor 전용 표 정정, SoT 규칙 갱신)*
