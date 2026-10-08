@@ -374,8 +374,8 @@ function renderKpi() {
        ${activeBlues().length ? '모집단과 파란 박스 위치가 맞는지 확인하세요.' : '먼저 이 상점들을 덮는 파란 박스를 그리세요.'}</div>` : '';
   $('#kpi').innerHTML = `<h2>전체 결과 <small>모집단 ${fmt(N)}건 · 일평균 ${fmt(N / nd)}건(${nd}일)</small></h2>${alert}
     <div class="kpis">
-      <div class="kpi main"><div class="k">권역 외 비중 (보수 B = T2+T3)</div><div class="v">${pct(out, N)}${kd(out, b ? b.t[2] + b.t[3] : 0)}</div>
-        <div class="k">${fmt(out)}건 · 낙관 A(T3만) ${pct(t[3], N)}${kd(t[3], b ? b.t[3] : 0)}</div></div>
+      <div class="kpi main"><div class="k">권역 외 비중 (T3 이탈)</div><div class="v">${pct(t[3], N)}${kd(t[3], b ? b.t[3] : 0)}</div>
+        <div class="k">${fmt(t[3])}건 · 보조: 보수(T2+T3) ${pct(out, N)}${kd(out, b ? b.t[2] + b.t[3] : 0)}</div></div>
       <div class="kpi"><div class="k">권역 내 확보율 (T1)</div><div class="v">${pct(t[1], N)}${kd(t[1], b ? b.t[1] : 0, false)}</div></div>
       <div class="kpi ${N && t[5] / N >= 0.2 ? 'bad' : ''}"><div class="k">권역 미포함 (T5) — 벤더 후보 없음</div><div class="v">${pct(t[5], N)}${kd(t[5], b ? b.t[5] : 0)}</div></div>
       <div class="kpi"><div class="k">출발 미커버 (T4+T5)</div><div class="v">${pct(t[4] + t[5], N)}${kd(t[4] + t[5], b ? b.t[4] + b.t[5] : 0)}</div></div>
@@ -383,7 +383,7 @@ function renderKpi() {
     </div>
     <div class="bar">${bar}</div>
     <div class="legend5">${[1, 2, 3, 4, 5].map((k) => `<span><i style="background:${T_COLOR[k]}"></i>${E.T_LABEL[k]} ${pct(t[k], N)}</span>`).join('')}</div>
-    <div class="note">B는 권역 간(T2)을 권역 외로 본다(복귀가 실현된다고 가정하지 않음). A는 T2가 도착 권역 벤더의 복귀로 처리된다고 본다. 실측(배정 기사 기준)은 둘 사이에 온다는 보장이 없다.</div>`;
+    <div class="note">권역 외 비중은 T3(도착이 어느 파란 박스에도 없는 오더)만 센다. 권역 간(T2)은 도착 권역 벤더의 복귀로 처리된다고 본다. 보조 지표 보수(T2+T3)는 복귀가 실현되지 않는다고 가정한 값이다. 실측(배정 기사 기준)이 둘 사이에 온다는 보장은 없다.</div>`;
 }
 
 function renderPerPoly() {
