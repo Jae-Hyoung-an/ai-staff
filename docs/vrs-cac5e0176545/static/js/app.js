@@ -284,7 +284,37 @@ function ensureZone(z) {
   const key = E.geomKey(z.geometry);
   if (z.key === key && z.O) return;
   z.key = key;
-  z.O = E.membership(E.prepare(z.geometry), st.X.ox, st.X.oy, st.n);
+  const P = E.prepare(z.geometry);
+  z.O = E.membership(P, st.X.ox, st.X.oy, st.n);
+  z.D = E.membership(P, st.X.dx, st.X.dy, st.n);
+}
+
+// 기존 권역 외(영업존 기준): 오더의 영업존 안에서 출발해 그 영업존 밖으로 배송된 오더. 분모는 모집단 N
+// 오더의 영업존 = 존 하나를 고르면 그 존, 아니면 관제 영업존(표시 중), 관제 영업존이 없으면 출발지를 품은 표시 중 영업존
+function legacyOut() {
+  const { n, col, mask } = st;
+  const pop = $('#pop').value;
+  const zIdx = pop.startsWith('z') && pop !== 'zones' ? +pop.slice(1) : 0;
+  const vis = visibleZones().filter((z) => z.O && z.D);
+  const byIdx = new Array(256).fill(null);
+  if (zIdx) {
+    const z = st.zones.find((x) => x.zoneIdx === zIdx && x.O && x.D);
+    if (!z) return null;
+    byIdx[zIdx] = z;
+  } else {
+    if (!vis.length) return null;
+    for (const z of vis) if (z.zoneIdx) byIdx[z.zoneIdx] = z;
+  }
+  let out = 0, inZone = 0;
+  for (let i = 0; i < n; i++) {
+    if (!mask[i]) continue;
+    let z = byIdx[col.zone[i]];
+    if (!z && !zIdx) z = vis.find((x) => x.O[i]);
+    if (!z || !z.O[i]) continue;
+    inZone++;
+    if (!z.D[i]) out++;
+  }
+  return { out, inZone };
 }
 
 function activeBlues() { return st.blues.filter((b) => b.active && b.S); }
@@ -300,6 +330,7 @@ function recompute() {
   const act = activeBlues();
   st.cls = E.classify(st.n, act.map((b) => b.S), act.map((b) => b.D));
   st.agg = E.aggregate(st.n, st.mask, act.map((b) => b.S), act.map((b) => b.D), st.cls);
+  st.legacy = legacyOut();
   renderKpi(); renderPerPoly(); renderBlueList(); renderHeat(); renderGap(); renderBaseline();
   setStatus(null, performance.now() - t0);
 }
@@ -368,6 +399,15 @@ function renderKpi() {
   // 권역 외는 '출발지가 박스 안'인 오더만 센다 → 출발지가 박스 밖이면 권역 외 0%가 오히려 나쁜 상태
   const uncovered = t[4] + t[5];
   const popLabel = $('#pop').selectedOptions[0]?.text || '';
+  // 기존 권역 외(영업존 기준)와 비교: 파란 박스가 있을 때만 차이를 보여 준다(없으면 T3가 0이라 비교가 무의미)
+  const lg = st.legacy;
+  let legacy = '<div class="k">보조: 기존 권역 외(영업존 기준) — 영업존이 없어 계산할 수 없음</div>';
+  if (lg) {
+    const dv = N ? 100 * (t[3] - lg.out) / N : 0;
+    const diff = !activeBlues().length ? '' : Math.abs(dv) < 0.05 ? ' · 기존과 같음'
+      : ` · 기존 대비 <span class="d ${dv < 0 ? 'good' : 'bad'}">${dv > 0 ? '+' : ''}${dv.toFixed(1)}%p</span>`;
+    legacy = `<div class="k" title="영업존 안에서 출발한 오더 ${fmt(lg.inZone)}건 중 ${fmt(lg.out)}건이 그 영업존 밖으로 배송 (분모는 모집단 ${fmt(N)}건)">보조: 기존 권역 외(영업존 기준) ${pct(lg.out, N)}${diff}</div>`;
+  }
   const alert = N && uncovered / N >= 0.2
     ? `<div class="alert">⚠ 이 모집단(${esc(popLabel)}) 오더의 <b>${pct(uncovered, N)}</b>는 출발지가 어느 파란 박스에도 없습니다.
        권역 외는 <b>출발지가 박스 안</b>인 오더만 세므로, 이 오더들은 권역 외가 아니라 <b>권역 미포함(벤더 후보 없음, 프렌즈만)</b>으로 잡힙니다.
@@ -375,7 +415,7 @@ function renderKpi() {
   $('#kpi').innerHTML = `<h2>전체 결과 <small>모집단 ${fmt(N)}건 · 일평균 ${fmt(N / nd)}건(${nd}일)</small></h2>${alert}
     <div class="kpis">
       <div class="kpi main"><div class="k">권역 외 비중 (T3 이탈)</div><div class="v">${pct(t[3], N)}${kd(t[3], b ? b.t[3] : 0)}</div>
-        <div class="k">${fmt(t[3])}건 · 보조: 보수(T2+T3) ${pct(out, N)}${kd(out, b ? b.t[2] + b.t[3] : 0)}</div></div>
+        <div class="k">${fmt(t[3])}건 · 보조: 보수(T2+T3) ${pct(out, N)}${kd(out, b ? b.t[2] + b.t[3] : 0)}</div>${legacy}</div>
       <div class="kpi"><div class="k">권역 내 확보율 (T1)</div><div class="v">${pct(t[1], N)}${kd(t[1], b ? b.t[1] : 0, false)}</div></div>
       <div class="kpi ${N && t[5] / N >= 0.2 ? 'bad' : ''}"><div class="k">권역 미포함 (T5) — 벤더 후보 없음</div><div class="v">${pct(t[5], N)}${kd(t[5], b ? b.t[5] : 0)}</div></div>
       <div class="kpi"><div class="k">출발 미커버 (T4+T5)</div><div class="v">${pct(t[4] + t[5], N)}${kd(t[4] + t[5], b ? b.t[4] + b.t[5] : 0)}</div></div>
@@ -383,7 +423,8 @@ function renderKpi() {
     </div>
     <div class="bar">${bar}</div>
     <div class="legend5">${[1, 2, 3, 4, 5].map((k) => `<span><i style="background:${T_COLOR[k]}"></i>${E.T_LABEL[k]} ${pct(t[k], N)}</span>`).join('')}</div>
-    <div class="note">권역 외 비중은 T3(도착이 어느 파란 박스에도 없는 오더)만 센다. 권역 간(T2)은 도착 권역 벤더의 복귀로 처리된다고 본다. 보조 지표 보수(T2+T3)는 복귀가 실현되지 않는다고 가정한 값이다. 실측(배정 기사 기준)이 둘 사이에 온다는 보장은 없다.</div>`;
+    <div class="note">권역 외 비중은 T3(도착이 어느 파란 박스에도 없는 오더)만 센다. 권역 간(T2)은 도착 권역 벤더의 복귀로 처리된다고 본다. 보조 지표 보수(T2+T3)는 복귀가 실현되지 않는다고 가정한 값이다. 실측(배정 기사 기준)이 둘 사이에 온다는 보장은 없다.
+      기존 권역 외(영업존 기준)는 영업존 안에서 출발해 그 영업존 밖으로 배송된 오더 ÷ 모집단이다. 존을 하나 고르면 그 영업존 기준이고, 전체일 때는 오더마다 자기 관제 영업존 기준으로 세어 합한다. 파란 박스와 무관하다.</div>`;
 }
 
 function renderPerPoly() {
