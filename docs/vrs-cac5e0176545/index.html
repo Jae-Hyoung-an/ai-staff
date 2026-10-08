@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>벤더 배송권역 시뮬레이터</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@geoman-io/leaflet-geoman-free@2.20.2/dist/leaflet-geoman.css">
+<link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+<header>
+  <h1>벤더 배송권역 시뮬레이터</h1>
+  <label>데이터 <select id="dataset"></select></label>
+  <label>모집단 <select id="pop"></select></label>
+  <label><input type="checkbox" id="fG4"> G4만</label>
+  <label><input type="checkbox" id="fVendor"> 벤더 배차만</label>
+  <label><input type="checkbox" id="fDone"> 배달완료만</label>
+  <label>요일 <select id="fDay"><option value="all">전체</option><option value="wd">평일</option><option value="we">주말</option></select></label>
+  <label>시간 <input id="fH0" type="number" min="0" max="23" value="0">~<input id="fH1" type="number" min="0" max="23" value="23">시</label>
+  <button id="btnDef" class="ghost">정의</button>
+  <span id="status">불러오는 중…</span>
+</header>
+<main>
+  <aside id="left">
+    <section>
+      <h2>영업존 <small>빨강 · 고정</small></h2>
+      <div id="zoneList"></div>
+      <div class="row">
+        <button id="btnZonePaste">영업존 붙여넣기</button>
+        <button id="btnZoneReset" class="ghost" hidden>원래대로</button>
+        <label class="chk"><input type="checkbox" id="lyRing" checked> 3km 범위선</label>
+      </div>
+    </section>
+    <section>
+      <h2>파란 박스 <small>벤더 배송권역</small></h2>
+      <p class="hint">지도 왼쪽 도구로 그리거나, 인트라 편집기에서 Ctrl/Cmd+C 한 권역을 이 화면에서 Ctrl+V 하세요.</p>
+      <div id="blueList"></div>
+      <div class="row wrap">
+        <button id="btnBluePaste">붙여넣기</button>
+        <button id="btnSave">시나리오 저장</button>
+        <button id="btnLoad">불러오기</button>
+        <button id="btnGeojson">GeoJSON 내보내기</button>
+        <button id="btnGeoImport">GeoJSON 불러오기</button><input id="fileGeo" type="file" accept=".geojson,.json,application/geo+json,application/json" hidden>
+        <button id="btnClear" class="danger">모두 지우기</button>
+      </div>
+    </section>
+    <section>
+      <h2>지도 레이어</h2>
+      <label class="chk"><input type="checkbox" id="lyGap" checked> 커버 공백 하이라이트</label>
+      <label>분포 <select id="heatMode">
+        <option value="out">권역 외 오더 도착지 (T2+T3)</option>
+        <option value="none5">권역 미포함 오더 도착지 (T5)</option>
+        <option value="dest">전체 오더 도착지</option>
+        <option value="origin">전체 오더 출발지</option>
+        <option value="off">끄기</option>
+      </select></label>
+      <label class="chk"><input type="checkbox" id="lySelOnly"> 선택한 파란 박스의 권역 외만</label>
+    </section>
+  </aside>
+  <div id="map"></div>
+  <aside id="right">
+    <section id="kpi"></section>
+    <section id="perPoly"></section>
+    <section id="gap"></section>
+    <section id="baseline"></section>
+  </aside>
+</main>
+<div id="modal" class="modal" hidden><div class="box"><div id="modalBody"></div></div></div>
+<div id="toast" hidden></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@geoman-io/leaflet-geoman-free@2.20.2/dist/leaflet-geoman.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
+<script type="module" src="static/js/app.js"></script>
+</body>
+</html>
