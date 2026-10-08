@@ -1,5 +1,5 @@
 // 벤더 배송권역 시뮬레이터 — 화면
-import * as E from './engine.js';
+import * as E from './engine.js?v=7466128357';
 
 const $ = (s) => document.querySelector(s);
 const fmt = (x) => Math.round(x).toLocaleString('ko-KR');
