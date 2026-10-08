@@ -21,6 +21,7 @@ const map = L.map('map', { zoomControl: true, preferCanvas: false }).setView([37
 // CARTO 타일은 2026-10 현재 키 없이 쓰면 'API KEY REQUIRED' 워터마크가 찍힌다 → OSM 표준 타일(흐리게)
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors', maxZoom: 19, className: 'baseTiles',
+  referrerPolicy: 'strict-origin-when-cross-origin', // OSM 이용 정책: 출처가 없으면 'Access blocked' 타일이 온다
 }).addTo(map);
 // 커버 공백 빗금 무늬 (CSS fill: url(#vrsHatch))
 document.body.insertAdjacentHTML('beforeend', `<svg width="0" height="0" style="position:absolute"><defs>
@@ -128,6 +129,7 @@ async function unlockPack() {
     try { return parsePack(await decryptPack(enc, pw)); } catch (e) {
       if (e.name !== 'OperationError') throw e;
       msg = '비밀번호가 맞지 않습니다. 다시 입력하세요.';
+      setStatus('비밀번호를 기다리는 중…');
     }
   }
 }

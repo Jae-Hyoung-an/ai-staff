@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<meta name="referrer" content="no-referrer">
+<!-- 다른 사이트(지도 타일·CDN)에는 폴더 이름 없이 사이트 주소만 보낸다. OSM 타일은 출처(Referer)가 없으면 막힌다 -->
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>벤더 배송권역 시뮬레이터</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@geoman-io/leaflet-geoman-free@2.20.2/dist/leaflet-geoman.css">
