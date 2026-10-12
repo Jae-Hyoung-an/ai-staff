@@ -5,7 +5,7 @@ const $ = (s) => document.querySelector(s);
 const fmt = (x) => Math.round(x).toLocaleString('ko-KR');
 const pct = (a, b, d = 1) => (b ? `${(100 * a / b).toFixed(d)}%` : '-');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const C = { sales: '#c0392b', cost: '#2a5c86', warn: '#e67e22', ok: '#1e7355', new: '#5b3fa8', mute: '#8a8f98' };
+const C = { sales: '#c0392b', cost: '#2a5c86', focus: '#0a66ff', warn: '#e67e22', ok: '#1e7355', new: '#5b3fa8', mute: '#8a8f98' };
 const T_COLOR = { 1: C.ok, 2: '#f0b37e', 3: C.warn, 4: C.new, 5: C.mute };
 const RING_KM = 3; // 상점 배송 반경 3km (영업존 외곽 기준)
 const LS_KEY = 'vrs.v1.blues';
@@ -442,7 +442,7 @@ function renderPerPoly() {
   $('#perPoly').innerHTML = `<h2>폴리곤별 <small>권역 기준 분류</small></h2>
     <table><thead><tr><th>파란 박스</th><th>출발</th><th>권역 내</th><th>권역 외</th><th>복귀</th><th>실질 권역 외율</th><th>단독</th><th>km²</th></tr></thead><tbody>${rows}</tbody></table>
     <div class="note">출발 = 권역 내+권역 외. 실질 권역 외율 = 그 권역의 권역 외 중 다른 어떤 권역에서도 권역 내가 아닌 오더 ÷ 출발. 단독 = 이 박스를 끄면 권역 미포함이 되는 오더(출발·도착이 걸친 박스가 이것 하나뿐). 겹침 때문에 폴리곤별 합계는 전체와 다르다.</div>`;
-  $('#perPoly').querySelectorAll('tr[data-id]').forEach((tr) => tr.onclick = () => selectBlue(st.blues.find((b) => b.id === +tr.dataset.id), true));
+  $('#perPoly').querySelectorAll('tr[data-id]').forEach((tr) => tr.onclick = () => focusBlue(st.blues.find((b) => b.id === +tr.dataset.id)));
 }
 
 function renderGap() {
@@ -604,10 +604,13 @@ function setBaseline() {
 }
 
 // ───────── 파란 박스 ─────────
+// 고른 박스는 밝은 파랑·굵게·맨 위로, 편집 중에는 나머지를 흐리게 → 겹친 박스 사이에서도 어느 박스인지 보인다
 function styleBlue(b) {
   const on = editing === b || st.sel === b;
-  b.layer.setStyle({ color: C.cost, fillColor: C.cost, weight: on ? 3.5 : 2,
-    fillOpacity: b.active ? (on ? 0.2 : 0.12) : 0.03, opacity: b.active ? 1 : 0.35, dashArray: b.active ? null : '4 4' });
+  const dim = !on && !!editing;
+  b.layer.setStyle({ color: on ? C.focus : C.cost, fillColor: on ? C.focus : C.cost, weight: on ? 4 : 2,
+    fillOpacity: b.active ? (on ? 0.22 : dim ? 0.04 : 0.12) : 0.03, opacity: b.active ? (dim ? 0.45 : 1) : 0.35, dashArray: b.active ? null : '4 4' });
+  if (on && b.layer.bringToFront) b.layer.bringToFront();
 }
 
 // ───────── 박스 편집: 박스를 누르면 그 박스만 편집 모드 ─────────
@@ -726,11 +729,17 @@ function removeBlue(b, fromMap = true) {
   recompute(); scheduleGap(); saveLocal();
 }
 
-function selectBlue(b, zoom = false) {
-  st.sel = st.sel === b && !zoom ? null : b;
-  st.blues.forEach(styleBlue);
-  if (zoom && b) map.fitBounds(b.layer.getBounds(), { maxZoom: 15 });
-  renderBlueList(); renderPerPoly(); renderHeat();
+// [보기]·폴리곤별 표의 행: 그 박스로 지도를 옮기고 바로 편집 상태(꼭짓점 끌기·추가)로
+function focusBlue(b) {
+  if (!b || !b.layer) return;
+  try { // 그리기·전체 편집 같은 Geoman 전체 도구가 켜져 있으면 끈다(개별 편집과 겹치지 않게)
+    map.pm.disableDraw(); map.pm.disableGlobalEditMode(); map.pm.disableGlobalDragMode();
+    map.pm.disableGlobalRemovalMode(); if (map.pm.disableGlobalCutMode) map.pm.disableGlobalCutMode();
+  } catch { /* 없는 도구는 무시 */ }
+  startEdit(b);
+  map.fitBounds(b.layer.getBounds(), { maxZoom: 15, padding: [30, 30] });
+  const item = document.querySelector(`#blueList .item[data-id="${b.id}"]`);
+  if (item) item.scrollIntoView({ block: 'nearest' });
 }
 
 function renderBlueList() {
@@ -745,7 +754,7 @@ function renderBlueList() {
         <span class="sw" style="background:${C.cost}"></span><input type="text" class="nm" value="${esc(b.name)}" maxlength="80"></div>
       <div class="meta">${b.area ? `${b.area.toFixed(1)}km²` : ''} ${b.P ? `· 꼭짓점 ${b.P.nv}` : ''}
         ${p ? `· 실질 권역 외 ${pct(p.realOut, p.INT + p.OUT)}` : b.active && !b.S ? '<span class="warnTag">⚠ 도형 없음</span>' : ''} ${warn.map((w) => `<span class="warnTag">⚠ ${esc(w)}</span>`).join(' ')}</div>
-      <div class="row"><button class="mini ed ${editing === b ? 'primary' : ''}">${editing === b ? '편집 끝' : '편집'}</button><button class="mini cp">인트라로 복사</button><button class="mini zm">보기</button><button class="mini danger rm">삭제</button></div></div>`;
+      <div class="row"><button class="mini ed ${editing === b ? 'primary' : ''}">${editing === b ? '편집 끝' : '편집'}</button><button class="mini cp">인트라로 복사</button><button class="mini zm" title="이 박스로 지도를 옮기고 꼭짓점을 고칠 수 있게 엽니다">보기</button><button class="mini danger rm">삭제</button></div></div>`;
   }).join('');
   el.querySelectorAll('.item').forEach((it) => {
     const b = st.blues.find((x) => x.id === +it.dataset.id);
@@ -757,7 +766,7 @@ function renderBlueList() {
       map.fitBounds(b.layer.getBounds(), { maxZoom: 15, padding: [30, 30] });
     };
     it.querySelector('.cp').onclick = () => copyIntra(b);
-    it.querySelector('.zm').onclick = () => selectBlue(b, true);
+    it.querySelector('.zm').onclick = () => focusBlue(b);
     it.querySelector('.rm').onclick = () => { if (confirm(`'${b.name}'을(를) 삭제할까요?`)) removeBlue(b); };
   });
 }
