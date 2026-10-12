@@ -1,5 +1,5 @@
 // 벤더 배송권역 시뮬레이터 — 화면
-import * as E from './engine.js?v=7466128357';
+import * as E from './engine.js?v=fa93bbea6d';
 
 const $ = (s) => document.querySelector(s);
 const fmt = (x) => Math.round(x).toLocaleString('ko-KR');
@@ -44,6 +44,7 @@ map.pm.addControls({
   removalMode: true, rotateMode: false,
 });
 try { map.pm.setLang('ko'); } catch { /* 번역 없으면 영어 */ }
+map.pm.setGlobalOptions({ removeLayerBelowMinVertexCount: false }); // 전체 편집 도구도 3개 아래로는 못 지움
 map.pm.setPathOptions({ color: C.cost, fillColor: C.cost, fillOpacity: 0.12, weight: 2 });
 
 const legend = L.control({ position: 'bottomleft' });
@@ -72,9 +73,9 @@ async function getJSON(url) { const r = await fetch(url); if (!r.ok) throw new E
 
 // ───────── 데이터 창구: 로컬 서버(server.py) 또는 정적 배포(암호화 데이터 팩) ─────────
 // 정적 배포(GitHub Pages)는 같은 폴더의 data.vrs.enc 를 비밀번호로 풀어 브라우저 안에서만 쓰고,
-// 영업존 수정·시나리오는 이 브라우저(localStorage)에만 저장한다
+// 시나리오·영업존 표시 여부는 이 브라우저(localStorage)에만 저장한다(영업존 모양은 배포본 그대로, 화면에서 못 바꿈)
 const PACK_URL = 'data.vrs.enc';
-const LS_ZONES = 'vrs.v1.zonesLocal', LS_SCEN = 'vrs.v1.scenarios';
+const LS_ZONES = 'vrs.v1.zonesLocal', LS_SCEN = 'vrs.v1.scenarios'; // LS_ZONES는 예전 판 정리용
 const bk = { mode: 'server', pack: null };
 
 async function detectBackend() {
@@ -152,14 +153,11 @@ async function bkDataset(name) {
   return { meta: d.meta, buf: bk.pack.blobs.slice(d.binOffset, d.binOffset + d.binLength), stores: d.stores };
 }
 async function bkMeta(name) { return bk.mode === 'server' ? getJSON(`/data/${name}.json`) : bk.pack.header.datasets.find((x) => x.meta.dataset === name).meta; }
+// 영업존은 고정(추가·삭제 없음, 표시/숨김만). 예전 판에서 이 브라우저에 바꿔 둔 영업존은 지우고 배포본 것을 쓴다
 async function bkZones() {
   if (bk.mode === 'server') return getJSON('/api/layers/sales_zones');
-  return lsGet(LS_ZONES, null) || bk.pack.header.zones;
-}
-async function bkSaveZones(fc) {
-  if (bk.mode === 'static') return lsSet(LS_ZONES, fc) ? { ok: true } : { ok: false, error: '브라우저 저장 공간 부족' };
-  const r = await fetch('/api/layers/sales_zones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fc) });
-  return r.ok ? { ok: true } : { ok: false, error: (await r.json().catch(() => ({}))).error || r.status };
+  try { localStorage.removeItem(LS_ZONES); } catch { /* 무시 */ }
+  return bk.pack.header.zones;
 }
 async function bkScenarioList() {
   if (bk.mode === 'server') return getJSON('/api/scenarios');
@@ -260,7 +258,10 @@ function salesOriginAny() {
 function layerGeometry(layer) {
   const gj = layer && layer.toGeoJSON ? layer.toGeoJSON() : null;
   const g = gj && (gj.type === 'Feature' ? gj.geometry : gj.type === 'FeatureCollection' ? gj.features[0]?.geometry : null);
-  return g && (g.type === 'Polygon' || g.type === 'MultiPolygon') ? g : null;
+  if (!g || (g.type !== 'Polygon' && g.type !== 'MultiPolygon')) return null;
+  // 꼭짓점이 3개 미만인 고리가 있으면 도형 없음으로 본다(계산·저장·공유 코드에서 빠짐)
+  const polys = g.type === 'Polygon' ? [g.coordinates] : g.coordinates;
+  return polys.length && polys.every((poly) => poly.length && poly.every(E.ringOk)) ? g : null;
 }
 
 function ensureBlue(b) {
@@ -447,7 +448,7 @@ function renderPerPoly() {
 function renderGap() {
   const el = $('#gap');
   if (!st.zones.length) {
-    el.innerHTML = `<h2>커버 공백 알림</h2><div class="empty">영업존이 없습니다. 인트라 권역 편집기에서 영업존 권역을 Ctrl/Cmd+C로 복사한 뒤 왼쪽 [영업존 붙여넣기]로 넣으면, 영업존 외곽 ${RING_KM}km 안에서 파란 박스가 덮지 않는 곳을 알려 드립니다.</div>`;
+    el.innerHTML = `<h2>커버 공백 알림</h2><div class="empty">영업존 레이어가 없습니다. 영업존이 있어야 외곽 ${RING_KM}km 안에서 파란 박스가 덮지 않는 곳을 알려 드립니다.</div>`;
     return;
   }
   if (!visibleZones().length) { el.innerHTML = '<h2>커버 공백 알림</h2><div class="empty">표시 중인 영업존이 없습니다. 왼쪽 영업존 체크를 켜면 그 영업존의 커버 공백을 알려 드립니다.</div>'; return; }
@@ -611,8 +612,9 @@ function styleBlue(b) {
 
 // ───────── 박스 편집: 박스를 누르면 그 박스만 편집 모드 ─────────
 // 꼭짓점 끌기 = 이동, 선 위 클릭(또는 변 가운데 점) = 꼭짓점 추가, 꼭짓점 우클릭 = 삭제, 박스 끌기 = 통째 이동
+// 꼭짓점을 지워 3개 미만이 되면 Geoman이 레이어를 지도에서만 지우고 pm:remove를 안 보낸다(보이지 않는 박스가 남음) → 3개 아래로는 못 지우게
 const EDIT_OPTS = { allowSelfIntersection: false, draggable: true, snappable: true, snapDistance: 12,
-  addVertexOn: 'click', removeVertexOn: 'contextmenu', hideMiddleMarkers: false };
+  addVertexOn: 'click', removeVertexOn: 'contextmenu', hideMiddleMarkers: false, removeLayerBelowMinVertexCount: false };
 const EDGE_PX = 10; // 선에서 이 거리(px) 안을 누르면 꼭짓점 추가
 let editing = null;
 const editHint = L.control({ position: 'topright' });
@@ -681,7 +683,14 @@ function attachBlue(b) {
     if (editing === b) insertVertexAt(b, e.latlng);
     else startEdit(b);
   });
-  const changed = () => { b.key = null; recompute(); scheduleGap(); saveLocal(); };
+  const changed = () => {
+    if (!layerGeometry(b.layer)) { // 그래도 도형이 사라졌으면 목록에서도 지운다
+      b.layer.remove(); removeBlue(b, false);
+      toast(`'${b.name}'의 꼭짓점이 3개 미만이 되어 박스를 지웠습니다`);
+      return;
+    }
+    b.key = null; recompute(); scheduleGap(); saveLocal();
+  };
   L0.on('pm:edit', changed);
   L0.on('pm:dragend', changed);
   L0.on('pm:markerdrag', throttle(() => { b.key = null; recompute(); }, 180));
@@ -765,14 +774,7 @@ async function copyIntra(b) {
   }
 }
 
-// ───────── 영업존 ─────────
-function zoneOptions(selIdx = '') {
-  const reg = new Set(st.zones.map((z) => z.zoneIdx));
-  return `<option value="" ${selIdx === '' ? 'selected' : ''}>— 존을 선택하세요 —</option>`
-    + st.meta.zones.map((z) => `<option value="${z.idx}" ${z.idx === selIdx ? 'selected' : ''}>${esc(z.name)} (지점 ${z.partnerId})${reg.has(z.idx) ? ' · 등록됨(교체)' : ''}</option>`).join('')
-    + `<option value="0" ${selIdx === 0 ? 'selected' : ''}>기타 (출발지가 이 영업존 안인 오더로 계산)</option>`;
-}
-
+// ───────── 영업존 (고정 · 표시/숨김만) ─────────
 // 영업존 표시 여부(이 브라우저에만 기억). 끄면 빨간 선·3km 범위선·커버 공백·알림 카드가 함께 숨는다
 const ZH_KEY = 'vrs.v1.zoneHidden';
 const zoneKey = (z) => `${z.zoneIdx}:${z.name}`;
@@ -796,22 +798,16 @@ function drawZones() {
 
 function renderZoneList() {
   const el = $('#zoneList');
-  if (!st.zones.length) { el.innerHTML = '<div class="empty">영업존이 없습니다. 인트라 권역 편집기에서 영업존 권역을 Ctrl/Cmd+C로 복사해 [영업존 붙여넣기]로 넣으세요. 한 번 넣으면 저장되어 항상 표시됩니다.</div>'; return; }
+  if (!st.zones.length) { el.innerHTML = '<div class="empty">영업존 레이어가 없습니다.</div>'; return; }
   el.innerHTML = `<div class="row" style="margin:0 0 6px"><button class="mini" id="zAllOn">모두 표시</button><button class="mini" id="zAllOff">모두 숨김</button></div>`
     + st.zones.map((z, i) => { const on = !zoneHidden.has(zoneKey(z)); return `<div class="item" style="${on ? '' : 'opacity:.55'}"><div class="top">
     <input type="checkbox" class="zv" data-i="${i}" ${on ? 'checked' : ''} title="지도에 표시"><span class="sw" style="background:${C.sales}"></span>
-    <b style="flex:1">${esc(z.name)}</b><button class="mini zm" data-i="${i}">보기</button><button class="mini danger rm" data-i="${i}">삭제</button></div>
+    <b style="flex:1">${esc(z.name)}</b><button class="mini zm" data-i="${i}" title="이 영업존으로 지도 이동">이동</button></div>
     <div class="meta">${(turf.area(turf.feature(z.geometry)) / 1e6).toFixed(1)}km² · ${z.zoneIdx ? '관제 상점 기준' : '출발지 기준'}${on ? '' : ' · 숨김'}</div></div>`; }).join('');
   el.querySelectorAll('.zv').forEach((cb) => cb.onchange = () => setZoneVisible(st.zones[+cb.dataset.i], cb.checked));
   $('#zAllOn').onclick = () => { zoneHidden.clear(); setZoneVisible(st.zones[0], true); };
   $('#zAllOff').onclick = () => { st.zones.forEach((z) => zoneHidden.add(zoneKey(z))); setZoneVisible(st.zones[0], false); };
   el.querySelectorAll('.zm').forEach((btn) => btn.onclick = () => map.fitBounds(L.geoJSON(st.zones[+btn.dataset.i].geometry).getBounds()));
-  el.querySelectorAll('.rm').forEach((btn) => btn.onclick = async () => {
-    const z = st.zones[+btn.dataset.i];
-    if (!confirm(`영업존 '${z.name}'을(를) 삭제할까요? (저장된 레이어에서 지워집니다)`)) return;
-    st.zones.splice(+btn.dataset.i, 1);
-    await saveZones(); drawZones(); renderZoneList(); recompute(); computeGaps(); renderGap();
-  });
 }
 
 async function loadZones() {
@@ -824,87 +820,110 @@ async function loadZones() {
     const p = (f && f.properties) || {};
     if (!g) { bad++; continue; } // 잘못된 영업존은 건너뛰고 화면은 계속 연다
     st.zones.push({ name: String(p.name || '영업존'), zoneIdx: Number.isInteger(p.zoneIdx) ? p.zoneIdx : 0,
-      partnerId: p.partnerId || null, geometry: g.geometry, props: p });
+      geometry: g.geometry });
   }
   if (bad) toast(`영업존 ${bad}개를 읽지 못해 건너뛰었습니다`);
   drawZones();
 }
 
-async function saveZones() {
-  const fc = { type: 'FeatureCollection', features: st.zones.map((z) => ({ type: 'Feature',
-    properties: { ...(z.props || {}), name: z.name, zoneIdx: z.zoneIdx, partnerId: z.partnerId }, geometry: z.geometry })) };
-  try {
-    const r = await bkSaveZones(fc);
-    if (!r.ok) toast(`영업존 저장 실패: ${r.error}`);
-    return r.ok;
-  } catch (e) { toast(`영업존 저장 실패: ${e.message}`); return false; }
-}
-
 // ───────── 붙여넣기 ─────────
-function openImport(geoms, defaultTarget = 'blue') {
-  openModal(`<h3>도형 ${geoms.length}개 가져오기</h3>
-    <label class="chk"><input type="radio" name="tg" value="blue" ${defaultTarget === 'blue' ? 'checked' : ''}> 파란 박스(벤더 배송권역)로 추가</label>
-    <label class="chk"><input type="radio" name="tg" value="zone" ${defaultTarget === 'zone' ? 'checked' : ''}> 영업존(빨강, 고정)으로 추가 — 저장됩니다</label>
-    <div id="zoneOpt" class="row wrap"><select id="mZone">${zoneOptions(st.meta.zones.find((z) => !st.zones.some((x) => x.zoneIdx === z.idx))?.idx ?? '')}</select><input id="mZoneName" type="text" placeholder="영업존 이름 (비우면 존 이름)"></div>
+function openImport(geoms) {
+  openModal(`<h3>도형 ${geoms.length}개를 파란 박스로 추가</h3>
     <div class="row"><input id="mName" type="text" placeholder="파란 박스 이름 (선택)" style="flex:1"></div>
     <div class="row"><button class="primary" id="mOk">추가</button><button id="mCancel">취소</button></div>`);
-  const sync = () => {
-    const z = document.querySelector('input[name=tg]:checked').value === 'zone';
-    $('#zoneOpt').style.display = z ? 'flex' : 'none'; $('#mName').parentElement.style.display = z ? 'none' : 'flex';
-  };
-  document.querySelectorAll('input[name=tg]').forEach((r) => r.onchange = sync); sync();
   $('#mCancel').onclick = closeModal;
-  $('#mOk').onclick = async () => {
-    const target = document.querySelector('input[name=tg]:checked').value;
-    if (target === 'zone') {
-      if ($('#mZone').value === '') return toast('어느 존의 영업존인지 선택하세요');
-      const zi = +$('#mZone').value, zm = st.meta.zones.find((z) => z.idx === zi);
-      const name = $('#mZoneName').value.trim() || (zm ? zm.name : '영업존');
-      // 영업존은 지점당 1개: 같은 존(기타는 같은 이름)이 있으면 확인 후 교체
-      const old = st.zones.find((z) => (zi ? z.zoneIdx === zi : z.zoneIdx === 0 && z.name === name));
-      if (old && !confirm(`이미 저장된 영업존 '${old.name}'을(를) 새 도형으로 교체할까요?`)) return;
-      let merged = geoms[0].geometry;
-      if (geoms.length > 1) {
-        try { merged = turf.union(turf.featureCollection(geoms.map((g) => turf.feature(g.geometry)))).geometry; } catch {
-          merged = { type: 'MultiPolygon', coordinates: geoms.flatMap((g) => (g.geometry.type === 'Polygon' ? [g.geometry.coordinates] : g.geometry.coordinates)) };
-        }
-      }
-      const prev = st.zones;
-      st.zones = st.zones.filter((z) => z !== old);
-      st.zones.push({ name, zoneIdx: zi, partnerId: zm ? zm.partnerId : null, geometry: merged });
-      if (!(await saveZones())) { st.zones = prev; return; }
-      drawZones(); renderZoneList();
-      toast(`영업존 '${name}' 저장`);
-      closeModal(); recompute(); computeGaps(); renderGap();
-    } else {
-      const nm = $('#mName').value.trim();
-      const added = geoms.map((g, i) => addBlue(g.geometry, nm ? (geoms.length > 1 ? `${nm} ${i + 1}` : nm) : g.name || null));
-      map.fitBounds(L.featureGroup(added.map((b) => b.layer)).getBounds(), { maxZoom: 14 });
-      closeModal(); recompute(); computeGaps(); renderGap(); saveLocal();
-    }
+  $('#mOk').onclick = () => {
+    const nm = $('#mName').value.trim();
+    const added = geoms.map((g, i) => addBlue(g.geometry, nm ? (geoms.length > 1 ? `${nm} ${i + 1}` : nm) : g.name || null));
+    map.fitBounds(L.featureGroup(added.map((b) => b.layer)).getBounds(), { maxZoom: 14 });
+    closeModal(); recompute(); computeGaps(); renderGap(); saveLocal();
   };
 }
 
-function pasteDialog(target) {
-  openModal(`<h3>${target === 'zone' ? '영업존' : '파란 박스'} 붙여넣기</h3>
-    <p class="hint">인트라 권역 편집기에서 Ctrl/Cmd+C 한 내용(mesh-one-region)이나 GeoJSON을 붙여넣으세요.</p>
+const isShareCode = (text) => String(text || '').trim().startsWith(E.SHARE_PREFIX);
+
+function pasteDialog() {
+  openModal(`<h3>파란 박스 붙여넣기</h3>
+    <p class="hint">인트라 권역 편집기에서 Ctrl/Cmd+C 한 내용(mesh-one-region)이나 GeoJSON을 붙여넣으세요. 공유 코드(${E.SHARE_PREFIX}…)를 넣으면 공유 코드 가져오기로 넘어갑니다.</p>
     <textarea id="mText" placeholder='{"format":"mesh-one-region", ...}'></textarea>
     <div class="row"><button class="primary" id="mNext">다음</button><button id="mCancel">취소</button></div>`);
   $('#mText').focus();
   $('#mCancel').onclick = closeModal;
   $('#mNext').onclick = () => {
-    const g = E.parseGeometries($('#mText').value);
+    const text = $('#mText').value;
+    if (isShareCode(text)) return confirmShare(text);
+    const g = E.parseGeometries(text);
     if (!g.length) return toast('도형을 찾지 못했습니다 (mesh-one-region 또는 GeoJSON)');
-    openImport(g, target);
+    openImport(g);
   };
 }
 
+// 글자를 넣는 칸에 붙여넣을 때만 건너뛴다(체크박스·버튼에 포커스가 있어도 Ctrl+V는 지도로)
+const NON_TEXT_INPUT = new Set(['checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'range', 'color', 'image']);
+const isTextField = (el) => !!el && (el.isContentEditable || el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && !NON_TEXT_INPUT.has(el.type)));
 document.addEventListener('paste', (e) => {
-  const tag = (e.target.tagName || '').toLowerCase();
-  if (tag === 'input' || tag === 'textarea' || !$('#modal').hidden) return;
-  const g = E.parseGeometries(e.clipboardData.getData('text/plain'));
-  if (g.length) { e.preventDefault(); openImport(g, 'blue'); }
+  if (isTextField(e.target) || !$('#modal').hidden) return;
+  const text = e.clipboardData.getData('text/plain');
+  if (isShareCode(text)) { e.preventDefault(); confirmShare(text); return; }
+  const g = E.parseGeometries(text);
+  if (g.length) { e.preventDefault(); openImport(g); }
 });
+
+// ───────── 공유 코드 (파란 박스만, 서버 저장 없이 문자열 하나에 모두 담음) ─────────
+async function exportShare() {
+  const list = snapshot();
+  if (!list.length) return toast('내보낼 파란 박스가 없습니다');
+  let res;
+  try { res = await E.encodeShare(list); } catch (e) { return toast(`공유 코드를 만들지 못했습니다: ${e.message}`); }
+  if (!res.count) return toast(`공유 코드로 옮길 수 있는 파란 박스가 없습니다 (${res.skipped.map((x) => x.reason).join(', ')})`);
+  const { code } = res;
+  let copied = false;
+  try { await navigator.clipboard.writeText(code); copied = true; } catch { /* 아래 칸에서 직접 복사 */ }
+  const left = new Set(res.skipped.map((x) => x.index));
+  const on = list.filter((x, i) => x.active && !left.has(i)).length;
+  const skippedNote = res.skipped.length
+    ? `<div class="alert">⚠ 파란 박스 ${res.skipped.length}개는 공유 코드에 넣지 못해 뺐습니다: ${res.skipped.map((x) => `${esc(x.name || `${x.index + 1}번째`)}(${esc(x.reason)})`).join(', ')}</div>` : '';
+  openModal(`<h3>공유 코드 — 파란 박스 ${res.count}개</h3>${skippedNote}
+    <p class="hint">${copied ? '<b>클립보드에 복사했습니다.</b> ' : '아래 코드를 모두 선택해 복사하세요. '}다른 브라우저에서 [공유 코드 가져오기]에 붙여넣으면 그쪽 파란 박스가 모두 이 ${res.count}개(켜짐 ${on}개)로 바뀝니다.</p>
+    <p class="hint">담기는 것: 파란 박스의 모양·이름·켜짐 여부. 담기지 않는 것: 시간대·요일·모집단·필터, 영업존 표시, 분포 레이어, 기준선, 시나리오.</p>
+    <textarea id="mCode" readonly>${esc(code)}</textarea>
+    <div class="row"><button class="primary" id="mCopy">다시 복사</button><button id="mClose">닫기</button><span class="hint">${fmt(code.length)}자</span></div>`);
+  $('#mCode').onfocus = (e) => e.target.select();
+  $('#mCopy').onclick = async () => {
+    try { await navigator.clipboard.writeText(code); toast('복사했습니다'); } catch { $('#mCode').focus(); toast('코드를 선택해 두었습니다 — Ctrl/Cmd+C로 복사하세요'); }
+  };
+  $('#mClose').onclick = closeModal;
+}
+
+function importShareDialog() {
+  openModal(`<h3>공유 코드 가져오기</h3>
+    <p class="hint">다른 사람이 [공유 코드 내보내기]로 만든 코드(${E.SHARE_PREFIX}…)를 붙여넣으세요. 덮어쓰기 전에 한 번 더 확인합니다.</p>
+    <textarea id="mCode" placeholder="${E.SHARE_PREFIX}…"></textarea>
+    <div class="row"><button class="primary" id="mNext">다음</button><button id="mCancel">취소</button></div>`);
+  $('#mCode').focus();
+  $('#mCancel').onclick = closeModal;
+  $('#mNext').onclick = () => confirmShare($('#mCode').value);
+}
+
+async function confirmShare(code) {
+  let list;
+  try { list = await E.decodeShare(code); } catch (e) { return toast(e.message); }
+  if (!list.length) return toast('공유 코드에 파란 박스가 없습니다');
+  const cur = st.blues.length, on = list.filter((x) => x.active).length;
+  const names = list.slice(0, 12).map((x) => `<li>${esc(x.name || '(이름 없음)')}${x.active ? '' : ' · 꺼짐'}</li>`).join('')
+    + (list.length > 12 ? `<li>… 외 ${list.length - 12}개</li>` : '');
+  openModal(`<h3>공유 코드로 파란 박스 덮어쓰기</h3>
+    <div class="alert">⚠ ${cur ? `지금 그려 놓은 파란 박스 <b>${cur}개가 모두 지워지고</b>,` : '지금은 파란 박스가 없습니다.'} 공유 코드의 파란 박스 <b>${list.length}개</b>(켜짐 ${on}개)로 <b>전부 바뀝니다</b>. 되돌릴 수 없습니다.${cur ? '<br>지금 박스를 남겨 두려면 취소한 뒤 [시나리오 저장]이나 [공유 코드 내보내기]로 먼저 보관하세요.' : ''}</div>
+    <ul class="hint">${names}</ul>
+    <p class="hint">시간대·요일·모집단·필터, 영업존 표시 같은 다른 설정은 바꾸지 않습니다.</p>
+    <div class="row"><button class="danger" id="mOk">${cur ? `덮어쓰기 (${cur}개 지움)` : '가져오기'}</button><button id="mCancel">취소</button></div>`);
+  $('#mCancel').onclick = closeModal;
+  $('#mOk').onclick = () => {
+    restore(list); closeModal(); recompute(); computeGaps(); renderGap(); saveLocal();
+    if (st.blues.length) map.fitBounds(L.featureGroup(st.blues.map((b) => b.layer)).getBounds(), { maxZoom: 14 });
+    toast(`파란 박스를 공유 코드의 ${st.blues.length}개로 바꿨습니다`);
+  };
+}
 
 map.on('pm:create', (e) => {
   let layer = e.layer;
@@ -979,21 +998,17 @@ $('#btnGeojson').onclick = () => {
   a.download = `벤더배송권역_${new Date().toISOString().slice(0, 10)}.geojson`; a.click();
 };
 $('#btnClear').onclick = () => { if (confirm('파란 박스를 모두 지울까요?')) { restore([]); recompute(); computeGaps(); renderGap(); saveLocal(); } };
-$('#btnBluePaste').onclick = () => pasteDialog('blue');
+$('#btnBluePaste').onclick = pasteDialog;
+$('#btnShareOut').onclick = exportShare;
+$('#btnShareIn').onclick = importShareDialog;
 $('#btnGeoImport').onclick = () => $('#fileGeo').click();
 $('#fileGeo').onchange = async (e) => {
   const f = e.target.files[0]; e.target.value = '';
   if (!f) return;
   const g = E.parseGeometries(await f.text());
   if (!g.length) return toast('파일에서 도형을 찾지 못했습니다 (GeoJSON 또는 mesh-one-region)');
-  openImport(g, 'blue');
+  openImport(g);
 };
-$('#btnZoneReset').onclick = async () => {
-  if (!confirm('이 브라우저에서 바꾼 영업존을 버리고 배포본의 영업존으로 되돌릴까요?')) return;
-  localStorage.removeItem(LS_ZONES);
-  await loadZones(); buildPopOptions(); renderZoneList(); recompute(); computeGaps(); renderGap();
-};
-$('#btnZonePaste').onclick = () => pasteDialog('zone');
 $('#btnDef').onclick = showDefinitions;
 
 // ───────── 필터·레이어 ─────────
@@ -1055,7 +1070,7 @@ if (new URLSearchParams(location.search).has('debug')) window.__vrs = { map, st 
 (async function init() {
   try {
     bk.mode = await detectBackend();
-    if (bk.mode === 'static') { bk.pack = await unlockPack(); $('#btnZoneReset').hidden = false; }
+    if (bk.mode === 'static') bk.pack = await unlockPack();
     const ds = await bkDatasets();
     if (!ds.length) { setStatus('데이터가 없습니다 — extract.py를 먼저 실행하세요'); return; }
     $('#dataset').innerHTML = ds.map((d) => `<option value="${d.dataset}">${esc(d.label)} (${fmt(d.n)}건)</option>`).join('');

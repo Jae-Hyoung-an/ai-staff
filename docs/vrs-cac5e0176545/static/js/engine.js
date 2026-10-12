@@ -187,6 +187,9 @@ export function toMeshOneRegion(geom) {
     feature: { type: 'Feature', properties: {}, geometry: { type: 'MultiPolygon', coordinates: polys } } });
 }
 
+// 닫는 중복점을 빼고 꼭짓점이 3개 이상인 고리만 도형으로 본다 ([a, b, a]는 면적 없는 선)
+export const ringOk = (r) => Array.isArray(r) && r.length - (r.length > 1 && r[0][0] === r[r.length - 1][0] && r[0][1] === r[r.length - 1][1] ? 1 : 0) >= 3;
+
 // 붙여넣은 텍스트 → [{geometry, name}] (mesh-one-region / GeoJSON Feature·FeatureCollection·Geometry)
 export function parseGeometries(text) {
   let obj;
@@ -205,7 +208,7 @@ export function parseGeometries(text) {
     if (g.type === 'Polygon' || g.type === 'MultiPolygon') {
       const coords = fix(g.coordinates, g.type === 'Polygon' ? 2 : 3);
       const rings = coords ? (g.type === 'Polygon' ? coords : coords.flat()) : [];
-      if (coords && rings.length && rings.every((r) => r.length >= 3)) out.push({ geometry: { type: g.type, coordinates: coords }, name: typeof name === 'string' ? name : '' });
+      if (coords && rings.length && rings.every(ringOk)) out.push({ geometry: { type: g.type, coordinates: coords }, name: typeof name === 'string' ? name : '' });
     } else if (g.type === 'GeometryCollection' && Array.isArray(g.geometries)) g.geometries.forEach((x) => add(x, name));
   };
   if (!obj || typeof obj !== 'object') return out;
@@ -214,6 +217,113 @@ export function parseGeometries(text) {
   else if (obj.type === 'Feature') add(obj.geometry, obj.properties?.name);
   else if (obj.type) add(obj);
   return out;
+}
+
+// ───────── 파란 박스 공유 코드 ─────────
+// 'VRS1.' + base64url(zlib(JSON)). 서버에 저장하지 않고 문자열 하나에 파란 박스의 모양·이름·켜짐을 모두 담는다
+// (시간대·필터·영업존 표시 같은 화면 설정은 담지 않음).
+// 좌표는 마이크로도 정수 — 화면이 쓰는 GeoJSON(Leaflet toGeoJSON)이 소수 6자리라 손실이 없다. 고리마다 첫 점 + 차분, 닫는 점은 뺀다.
+export const SHARE_PREFIX = 'VRS1.';
+const SHARE_MAX_CHARS = 4_000_000, SHARE_MAX_JSON = 40_000_000, SHARE_MAX_BOXES = 500;
+
+function b64uEncode(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64uDecode(str) {
+  const s = atob(str.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (str.length % 4)) % 4));
+  const out = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+  return out;
+}
+async function pipeBytes(bytes, stream, limit = Infinity) {
+  const reader = new Blob([bytes]).stream().pipeThrough(stream).getReader();
+  const chunks = [];
+  let n = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    n += value.length;
+    if (n > limit) { await reader.cancel(); throw new Error('too large'); }
+    chunks.push(value);
+  }
+  const out = new Uint8Array(n);
+  let o = 0;
+  for (const c of chunks) { out.set(c, o); o += c.length; }
+  return out;
+}
+
+const SHARE_MAX_POINTS = 200_000;
+
+function packRing(ring) {
+  const pts = ring.map((c) => [Math.round(c[0] * 1e6), Math.round(c[1] * 1e6)]);
+  const a = pts[0], z = pts[pts.length - 1];
+  if (pts.length > 1 && a[0] === z[0] && a[1] === z[1]) pts.pop();
+  const out = [];
+  let px = 0, py = 0;
+  for (const [x, y] of pts) { out.push(x - px, y - py); px = x; py = y; }
+  return out;
+}
+function unpackRing(arr, budget) {
+  if (!Array.isArray(arr) || arr.length < 6 || arr.length % 2) throw new Error('꼭짓점이 3개 미만인 고리');
+  budget.left -= arr.length / 2;
+  if (budget.left < 0) throw new Error(`꼭짓점이 너무 많음(전체 ${SHARE_MAX_POINTS.toLocaleString()}개 이하)`);
+  const ring = [];
+  let x = 0, y = 0;
+  for (let i = 0; i < arr.length; i += 2) {
+    if (!Number.isSafeInteger(arr[i]) || !Number.isSafeInteger(arr[i + 1])) throw new Error('좌표가 정수가 아님');
+    x += arr[i]; y += arr[i + 1];
+    if (x < 124e6 || x > 132e6 || y < 33e6 || y > 39e6) throw new Error('한국 범위(경도 124~132, 위도 33~39) 밖 좌표');
+    ring.push([x / 1e6, y / 1e6]);
+  }
+  ring.push([ring[0][0], ring[0][1]]);
+  return ring;
+}
+const packBox = (x) => ({ n: String(x.name ?? ''), a: x.active === false ? 0 : 1, m: x.geometry?.type === 'MultiPolygon' ? 1 : 0,
+  g: polysOf(x.geometry).map((poly) => poly.map(packRing)) });
+function unpackBox(x, budget = { left: SHARE_MAX_POINTS }) {
+  if (!x || !Array.isArray(x.g) || !x.g.length) throw new Error('도형 없음');
+  const polys = x.g.map((poly) => {
+    if (!Array.isArray(poly) || !poly.length) throw new Error('빈 다각형');
+    return poly.map((r) => unpackRing(r, budget));
+  });
+  const geometry = polys.length > 1 || x.m === 1 ? { type: 'MultiPolygon', coordinates: polys } : { type: 'Polygon', coordinates: polys[0] };
+  return { name: String(x.n ?? ''), active: x.a !== 0, geometry };
+}
+
+// list: [{name, active, geometry}] → { code, count, skipped: [{index, name, reason}] }
+// 받는 쪽에서 거절될 박스(꼭짓점 3개 미만·한국 범위 밖 등)는 같은 검사로 미리 빼고 알려 준다 → 만든 코드는 항상 가져올 수 있다
+export async function encodeShare(list) {
+  const b = [], skipped = [];
+  const budget = { left: SHARE_MAX_POINTS };
+  list.forEach((x, index) => {
+    try { const p = packBox(x); unpackBox(p, budget); b.push(p); } catch (e) { skipped.push({ index, name: String(x?.name ?? ''), reason: e.message }); }
+  });
+  if (b.length > SHARE_MAX_BOXES) throw new Error(`파란 박스가 너무 많습니다 (${SHARE_MAX_BOXES}개 이하)`);
+  const json = new TextEncoder().encode(JSON.stringify({ v: 1, b }));
+  const code = SHARE_PREFIX + b64uEncode(await pipeBytes(json, new CompressionStream('deflate')));
+  return { code, count: b.length, skipped };
+}
+
+// 공유 코드 → [{name, active, geometry}]. 형식이 틀리면 사용자에게 보여 줄 문구로 Error를 던진다
+export async function decodeShare(text) {
+  const s = String(text ?? '').replace(/\s+/g, '');
+  if (!s.startsWith(SHARE_PREFIX)) throw new Error(`공유 코드가 아닙니다 (${SHARE_PREFIX} 로 시작해야 합니다)`);
+  if (s.length > SHARE_MAX_CHARS) throw new Error('공유 코드가 너무 깁니다');
+  let obj;
+  try {
+    const json = await pipeBytes(b64uDecode(s.slice(SHARE_PREFIX.length)), new DecompressionStream('deflate'), SHARE_MAX_JSON);
+    obj = JSON.parse(new TextDecoder().decode(json));
+  } catch {
+    throw new Error('공유 코드가 깨졌습니다 — 처음부터 끝까지 빠짐없이 복사했는지 확인하세요');
+  }
+  if (!obj || obj.v !== 1 || !Array.isArray(obj.b)) throw new Error('지원하지 않는 공유 코드 형식입니다');
+  if (obj.b.length > SHARE_MAX_BOXES) throw new Error(`파란 박스가 너무 많습니다 (${SHARE_MAX_BOXES}개 이하)`);
+  const budget = { left: SHARE_MAX_POINTS };
+  return obj.b.map((x, i) => {
+    try { return unpackBox(x, budget); } catch (e) { throw new Error(`공유 코드의 ${i + 1}번째 파란 박스가 잘못되었습니다: ${e.message}`); }
+  });
 }
 
 export function geomKey(geom) {

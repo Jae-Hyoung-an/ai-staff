@@ -30,15 +30,17 @@
       <h2>영업존 <small>빨강 · 고정</small></h2>
       <div id="zoneList"></div>
       <div class="row">
-        <button id="btnZonePaste">영업존 붙여넣기</button>
-        <button id="btnZoneReset" class="ghost" hidden>원래대로</button>
         <label class="chk"><input type="checkbox" id="lyRing" checked> 3km 범위선</label>
       </div>
     </section>
     <section>
       <h2>파란 박스 <small>벤더 배송권역</small></h2>
-      <p class="hint">지도 왼쪽 도구로 그리거나, 인트라 편집기에서 Ctrl/Cmd+C 한 권역을 이 화면에서 Ctrl+V 하세요.</p>
+      <p class="hint">지도 왼쪽 도구로 그리거나, 인트라 편집기에서 Ctrl/Cmd+C 한 권역을 이 화면에서 Ctrl+V 하세요. 다른 사람과 같은 박스를 보려면 [공유 코드 내보내기] → 상대가 [공유 코드 가져오기].</p>
       <div id="blueList"></div>
+      <div class="row wrap">
+        <button id="btnShareOut" class="primary">공유 코드 내보내기</button>
+        <button id="btnShareIn">공유 코드 가져오기</button>
+      </div>
       <div class="row wrap">
         <button id="btnBluePaste">붙여넣기</button>
         <button id="btnSave">시나리오 저장</button>
@@ -74,6 +76,6 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@geoman-io/leaflet-geoman-free@2.20.2/dist/leaflet-geoman.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
-<script type="module" src="static/js/app.js?v=36664b2307"></script>
+<script type="module" src="static/js/app.js?v=ecb9207691"></script>
 </body>
 </html>
