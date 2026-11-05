@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 링크 미리보기(슬랙 등)는 아래 정적 제목을 읽는다 — config.js 의 title 과 같게 둔다 -->
+<title>기상 SOP 조치 — 인트라 화면 목업 v0.1</title>
+<meta name="description" content="[PRD] 기상악화 SOP 단계 조치·기록 v0.1 화면 목업 — 실제 동작 아님. PRD 화면 절이 완료될 때마다 화면을 덧붙인다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="nav">
+    <div class="brand" id="brand"></div>
+    <div class="me" id="me"></div>
+    <div class="navsearch">🔍 메뉴 검색 및 이동 <span class="kb">Ctrl+K</span></div>
+    <div id="navgroups"></div>
+    <div class="navfoot">
+      <h5>목업 도구</h5>
+      <button class="btn sm" id="theme">테마 전환</button>
+      <div class="links" id="links"></div>
+      <div class="draft" id="draft"></div>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <div class="crumb"><span id="cb-grp"></span><b id="cb-menu"></b></div>
+      <span class="sid" id="cb-sid"></span>
+      <div class="spacer"></div>
+      <button class="tgl" id="notetgl" aria-pressed="false"><span class="dot"></span>변경점 주석</button>
+    </header>
+    <div class="wrap">
+      <main class="canvas" id="canvas"></main>
+      <aside class="panel" id="panel"></aside>
+    </div>
+  </div>
+</div>
+<!-- 로딩 순서를 바꾸지 않는다: 설정 → 공통 빌더 → 지도(선택) → 화면 → 라우터 -->
+<script src="config.js"></script>
+<script src="lib.js"></script>
+<!-- 지도 도식(map.js)은 이 목업에서 쓰지 않는다 -->
+<!-- PRD 화면 절이 완료될 때마다 아래에 screens/sNN.js 를 덧붙인다 -->
+<script src="screens/s01.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
