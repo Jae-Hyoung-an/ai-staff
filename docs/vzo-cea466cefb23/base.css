@@ -1,0 +1,118 @@
+/* 바탕 스타일 — Claude 대시보드가 페이지에 주는 바탕(토큰·초기화·#dash-root)을 우리 말로 다시 쓴 것.
+   페이지의 style.css가 이 파일 뒤에 오므로 우선순위가 같으면 페이지가 이긴다. 플랫폼 app.css·글꼴은 쓰지 않는다. */
+
+/* 토큰: 2026-11-09 플랫폼 화면에서 브라우저로 잰 값 */
+:root {
+  color-scheme: light dark;
+  --color-fg: #0b0b0b;
+  --color-fg-muted: #898781;
+  --color-fg-secondary: #52514e;
+  --color-bg: #f9f9f7;
+  --color-panel: #ffffff;
+  --color-border-line: rgba(11,11,11,.1);
+  --color-bad: #8e2626;
+  --color-ok: #006300;
+  --color-warn: #734500;
+  --cds-text-secondary: #52514e;
+  --cds-surface-popover: #ffffff;
+  --cds-shadow-popover: 0 8px 24px #0000001f, 0 2px 6px #00000014;
+  --cds-chart-reference: #898781;
+  --cds-chart-muted: #c3c2b7;
+  --cds-chart-grid: rgba(11,11,11,.1);
+  --cds-chart-axis: #c3c2b7;
+  --cds-border: rgba(11,11,11,.1);
+  --cds-chart-categorical-1: #2a78d6;
+  --cds-chart-categorical-2: #eb6834;
+  --cds-chart-categorical-3: #1baf7a;
+  --cds-chart-categorical-4: #eda100;
+  --cds-chart-categorical-5: #e87ba4;
+  --cds-chart-categorical-6: #008300;
+  --cds-chart-categorical-7: #6250d6;
+  --cds-chart-categorical-8: #e34948;
+
+  /* 테마와 무관한 값 */
+  --cds-font-size-caption: .6875rem;
+  --cds-font-size-body: .8125rem;
+  --cds-font-size-heading: .875rem;
+  --cds-font-size-title: 1.25rem;
+  --cds-font-weight-medium: 500;
+  --cds-gap-xs: .375rem;
+  --cds-gap-sm: .5rem;
+  --cds-gap-md: .75rem;
+  --cds-gap-xl: 2rem;
+  --cds-pad-xs: .25rem;
+  --cds-pad-sm: .375rem;
+  --cds-pad-md: .5rem;
+  --cds-pad-lg: .75rem;
+  --cds-pad-xl: 1.25rem;
+  --cds-radius: .375rem;
+  --cds-dur-slow: .45s;
+  /* 플랫폼 글꼴(Anthropic Sans/Serif)은 없어 시스템 글꼴로 대신한다. Georgia는 숫자 모양이 달라 맨 뒤 */
+  --font-anthropic-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-anthropic-serif: ui-serif, Cambria, "Times New Roman", Georgia, serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-fg: #f0efec;
+    --color-fg-muted: #898781;
+    --color-fg-secondary: #c3c2b7;
+    --color-bg: #0b0b0b;
+    --color-panel: #1a1a19;
+    --color-border-line: rgba(255,255,255,.1);
+    --color-bad: #ec7e7e;
+    --color-ok: #0ca30c;
+    --color-warn: #db9300;
+    --cds-text-secondary: #c3c2b7;
+    --cds-surface-popover: #20201f;
+    --cds-shadow-popover: 0 8px 24px #00000052, 0 2px 6px #0003;
+    --cds-chart-reference: #97958d;
+    --cds-chart-muted: #5f5e5a;
+    --cds-chart-grid: rgba(255,255,255,.1);
+    --cds-chart-axis: #383835;
+    --cds-border: rgba(255,255,255,.1);
+    --cds-chart-categorical-1: #3987e5;
+    --cds-chart-categorical-2: #d95926;
+    --cds-chart-categorical-3: #199e70;
+    --cds-chart-categorical-4: #c98500;
+    --cds-chart-categorical-5: #d55181;
+    --cds-chart-categorical-6: #008300;
+    --cds-chart-categorical-7: #9085e9;
+    --cds-chart-categorical-8: #e66767;
+  }
+}
+
+/* 초기화: Tailwind CSS v4 preflight(MIT 라이선스)를 줄여 옮긴 것.
+   플랫폼처럼 @layer base 안에 두어, 층 없는 페이지 CSS가 우선순위와 상관없이 늘 이긴다 */
+@layer base {
+  *, ::before, ::after, ::backdrop { box-sizing: border-box; border: 0 solid; border-color: var(--cds-border); margin: 0; padding: 0; }
+  html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; -webkit-tap-highlight-color: transparent; }
+  h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+  a { color: inherit; text-decoration: inherit; }
+  b, strong { font-weight: bolder; }
+  small { font-size: 80%; }
+  sub, sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
+  sub { bottom: -.25em; }
+  sup { top: -.5em; }
+  table { text-indent: 0; border-color: inherit; border-collapse: collapse; }
+  ol, ul, menu { list-style: none; }
+  img, svg, video, canvas { display: block; vertical-align: middle; }
+  img, video { max-width: 100%; height: auto; }
+  button, input, select, textarea { font: inherit; letter-spacing: inherit; color: inherit; background-color: transparent; border-radius: 0; opacity: 1; }
+  summary { display: list-item; }
+  hr { height: 0; color: inherit; border-top-width: 1px; }
+  code, kbd, samp, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 1em; }
+  [hidden]:where(:not([hidden="until-found"])) { display: none !important; }
+  body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+}
+
+/* 페이지 바탕(층 없음, 플랫폼과 같은 규칙) */
+#dash-root { color: var(--color-fg); font-size: 14px; line-height: 1.45; }
+:where(#dash-root:not(:empty)) { padding: var(--dash-gutter, clamp(var(--cds-pad-md), 4%, var(--cds-pad-xl))); }
+:where(#dash-root[data-dash-one-writer] a[href]:not([role])) { text-underline-offset: .15em; text-decoration: underline; }
+/* 굵은 글자 700: 플랫폼 규칙([data-appifact-content] :is(b,strong))과 같은 우선순위(0,1,1)로 둔다.
+   #dash-root(1,0,1)로 쓰면 페이지의 .vz-lede b·.vz p b(500)를 눌러 원본과 달라진다 */
+[id="dash-root"] :is(b, strong) { font-weight: 700; }
+
+/* d3를 받지 못했을 때 #dash-root 맨 위에 dash.js가 넣는 안내 한 줄 */
+.dash-notice { max-width: 1120px; margin: 0 auto var(--cds-gap-md); padding: var(--cds-pad-md) var(--cds-pad-lg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-panel); color: var(--color-bad); font-size: var(--cds-font-size-body); line-height: 1.5; }

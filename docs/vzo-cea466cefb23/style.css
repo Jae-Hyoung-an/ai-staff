@@ -1,0 +1,122 @@
+/* 벤더존 적시 도착·조리 지연 — 레이아웃: 한 칼럼 보고서(요약 → 존×타입 → 지표 비교 → 원인 → 제안), 카드는 차트·표에만 */
+.vz { max-width: 1120px; margin-inline: auto; display: flex; flex-direction: column; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+.vz-head { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+.vz-eyebrow { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); letter-spacing: 0.02em; }
+.vz-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); line-height: 1.2; margin: 0; text-wrap: balance; }
+.vz-lede { font-size: var(--cds-font-size-body); line-height: 1.65; margin: 0; max-width: 68ch; }
+.vz-lede b, .vz p b, .vz li b { font-weight: var(--cds-font-weight-medium); }
+.vz-meta { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; line-height: 1.6; }
+.vz-nav { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-caption); }
+.vz-nav a { color: var(--color-fg-muted); text-decoration: none; border-bottom: 1px solid var(--color-border-line); padding-bottom: 1px; }
+.vz-nav a:hover, .vz-nav a:focus-visible { color: var(--color-fg); border-bottom-color: var(--color-fg); }
+
+.vz-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: var(--cds-gap-md); }
+.vz-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-xs); min-width: 0; }
+.vz-kpi-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.vz-kpi-value { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); line-height: 1.1; }
+.vz-kpi-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+
+.vz-sec { display: flex; flex-direction: column; gap: var(--cds-gap-md); scroll-margin-top: 1rem; }
+.vz-sec > h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; text-wrap: balance; }
+.vz-sec > p, .vz-prose p { margin: 0; line-height: 1.65; max-width: 72ch; font-size: var(--cds-font-size-body); }
+.vz-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); align-items: start; }
+.vz-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+.vz-card h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.vz-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; line-height: 1.55; }
+.vz-chart { position: relative; min-height: 120px; min-width: 0; }
+.vz-chart svg { display: block; overflow: visible; }
+.vz-muted { color: var(--color-fg-muted); }
+
+/* 발견 목록 */
+.vz-finds { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+.vz-finds li { line-height: 1.6; padding-left: 1.1rem; position: relative; max-width: 80ch; }
+.vz-finds li::before { content: ""; position: absolute; left: 0.2rem; top: 0.62em; width: 0.38rem; height: 0.38rem; border-radius: 50%; background: var(--color-fg-muted); }
+
+/* 판정 칩: 색이 아니라 글자가 판정을 말한다 */
+.vz-chip { display: inline-block; font-size: var(--cds-font-size-caption); padding: 0 0.5rem; border-radius: 999px; border: 1px solid var(--color-border-line); color: var(--color-fg-muted); white-space: nowrap; line-height: 1.7; }
+.vz-chip.is-support { color: var(--color-fg); border-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.vz-chip.is-part { color: var(--color-fg); border-style: dashed; border-color: var(--color-fg-muted); }
+.vz-chip.is-hold { border-style: dotted; }
+
+/* 가설 판정 카드 */
+.vz-hyps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); }
+.vz-hyp { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-xs); min-width: 0; }
+.vz-hyp-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--cds-gap-xs); }
+.vz-hyp-head h3 { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+.vz-hyp p { margin: 0; line-height: 1.6; font-size: var(--cds-font-size-body); }
+.vz-hyp .vz-who { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+
+/* 제안 목록 */
+.vz-acts { margin: 0; padding-left: 1.4rem; display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.vz-acts li { line-height: 1.65; max-width: 82ch; padding-left: 0.2rem; }
+.vz-acts li::marker { color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.vz-owner { display: block; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: 2px; }
+
+/* 정의 목록 */
+.vz-defs { margin: 0; display: grid; grid-template-columns: minmax(8rem, max-content) 1fr; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-body); line-height: 1.6; }
+.vz-defs dt { color: var(--color-fg-muted); }
+.vz-defs dd { margin: 0; }
+@media (max-width: 560px) { .vz-defs { grid-template-columns: 1fr; } .vz-defs dd { margin-bottom: var(--cds-gap-xs); } }
+
+.vz-card.is-wide { grid-column: 1 / -1; }
+.vz-kpi-pair { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.35rem; }
+.vz-kpi-arrow { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); }
+.vz-unit { font-size: var(--cds-font-size-body); color: var(--color-fg-muted); margin-left: 1px; }
+.vz-sub { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-sm) 0 0; }
+
+/* 표 */
+.vz-tablebox { overflow-x: auto; min-width: 0; }
+.vz-table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.vz-table th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.vz-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.vz-table td.is-num, .vz-table th.is-num { text-align: right; white-space: nowrap; }
+.vz-table tr:last-child td { border-bottom: none; }
+.vz-scroll { max-height: 26rem; overflow: auto; }
+.vz-scroll th { position: sticky; top: 0; background: var(--color-panel); }
+
+/* 히트맵 표 */
+.vz-heat { display: grid; gap: 2px; font-variant-numeric: tabular-nums; font-size: var(--cds-font-size-caption); }
+.vz-heat > div { padding: 0.45rem 0.4rem; border-radius: 3px; text-align: center; min-width: 0; }
+.vz-heat-col { color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); }
+.vz-heat-row { text-align: left !important; color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.vz-heat-row.is-total, .vz-heat-cell.is-total { color: var(--color-fg-muted); }
+.vz-heat-cell.is-total { border: 1px solid var(--color-border-line); }
+.vz-heat-cell:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 1px; }
+.vz-heat-legend { display: flex; align-items: center; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-sm); flex-wrap: wrap; }
+.vz-heat-ramp { display: inline-block; width: 7rem; height: 0.55rem; border-radius: 3px; }
+
+/* SVG 글자·선 */
+.vz-tick { font-size: 11px; fill: var(--color-fg-muted); font-family: var(--font-anthropic-sans); }
+.vz-lab { font-size: 12px; fill: var(--color-fg); font-family: var(--font-anthropic-sans); }
+.vz-lab.is-emph, .vz-end.is-emph { font-weight: 600; }
+.vz-val { font-size: 11px; fill: var(--color-fg); font-family: var(--font-anthropic-sans); font-variant-numeric: tabular-nums; }
+.vz-in { font-size: 11px; font-family: var(--font-anthropic-sans); font-variant-numeric: tabular-nums; }
+.vz-end { font-size: 11px; fill: var(--color-fg); font-family: var(--font-anthropic-sans); }
+.vz-legend { font-size: 11px; fill: var(--color-fg-muted); font-family: var(--font-anthropic-sans); }
+.vz-grid { stroke: var(--cds-chart-grid); stroke-width: 1; }
+.vz-axis { stroke: var(--cds-chart-axis); stroke-width: 1; }
+.vz-rule { stroke: var(--cds-chart-reference); stroke-width: 1; }
+.vz-leader { stroke: var(--cds-chart-reference); stroke-width: 1; }
+.vz-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.vz-db-line { stroke: var(--cds-chart-muted); stroke-width: 2; stroke-linecap: round; opacity: 0.6; }
+.vz-ci { stroke: var(--color-fg-muted); stroke-width: 1.5; }
+.vz-band { fill: var(--cds-chart-grid); opacity: 0.8; }
+.vz-ref { stroke: var(--cds-chart-reference); stroke-width: 1; stroke-dasharray: 4 3; }
+
+/* 툴팁 */
+.vz-tip { position: absolute; z-index: 5; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); pointer-events: none; min-width: 9rem; max-width: 16rem; }
+.vz-tip-head { color: var(--cds-text-secondary); margin-bottom: 2px; }
+.vz-tip-row { display: flex; align-items: center; gap: 0.4rem; line-height: 1.5; }
+.vz-tip-row b { font-variant-numeric: tabular-nums; }
+.vz-tip-key { display: inline-block; width: 0.7rem; height: 2px; border-radius: 1px; flex: none; }
+
+/* 상태 */
+.vz-fail { display: flex; align-items: center; justify-content: center; gap: 0.4rem; min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.vz-fail-dot { width: 0.375rem; height: 0.375rem; border-radius: 50%; background: var(--color-bad); }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+
+@media (max-width: 480px) {
+  .vz-heat { font-size: 11px; }
+  .vz-heat > div { padding: 0.35rem 0.2rem; }
+}

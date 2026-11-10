@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdn.jsdelivr.net 'sha256-Wi/iQot8bYl7Hag5TifPt49TifLpAzvV6t38Uk//wVg='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>벤더존 적시 도착·조리 지연</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="base.css?v=bbfe187c16">
+<script type="application/json" id="dash-datasets">{"adjust_steps": "data/adjust_steps.csv?v=1dbf8375e1", "agent_adjust": "data/agent_adjust.csv?v=3695810e73", "conc_curve": "data/conc_curve.csv?v=5c0878b699", "cook_slack": "data/cook_slack.csv?v=33d5d4568d", "cs_lateness": "data/cs_lateness.csv?v=b2d212cabc", "daily": "data/daily.csv?v=baf697754f", "decline_dest": "data/decline_dest.csv?v=8f7f13c42b", "facts": "data/facts.csv?v=351ec8df06", "g4_gap_by_metric": "data/g4_gap_by_metric.csv?v=0bb15132e1", "grace": "data/grace.csv?v=1789951961", "late_class": "data/late_class.csv?v=89b27db996", "lead_strata": "data/lead_strata.csv?v=91c4e86a35", "metric_bridge": "data/metric_bridge.csv?v=9741bf94fb", "pay_g4": "data/pay_g4.csv?v=992d968e62", "posted_match": "data/posted_match.csv?v=459c6b9630", "ready_dist": "data/ready_dist.csv?v=5e59d78a17", "salience": "data/salience.csv?v=839938a8c4", "top_stores": "data/top_stores.csv?v=18a7bba223", "weekly_metric": "data/weekly_metric.csv?v=f63cec9808", "zone_adj": "data/zone_adj.csv?v=0ebe44ea20", "zone_type": "data/zone_type.csv?v=22d957a8c1"}</script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="dash.js?v=497464b89c"></script>
+</head>
+<body>
+<div id="dash-root" data-dash-one-writer>
+<meta name="dash-one-writer">
+<link rel="stylesheet" href="style.css?v=f4209010c8">
+<div class="vz">
+
+<header class="vz-head" id="top">
+  <p class="vz-eyebrow">운영 문의 분석 · 벤더존 5곳 · 상점 타입 5종</p>
+  <h1 class="vz-title" id="title">벤더존 적시 도착·조리 지연</h1>
+  <p class="vz-lede">G4 상점의 기사 적시 도착률은 <b data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=5개 존 전체&amp;type=G4">—</b>%로 G1(<b data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=5개 존 전체&amp;type=G1">—</b>%)보다 낮고, 조리 지연율은 <b data-draw="v" data-source="zone_type" data-field="cook_pct" data-where="zone=5개 존 전체&amp;type=G4">—</b>%로 다섯 타입 중 가장 높습니다. 'G4가 낮다'는 운영 체감은 맞습니다. 다만 운영 픽업 준수율(이하 운영 지표)은 매일 공유되는 '픽업요청 준수율'과 같은 식으로, 기사는 제때 왔지만 음식 준비·인계로 픽업이 늦어진 몫까지 함께 셉니다. 그래서 운영 지표로는 G4−G1 격차가 <b data-draw="v" data-source="g4_gap_by_metric" data-field="g4_minus_g1_ops" data-where="zone=5개 존 전체" data-fmt="s1">—</b>%p로 더 크게 보입니다. 기사 도착만 재면 격차는 <b data-draw="v" data-source="g4_gap_by_metric" data-field="g4_minus_g1_ontime" data-where="zone=5개 존 전체" data-fmt="s1">—</b>%p입니다. 도착 격차는 배차 시점보다 배정 뒤 동선에서 더 생기는 것으로 보이고, 후불 구조·저녁 집중·존 밖 배달도 겹칩니다. 조리 지연은 주문 경로(G4·OD)보다 매장 차이로 보이며 상위 20개 매장에 몰려 있습니다.</p>
+  <p class="vz-meta">접수 <span data-draw="v" data-source="facts" data-field="value" data-where="key=period" data-fmt="t">—</span> · 배달 완료 <span data-draw="v" data-source="zone_type" data-field="orders" data-where="zone=5개 존 전체&amp;type=전체" data-fmt="0">—</span>건(5개 타입, 묶음 하위 오더 제외) · Snowflake <span data-draw="v" data-source="facts" data-field="value" data-where="key=load_date" data-fmt="t">—</span> 적재분으로 만든 고정 사본입니다. 적시 도착 = 상점 도착 버튼 시각 ≤ 최초 픽업요청시각. 조리 지연 = 적시 도착했는데 픽업 처리가 최초 요청시각 뒤인 건(적시 도착 건 대비 비율).</p>
+  <nav class="vz-nav" aria-label="목차">
+    <a href="#s-min">존 × 상점 타입</a>
+    <a href="#s-metric">운영 지표와의 차이</a>
+    <a href="#s-real">격차는 실제인가</a>
+    <a href="#s-arrive">도착이 늦는 이유</a>
+    <a href="#s-cook">조리 지연</a>
+    <a href="#s-rider">기사 행동</a>
+    <a href="#s-voice">운영 체감의 출처</a>
+    <a href="#s-hyp">가설 판정</a>
+    <a href="#s-act">제안</a>
+    <a href="#s-method">방법·한계</a>
+  </nav>
+</header>
+
+<section class="vz-kpis" aria-label="핵심 수치">
+  <div class="vz-kpi">
+    <span class="vz-kpi-label">G4 적시 도착률</span>
+    <span class="vz-kpi-value"><span data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=5개 존 전체&amp;type=G4" data-fetchpriority="high">—</span><span class="vz-unit">%</span></span>
+    <span class="vz-kpi-note">G1 <span data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=5개 존 전체&amp;type=G1">—</span>% · 요기요OD <span data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=5개 존 전체&amp;type=요기요OD">—</span>% · 땡겨요OD <span data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=5개 존 전체&amp;type=땡겨요OD">—</span>%</span>
+  </div>
+  <div class="vz-kpi">
+    <span class="vz-kpi-label">G4 조리 지연율</span>
+    <span class="vz-kpi-value"><span data-draw="v" data-source="zone_type" data-field="cook_pct" data-where="zone=5개 존 전체&amp;type=G4" data-fetchpriority="high">—</span><span class="vz-unit">%</span></span>
+    <span class="vz-kpi-note">적시 도착 건 중. G1 <span data-draw="v" data-source="zone_type" data-field="cook_pct" data-where="zone=5개 존 전체&amp;type=G1">—</span>% · 요기요OD <span data-draw="v" data-source="zone_type" data-field="cook_pct" data-where="zone=5개 존 전체&amp;type=요기요OD">—</span>%</span>
+  </div>
+  <div class="vz-kpi">
+    <span class="vz-kpi-label">운영 픽업 준수율(G4)</span>
+    <span class="vz-kpi-value"><span data-draw="v" data-source="metric_bridge" data-field="ops_pickup_pct" data-where="zone=5개 존 전체&amp;type=G4" data-fetchpriority="high">—</span><span class="vz-unit">%</span></span>
+    <span class="vz-kpi-note">픽업 완료 ≤ 최종 요청시각. 적시 도착률과 <span data-draw="v" data-source="metric_bridge" data-field="gap_ops_minus_ontime" data-where="zone=5개 존 전체&amp;type=G4" data-fmt="s1">—</span>%p 차이</span>
+  </div>
+  <div class="vz-kpi">
+    <span class="vz-kpi-label">G4−G1 격차</span>
+    <span class="vz-kpi-value vz-kpi-pair"><span data-draw="v" data-source="g4_gap_by_metric" data-field="g4_minus_g1_ops" data-where="zone=5개 존 전체" data-fmt="s1">—</span><span class="vz-kpi-arrow">→</span><span data-draw="v" data-source="g4_gap_by_metric" data-field="g4_minus_g1_ontime" data-where="zone=5개 존 전체" data-fmt="s1">—</span><span class="vz-unit">%p</span></span>
+    <span class="vz-kpi-note">운영 지표 기준 → 적시 도착 기준</span>
+  </div>
+  <div class="vz-kpi">
+    <span class="vz-kpi-label">조리 지연 상위 20개 매장 몫</span>
+    <span class="vz-kpi-value"><span data-draw="v" data-source="facts" data-field="value" data-where="key=top20_share">—</span><span class="vz-unit">%</span></span>
+    <span class="vz-kpi-note">G4 조리 지연 건 중. 앞 2주로 골라 뒤 2주에 재도 <span data-draw="v" data-source="facts" data-field="value" data-where="key=top20_oos">—</span>%</span>
+  </div>
+</section>
+
+<section class="vz-sec" id="s-min">
+  <h2 id="h-min">존 × 상점 타입: 적시 도착률과 조리 지연율</h2>
+  <p>존·상점 타입별 기본 표입니다. 테두리만 있는 칸은 합계이고, 칸에 마우스를 올리면 완료 오더 수가 보입니다.</p>
+  <div class="vz-grid2">
+    <div class="vz-card">
+      <h3 id="h-heat-ontime">적시 도착률(%)</h3>
+      <p class="vz-note">도착 버튼 ≤ 최초 요청시각, 배달 완료 오더 중. 진할수록 높음</p>
+      <div class="vz-chart" id="c-heat-ontime" data-draw="c-heat-ontime" data-source="zone_type"></div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-heat-cook">조리 지연율(%)</h3>
+      <p class="vz-note">적시 도착 건 중 픽업이 최초 요청시각 뒤인 비율. 진할수록 높음</p>
+      <div class="vz-chart" id="c-heat-cook" data-draw="c-heat-cook" data-source="zone_type"></div>
+    </div>
+  </div>
+  <ul class="vz-finds">
+    <li>G4 적시 도착은 서초1 <b data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=서초1&amp;type=G4">—</b>%, 성북1 <b data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=성북1&amp;type=G4">—</b>%, 사당이수1 <b data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=사당이수1&amp;type=G4">—</b>%가 낮고 동대문1 <span data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=동대문1&amp;type=G4">—</span>%, 성동1 <span data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=성동1&amp;type=G4">—</span>%가 높습니다.</li>
+    <li>G4 조리 지연은 서초1 <b data-draw="v" data-source="zone_type" data-field="cook_pct" data-where="zone=서초1&amp;type=G4">—</b>%, 동대문1 <b data-draw="v" data-source="zone_type" data-field="cook_pct" data-where="zone=동대문1&amp;type=G4">—</b>%가 높습니다. 서초1은 매장 3곳이 존 G4 조리 지연의 대부분을 내고, 이 3곳을 빼면 <span data-draw="v" data-source="facts" data-field="value" data-where="key=seo_top3_ex">—</span>%로 내려갑니다.</li>
+    <li>성북1과 서초1은 G1·OD까지 모든 타입이 낮습니다(존 전체 적시 도착 성북1 <span data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=성북1&amp;type=전체">—</span>%, 서초1 <span data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=서초1&amp;type=전체">—</span>%). 존 단위 공급 문제가 G4 문제와 겹친 것으로 보입니다.</li>
+    <li>G2·G3은 4주 합계 <span data-draw="v" data-source="facts" data-field="value" data-where="key=g23_n" data-fmt="0">—</span>건이라 표에서 뺐습니다.</li>
+  </ul>
+</section>
+
+<section class="vz-sec" id="s-metric">
+  <h2 id="h-metric">운영의 '픽업요청 준수율'과 적시 도착률은 무엇이 다른가</h2>
+  <p>운영 지표(운영 픽업 준수율)는 '픽업 완료 ≤ 최종 요청시각'으로, 매일 슬랙에 공유되는 '픽업요청 준수율'과 같은 식입니다. AI배차 모니터링 카드, 벤더 성공지표, 공식 SLA 지표 4번(픽업 시간 준수율)도 같은 식을 씁니다. 슬랙에 공유된 '픽업요청 준수율' <b data-draw="v" data-source="facts" data-field="value" data-where="key=posts_n" data-fmt="0">—</b>건은 공유 때처럼 묶음 하위 오더까지 넣어 다시 계산하면 비율이 소수 첫째 자리까지 같습니다(사당이수1 10/1~10/5는 건수만 다름: 공유 <span data-draw="v" data-source="posted_match" data-field="posted_n" data-where="post=p3" data-fmt="0">—</span>건, 재계산 <span data-draw="v" data-source="posted_match" data-field="orders" data-where="post=p3" data-fmt="0">—</span>건). 공유 수치처럼 묶음 하위 오더까지 넣어 4주를 재면 G4 <span data-draw="v" data-source="facts" data-field="value" data-where="key=p1b_g4">—</span>%, G1 <span data-draw="v" data-source="facts" data-field="value" data-where="key=p1b_g1">—</span>%로, 격차는 묶음 하위 오더를 뺀 이 페이지 값과 거의 같습니다. 이 식에는 기사는 제때 왔지만 음식 준비·인계로 픽업이 늦어진 몫이 함께 들어갑니다. 적시 도착률은 기사 도착만 봅니다.</p>
+  <div class="vz-grid2">
+    <div class="vz-card">
+      <h3 id="h-metric-db">타입별 세 지표(%)</h3>
+      <p class="vz-note">같은 오더로 잰 값(4주·5개 존). S&amp;OP 카드는 GPS 50m 도착 ≤ 최종 요청시각, GPS 판정이 정상인 오더만 분모</p>
+      <div class="vz-chart" id="c-metric-db" data-draw="c-metric-db" data-source="metric_bridge"></div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-gap-db">G4−G1 격차: 지표별·존별(%p)</h3>
+      <p class="vz-note">음수일수록 G4가 낮음. 모든 존에서 운영 지표 격차가 적시 도착률 격차보다 넓습니다(사당이수1만 S&amp;OP 카드 격차가 운영 지표 격차보다 조금 더 넓음)</p>
+      <div class="vz-chart" id="c-gap-db" data-draw="c-gap-db" data-source="g4_gap_by_metric"></div>
+    </div>
+    <div class="vz-card is-wide">
+      <h3 id="h-bridge">운영 지표 → 적시 도착률 차이 분해</h3>
+      <p class="vz-note">운영 지표 − 적시 도착률 = 도착 뒤 손실(제때 왔지만 픽업이 최종 요청시각을 넘김: 조리·인계) + 요청시각 변경 몫(최종 요청시각이 최초보다 늦어져 생긴 여유). 칸마다 반올림한 값이라 행 안에서 합이 조금 어긋날 수 있습니다</p>
+      <div class="vz-tablebox">
+        <table class="vz-table" id="t-bridge" data-source="metric_bridge" data-row-key="zone,type">
+          <thead><tr>
+            <th data-field="type">타입</th>
+            <th data-field="ops_pickup_pct" class="is-num">운영 픽업 준수율(%)</th>
+            <th data-field="part_cooking" class="is-num">도착 뒤 손실(%p)</th>
+            <th data-field="part_reqchange" class="is-num">요청시각 변경(%p)</th>
+            <th data-field="ontime_pct" class="is-num">적시 도착률(%)</th>
+            <th data-field="gap_ops_minus_ontime" class="is-num">차이(%p)</th>
+          </tr></thead>
+          <tbody data-draw="t-bridge"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-weekly-gap">주차별 G4−G1 격차(%p)</h3>
+      <p class="vz-note"><span data-draw="v" data-source="facts" data-field="value" data-where="key=period9" data-fmt="t">—</span> 9주. 9/21 주까지는 서초1·사당이수1 오픈 전이라 3개 존 값이고, G4는 서초1이 10/5 주부터, 사당이수1이 10/12 주부터 들어갑니다. 운영 지표 쪽 격차가 매주 더 넓습니다</p>
+      <div class="vz-chart" id="c-weekly-gap" data-draw="c-weekly-gap" data-source="weekly_gap"></div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-posted">슬랙 공유 수치 재계산</h3>
+      <p class="vz-note">같은 날·존·타입 오더로 다시 계산. 준수율 = 완료 오더(묶음 하위 포함) 중 픽업 ≤ 최종 요청시각, SLA = 접수 후 40분 안 배달 완료. 마지막 칸은 같은 날·존·타입에서 묶음 하위 오더를 뺀 분석 모집단 값</p>
+      <div class="vz-tablebox">
+        <table class="vz-table" id="t-posted" data-source="posted_match" data-row-key="post">
+          <thead><tr>
+            <th data-field="label">공유 수치</th>
+            <th data-field="posted_rate" class="is-num">공유 준수율</th>
+            <th data-field="rate_pct" class="is-num">재계산 준수율</th>
+            <th data-field="posted_sla" class="is-num">공유 SLA</th>
+            <th data-field="sla_pct" class="is-num">재계산 SLA</th>
+            <th data-field="posted_n" class="is-num">공유 건수</th>
+            <th data-field="orders" class="is-num">재계산 건수</th>
+            <th data-field="ontime_pct" class="is-num">같은 날·존·타입 적시 도착률</th>
+          </tr></thead>
+          <tbody data-draw="t-posted"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <ul class="vz-finds">
+    <li>G4는 운영 지표가 적시 도착률보다 <b data-draw="v" data-source="metric_bridge" data-field="gap_ops_minus_ontime" data-where="zone=5개 존 전체&amp;type=G4" data-fmt="a1">—</b>%p 낮습니다. 도착 뒤 손실 <span data-draw="v" data-source="metric_bridge" data-field="part_cooking" data-where="zone=5개 존 전체&amp;type=G4" data-fmt="s1">—</span>%p에 요청시각이 뒤로 바뀐 몫 <span data-draw="v" data-source="metric_bridge" data-field="part_reqchange" data-where="zone=5개 존 전체&amp;type=G4" data-fmt="s1">—</span>%p가 더해진 값입니다. G1은 도착 뒤 손실이 <span data-draw="v" data-source="metric_bridge" data-field="part_cooking" data-where="zone=5개 존 전체&amp;type=G1" data-fmt="s1">—</span>%p뿐입니다.</li>
+    <li>그래서 운영 지표 G4−G1 격차의 약 <b data-draw="v" data-source="facts" data-field="value" data-where="key=ops_nonrider_share" data-fmt="0">—</b>%는 기사 도착이 아닌 몫입니다. 대부분은 이 도착 뒤 손실 차이이고, 일부는 G1의 요청시각 변경 몫(<span data-draw="v" data-source="metric_bridge" data-field="part_reqchange" data-where="zone=5개 존 전체&amp;type=G1" data-fmt="s1">—</span>%p)이 G4보다 큰 데서 옵니다. 9주 내내 운영 지표 쪽 격차가 더 넓습니다.</li>
+    <li>요기요OD와 비교하면 운영 지표로는 G4가 <span data-draw="v" data-source="g4_gap_by_metric" data-field="g4_minus_yogiyo_ops" data-where="zone=5개 존 전체" data-fmt="a1">—</span>%p 낮고, 원자료 적시 도착률로는 <span data-draw="v" data-source="g4_gap_by_metric" data-field="g4_minus_yogiyo_ontime" data-where="zone=5개 존 전체" data-fmt="1">—</span>%p 높습니다. 하지만 두 타입은 요청 여유시간 구성이 달라 같은 조건 비교가 아닙니다(다음 절).</li>
+    <li>G4의 요청시각 변경 몫은 거의 전부 프렌즈 기사의 '시간조정'입니다(G1은 버거킹 자동 조정이 섞여 있습니다). 최종 요청시각을 쓰는 운영 지표는 그만큼 G4를 좋게 보이게 합니다(기사 행동 절).</li>
+  </ul>
+</section>
+
+<section class="vz-sec" id="s-real">
+  <h2 id="h-real">G4 격차는 측정 착시가 아니다. 다만 비교 상대에 따라 크기가 다르다</h2>
+  <p>요청시각 기준 3가지(최초·도착 순간 유효·최종)와 도착 측정 3가지(버튼·GPS 보정·GPS만)를 섞은 정의 8개 모두에서 G4 적시 도착은 다른 4타입보다 <b data-draw="v" data-source="facts" data-field="value" data-where="key=def_gap_lo">—</b>~<b data-draw="v" data-source="facts" data-field="value" data-where="key=def_gap_hi">—</b>%p 낮았습니다(존 구성 맞춤). 정의를 바꿔 생기는 변화는 ±<span data-draw="v" data-source="facts" data-field="value" data-where="key=def_delta">—</span>%p 안입니다. 도착 버튼은 GPS 50m 진입보다 중앙 <span data-draw="v" data-source="facts" data-field="value" data-where="key=btn_lag_s" data-fmt="0">—</span>초 늦게 찍히지만 모든 타입에 공통입니다.</p>
+  <div class="vz-grid2">
+    <div class="vz-card">
+      <h3 id="h-lead-share">요청 여유시간(접수 → 최초 요청) 구성(%)</h3>
+      <p class="vz-note">타입별 오더 비중. G4는 POS 기본값 15분이 대부분이고, 요기요OD는 15분 미만이 많습니다</p>
+      <div class="vz-chart" id="c-lead-share" data-draw="c-lead-share" data-source="lead_strata"></div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-lead-on">여유시간 구간별 적시 도착률(%)</h3>
+      <p class="vz-note">같은 여유시간끼리 비교. 오더가 적은 칸(30건 미만)은 비웠습니다</p>
+      <div class="vz-chart" id="c-lead-on" data-draw="c-lead-on" data-source="lead_strata"></div>
+    </div>
+    <div class="vz-card is-wide">
+      <h3 id="h-steps">조건을 맞춰 가며 본 G4−G1 적시 도착 격차(%p)</h3>
+      <p class="vz-note">로지스틱 보정을 단계마다 쌓은 값(5개 타입 전체 오더), 막대 끝 가는 선은 95% 구간(픽업 지점 군집). 막대에 마우스를 올리면 G4−요기요OD 값이 보입니다. 아래 본문 범위의 뒤 값이 2단계 값이고, 1단계는 여유시간을 맞추기 전 값입니다. 4단계부터는 격차가 생기는 경로(거리·보유 건수·배차 지연·경유 등)를 더한 것이라 '그 경로로 설명된다'로만 읽습니다</p>
+      <div class="vz-chart" id="c-steps" data-draw="c-steps" data-source="adjust_steps"></div>
+    </div>
+  </div>
+  <ul class="vz-finds">
+    <li>G4는 <b data-draw="v" data-source="facts" data-field="value" data-where="key=g4_lead15">—</b>%가 정확히 15분이고, 요기요OD는 15분 미만 오더가 많습니다(10분 미만 <span data-draw="v" data-source="lead_strata" data-field="share_pct" data-where="type=요기요OD&amp;lead=10분 미만">—</span>%, 10~14분 <span data-draw="v" data-source="lead_strata" data-field="share_pct" data-where="type=요기요OD&amp;lead=10~14분">—</span>%). 그래서 원자료 비교(G4 <span data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=5개 존 전체&amp;type=G4">—</span>% vs 요기요OD <span data-draw="v" data-source="zone_type" data-field="ontime_pct" data-where="zone=5개 존 전체&amp;type=요기요OD">—</span>%)는 같은 조건이 아닙니다. 존·날짜·여유시간·시간대를 맞추면 G4가 요기요OD보다 <b data-draw="v" data-source="facts" data-field="value" data-where="key=adj_yo">—</b>~<b data-draw="v" data-source="adjust_steps" data-field="g4_yo" data-where="step=2" data-fmt="a1">—</b>%p 낮습니다. 앞 값은 올리브영을 뺀 4타입 모형(95% 구간 <span data-draw="v" data-source="facts" data-field="value" data-where="key=adj_yo_lo">—</span>~<span data-draw="v" data-source="facts" data-field="value" data-where="key=adj_yo_hi">—</span>), 뒤 값은 단계 차트 2단계(±<span data-draw="v" data-source="adjust_steps" data-field="g4_yo_ci" data-where="step=2">—</span>)입니다. 요기요OD 비교는 두 값 모두 아래 G1 비교보다 오차 범위가 넓습니다.</li>
+    <li>15분 구간만 보면 G4 <span data-draw="v" data-source="lead_strata" data-field="ontime_pct" data-where="type=G4&amp;lead=15분">—</span>%, 요기요OD <span data-draw="v" data-source="lead_strata" data-field="ontime_pct" data-where="type=요기요OD&amp;lead=15분">—</span>%, 땡겨요OD <span data-draw="v" data-source="lead_strata" data-field="ontime_pct" data-where="type=땡겨요OD&amp;lead=15분">—</span>%로 비슷합니다. OD와의 격차는 주로 25분 이상 오더에서 나옵니다: G4 <b data-draw="v" data-source="lead_strata" data-field="ontime_pct" data-where="type=G4&amp;lead=25분+">—</b>% vs 요기요OD <span data-draw="v" data-source="lead_strata" data-field="ontime_pct" data-where="type=요기요OD&amp;lead=25분+">—</span>%, 땡겨요OD <span data-draw="v" data-source="lead_strata" data-field="ontime_pct" data-where="type=땡겨요OD&amp;lead=25분+">—</span>%. G4의 긴 여유 오더는 상위 10개 매장이 <span data-draw="v" data-source="facts" data-field="value" data-where="key=long_top10">—</span>%를 냅니다.</li>
+    <li>G1 대비 격차는 존·날짜·여유시간·시간대를 맞춰도 남습니다. G4가 G1보다 <b data-draw="v" data-source="facts" data-field="value" data-where="key=adj_g1">—</b>~<b data-draw="v" data-source="adjust_steps" data-field="g4_g1" data-where="step=2" data-fmt="a1">—</b>%p 낮습니다. 앞 값은 4타입 모형(95% 구간 <span data-draw="v" data-source="facts" data-field="value" data-where="key=adj_g1_lo">—</span>~<span data-draw="v" data-source="facts" data-field="value" data-where="key=adj_g1_hi">—</span>), 뒤 값은 단계 차트 2단계(±<span data-draw="v" data-source="adjust_steps" data-field="g4_g1_ci" data-where="step=2">—</span>)입니다.</li>
+    <li>여유시간·후불은 맞추지 않고 존·날짜·시간대·도착지만 맞추면 G4−G1은 <span data-draw="v" data-source="facts" data-field="value" data-where="key=gap_ztd" data-fmt="s1">—</span>%p(±<span data-draw="v" data-source="facts" data-field="value" data-where="key=gap_ztd_ci">—</span>)입니다. 여기에 여유시간·후불과 거리·보유 건수·기사 유형까지 더해 맞춘 단계 차트 4단계는 <span data-draw="v" data-source="adjust_steps" data-field="g4_g1" data-where="step=4" data-fmt="s1">—</span>%p(±<span data-draw="v" data-source="adjust_steps" data-field="g4_g1_ci" data-where="step=4">—</span>)입니다. 같은 4단계에서 여유시간을 5분 단위로 더 잘게 나눠 맞추면 <span data-draw="v" data-source="facts" data-field="value" data-where="key=resid_5min" data-fmt="s1">—</span>%p(±<span data-draw="v" data-source="facts" data-field="value" data-where="key=resid_5min_ci">—</span>)로 더 줄어 0과 구분되지 않습니다. 4단계부터는 격차가 생기는 경로까지 맞춘 값이라, 격차가 없다는 뜻이 아니라 거리·보유 건수 같은 경로로 설명된다는 뜻입니다. 보정 방식에 따라 값이 달라지므로 범위로 읽는 편이 안전합니다.</li>
+  </ul>
+</section>
+
+<section class="vz-sec" id="s-arrive">
+  <h2 id="h-arrive">도착이 늦는 이유: 배차 시점보다 배정 뒤 동선·후불 구조·존 밖 배달</h2>
+  <p>최초 요청시각에 아직 아무도 배정되지 않은 오더는 G4 <b data-draw="v" data-source="facts" data-field="value" data-where="key=unasg_fr_g4">—</b>%, G1 <b data-draw="v" data-source="facts" data-field="value" data-where="key=unasg_fr_g1">—</b>%로 비슷합니다. 같은 존·시간대로 맞춘 G1보다 G4 지각이 <b data-draw="v" data-source="facts" data-field="value" data-where="key=late_excess">—</b>%p 많은데, 그중 <span data-draw="v" data-source="facts" data-field="value" data-where="key=late_assign">—</span>%p가 배정 시점(요청시각 뒤 배정·재배정·남은 시간 부족)이고 <span data-draw="v" data-source="facts" data-field="value" data-where="key=late_after">—</span>%p가 배정 뒤(다른 픽업·배달을 먼저 하는 경유와 이동)입니다.</p>
+  <div class="vz-grid2">
+    <div class="vz-card">
+      <h3 id="h-late">지각 유형(전체 오더 대비 %)</h3>
+      <p class="vz-note">G1·OD는 G4의 존×시간대×휴일 분포로 맞춘 값. 왼쪽 유형부터 우선 분류. 칸과 본문 수치는 각각 반올림한 값이라, 칸끼리 더하거나 뺀 값이 본문 수치와 0.1%p쯤 다를 수 있습니다</p>
+      <div class="vz-chart" id="c-late" data-draw="c-late" data-source="late_class"></div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-decline">비프렌즈 기사 거절률: 도착지 존 안 vs 밖(%)</h3>
+      <p class="vz-note">세트·NVP 기사, 노출 대비. 결제수단보다 존 밖 배달에서 거절이 크게 늘어납니다</p>
+      <div class="vz-chart" id="c-decline" data-draw="c-decline" data-source="decline_dest"></div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-pay">G4 선불 vs 후불</h3>
+      <p class="vz-note">후불은 프렌즈 앱이 받지 못해 세트 기사에게 몰립니다. 보정 차이는 같은 상점·존×날짜·시간대·여유·도착지 조건</p>
+      <div class="vz-tablebox">
+        <table class="vz-table" id="t-pay" data-source="pay_g4" data-row-key="metric">
+          <thead><tr>
+            <th data-field="metric">지표</th>
+            <th data-field="prepay" class="is-num">선불</th>
+            <th data-field="postpay" class="is-num">후불</th>
+            <th data-field="adj_diff" class="is-num">보정 차이(후불−선불)</th>
+            <th data-field="adj_ci" class="is-num">95% ±</th>
+          </tr></thead>
+          <tbody data-draw="t-pay"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-zone">존 안에서 맞춘 G4−G1 적시 도착 격차(%p)</h3>
+      <p class="vz-note">존×날짜·시간대·여유·도착지·후불 보정, 가는 선은 95% 구간. 성북1은 G4 고유 격차가 보이지 않습니다</p>
+      <div class="vz-chart" id="c-zone" data-draw="c-zone" data-source="zone_adj"></div>
+    </div>
+    <div class="vz-card is-wide">
+      <h3 id="h-daily">일별 적시 도착률(%)</h3>
+      <p class="vz-note">두 일요일에 모든 타입이 함께 떨어졌습니다. 10/18은 폭우로 활동 기사가 줄고 이동이 길어졌고, 11/1은 올리브영 행사와 우천으로 주문이 몰렸습니다</p>
+      <div class="vz-chart" id="c-daily" data-draw="c-daily" data-source="daily"></div>
+    </div>
+  </div>
+  <ul class="vz-finds">
+    <li><b>경유</b>: 같은 조건에서 G4 <b data-draw="v" data-source="facts" data-field="value" data-where="key=detour_g4">—</b>% vs G1 <span data-draw="v" data-source="facts" data-field="value" data-where="key=detour_g1">—</span>%의 오더가 기사의 다른 픽업·배달 뒤에 도착합니다. G4 초과분은 이미 1건을 든 기사에게 배정될 때 생깁니다.</li>
+    <li><b>구성</b>: G4는 오더의 <span data-draw="v" data-source="facts" data-field="value" data-where="key=eve_g4">—</span>%가 17~20시 접수(G1 <span data-draw="v" data-source="facts" data-field="value" data-where="key=eve_g1">—</span>%)이고, <span data-draw="v" data-source="facts" data-field="value" data-where="key=outzone_g4">—</span>%가 도착지 존 밖(G1 <span data-draw="v" data-source="facts" data-field="value" data-where="key=outzone_g1">—</span>%)입니다.</li>
+    <li><b>후불(문의 예시 가설 3)</b>: G4의 <span data-draw="v" data-source="facts" data-field="value" data-where="key=postpay_g4">—</span>%가 후불입니다. 기사가 후불을 꺼리지 않고(비프렌즈 거절률 선불 <span data-draw="v" data-source="pay_g4" data-field="prepay" data-where="metric=비프렌즈 기사 거절률(%25)">—</span>% vs 후불 <span data-draw="v" data-source="pay_g4" data-field="postpay" data-where="metric=비프렌즈 기사 거절률(%25)">—</span>%), 배정이 늦지도 않습니다(접수→첫 배정 중앙값 선불 <span data-draw="v" data-source="pay_g4" data-field="prepay" data-where="metric=접수→첫 배정 중앙(분)">—</span>분, 후불 <span data-draw="v" data-source="pay_g4" data-field="postpay" data-where="metric=접수→첫 배정 중앙(분)">—</span>분). 프렌즈 앱이 후불을 받지 못해 세트 기사가 <span data-draw="v" data-source="pay_g4" data-field="postpay" data-where="metric=세트 배차(%25)">—</span>%를 맡고, 같은 상점·조건에서 후불 오더의 적시 도착이 선불보다 <b data-draw="v" data-source="facts" data-field="value" data-where="key=pay_adj" data-fmt="a1">—</b>%p 낮습니다(17~20시 <span data-draw="v" data-source="facts" data-field="value" data-where="key=pay_peak" data-fmt="a1">—</span>%p). G4 전체 격차 중 약 <span data-draw="v" data-source="facts" data-field="value" data-where="key=pay_share">—</span>%p입니다.</li>
+    <li><b>기사 거절</b>: 비프렌즈 기사는 같은 기사·시각·배달거리로 맞춰도 선불 G4 제안을 G1보다 <span data-draw="v" data-source="facts" data-field="value" data-where="key=same_rider_dec">—</span>%p 더 거절합니다(프렌즈는 차이 없음). 10/22 뒤 권역 외 G4 오더는 적시 도착 <span data-draw="v" data-source="facts" data-field="value" data-where="key=outbound_on">—</span>%, 거절률(프렌즈 포함 전체 노출 기준) <span data-draw="v" data-source="facts" data-field="value" data-where="key=outbound_dec">—</span>%입니다.</li>
+    <li><b>존</b>: 존 구성 몫(존별 오더 분포 차이에서 생기는 몫)은 <span data-draw="v" data-source="facts" data-field="value" data-where="key=zone_mix_lo">—</span>~<span data-draw="v" data-source="facts" data-field="value" data-where="key=zone_mix_hi">—</span>%p로 작습니다. 성북1은 존 전체가 거절(<span data-draw="v" data-source="zone_adj" data-field="decline" data-where="zone=성북1">—</span>%)과 요청 5분 전 미배정(<span data-draw="v" data-source="zone_adj" data-field="unasg5" data-where="zone=성북1">—</span>%)으로 낮고, 서초1은 기사가 멀리서 오는(직전 완료지→상점 중앙 <span data-draw="v" data-source="zone_adj" data-field="prev_km" data-where="zone=서초1" data-fmt="2">—</span>km) 원거리 공급형입니다.</li>
+    <li><b>10/22 존·권역 개편</b>: 개편 전후로 G4만의 변화는 보이지 않습니다(G1과 비교한 전후 변화 <span data-draw="v" data-source="facts" data-field="value" data-where="key=v2_did">—</span>%p, 오차 범위 ±<span data-draw="v" data-source="facts" data-field="value" data-where="key=v2_ci">—</span>%p). 주차별 하락은 10/18(전체 적시 도착 <span data-draw="v" data-source="daily" data-field="all_on" data-where="date=2026-10-18">—</span>%)과 11/1(<span data-draw="v" data-source="daily" data-field="all_on" data-where="date=2026-11-01">—</span>%) 두 일요일에 몰려 있고, 그날은 모든 타입이 함께 떨어졌습니다.</li>
+    <li><b>요청 여유</b>: 같은 상점 안에서 15분 대신 15~22분으로 잡은 오더는 적시 도착이 <span data-draw="v" data-source="facts" data-field="value" data-where="key=lead_s_1522" data-fmt="s1">—</span>%p, 15분 미만(5·10분)은 <span data-draw="v" data-source="facts" data-field="value" data-where="key=lead_s_u15" data-fmt="s1">—</span>%p입니다. 일부는 기준시각이 늦어지는 기계적 효과입니다.</li>
+  </ul>
+</section>
+
+<section class="vz-sec" id="s-cook">
+  <h2 id="h-cook">조리 지연: G4가 가장 높지만 주문 경로(G4·OD)보다 매장 차이로 보인다</h2>
+  <p>기사가 몇 분 일찍 왔는지(도착 여유)와 존×날짜·시간대를 맞춰도 G4 조리 지연율은 <b data-draw="v" data-source="facts" data-field="value" data-where="key=cook_adj_g4">—</b>%로 G1 <span data-draw="v" data-source="facts" data-field="value" data-where="key=cook_adj_g1">—</span>%, 요기요OD <span data-draw="v" data-source="facts" data-field="value" data-where="key=cook_adj_yo">—</span>%, 땡겨요OD <span data-draw="v" data-source="facts" data-field="value" data-where="key=cook_adj_dd">—</span>%보다 높습니다. 다만 조리 지연 건의 픽업은 요청시각 뒤 중앙 <span data-draw="v" data-source="facts" data-field="value" data-where="key=cook_med">—</span>분이라 길지 않고, 요기요OD 대비로는 <span data-draw="v" data-source="facts" data-field="value" data-where="key=cook_ratio_yo" data-fmt="2">—</span>배 수준입니다.</p>
+  <div class="vz-grid2">
+    <div class="vz-card">
+      <h3 id="h-cook-slack">도착 여유별 조리 지연율(%)</h3>
+      <p class="vz-note">요청시각 직전 1분 안에 도착하면 정상 인계 시간만으로도 G1·G4·요기요OD·땡겨요OD 모두 40%대입니다. 여유가 길어도 G4는 높게 남습니다</p>
+      <div class="vz-chart" id="c-cook-slack" data-draw="c-cook-slack" data-source="cook_slack"></div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-grace">판정 유예를 주면</h3>
+      <p class="vz-note">픽업이 '요청시각 + 유예'를 넘길 때만 조리 지연으로 셉니다. 오른쪽 세 칸은 도착에도 같은 유예를 준 값</p>
+      <div class="vz-tablebox">
+        <table class="vz-table" id="t-grace" data-source="grace" data-row-key="grace">
+          <thead><tr>
+            <th data-field="grace" class="is-num">유예(분)</th>
+            <th data-field="g4_pick" class="is-num">G4(%)</th>
+            <th data-field="oth_pick" class="is-num">다른 4타입(%)</th>
+            <th data-field="ratio_pick" class="is-num">배율</th>
+            <th data-field="g4_both" class="is-num">G4, 도착도 유예(%)</th>
+            <th data-field="oth_both" class="is-num">다른 4타입, 도착도 유예(%)</th>
+            <th data-field="ratio_both" class="is-num">배율</th>
+          </tr></thead>
+          <tbody data-draw="t-grace"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-conc">조리 지연이 몰린 매장(누적 %)</h3>
+      <p class="vz-note">매장을 조리 지연 건수 순으로 쌓은 곡선. 점선은 그 매장들이 받은 G4 오더 몫. 같은 4주로 고르고 잰 값이라 조금 부풀려집니다</p>
+      <div class="vz-chart" id="c-conc" data-draw="c-conc" data-source="conc_curve"></div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-ready">조리완료 신호 시각 − 최초 요청시각(%)</h3>
+      <p class="vz-note">신호가 있는 오더 중 비중. G4 신호도 대부분 요청시각 전에 눌립니다. 요청 0~2분 전 칸에는 요청시각과 같은 시각에 찍힌 신호도 들어 있어, 요청시각 전 네 칸을 더하면 본문의 '요청시각 전' 비중보다 조금 큽니다</p>
+      <div class="vz-chart" id="c-ready" data-draw="c-ready" data-source="ready_dist"></div>
+    </div>
+    <div class="vz-card is-wide">
+      <h3 id="h-top">G4 조리 지연 상위 20개 매장(4주)</h3>
+      <p class="vz-note">조리 지연 건수 순. 조리 지연율 = 적시 도착 건 중. '10/12 목록'은 10/12 분석의 상위 20곳에 있던 매장</p>
+      <div class="vz-tablebox vz-scroll">
+        <table class="vz-table" id="t-top" data-source="top_stores" data-row-key="rank">
+          <thead><tr>
+            <th data-field="rank" class="is-num">순위</th>
+            <th data-field="store">매장</th>
+            <th data-field="zone">존</th>
+            <th data-field="cat">업종</th>
+            <th data-field="orders" class="is-num">완료 오더</th>
+            <th data-field="cook_n" class="is-num">조리 지연 건</th>
+            <th data-field="cook_pct" class="is-num">조리 지연율(%)</th>
+            <th data-field="late_med" class="is-num">지연 중앙(분)</th>
+            <th data-field="lead_med" class="is-num">요청 여유 중앙(분)</th>
+            <th data-field="prev_list">10/12 목록</th>
+          </tr></thead>
+          <tbody data-draw="t-top"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <ul class="vz-finds">
+    <li><b>집중</b>: 상위 20곳(G4 오더의 <span data-draw="v" data-source="facts" data-field="value" data-where="key=top20_orders">—</span>%)이 조리 지연의 <b data-draw="v" data-source="facts" data-field="value" data-where="key=top20_share">—</b>%를 냅니다. 앞 2주로 골라 뒤 2주에 재도 <span data-draw="v" data-source="facts" data-field="value" data-where="key=top20_oos">—</span>%이고, 매장 순위는 2주 간격으로 유지됩니다(순위상관 <span data-draw="v" data-source="facts" data-field="value" data-where="key=rank_corr" data-fmt="2">—</span>).</li>
+    <li><b>지난 목록</b>: 10/12 분석의 상위 20곳 중 <b data-draw="v" data-source="facts" data-field="value" data-where="key=prev20_still" data-fmt="0">—</b>곳이 여전히 상위 20이고, 조리 지연율은 9/14~10/11 <span data-draw="v" data-source="facts" data-field="value" data-where="key=prev20_before">—</span>% → 10/12~11/1 <span data-draw="v" data-source="facts" data-field="value" data-where="key=prev20_after">—</span>%로 뚜렷한 개선이 보이지 않습니다.</li>
+    <li><b>주문 경로보다 주방</b>: 같은 음식점이 G4와 OD로 함께 받는 주방 <span data-draw="v" data-source="facts" data-field="value" data-where="key=sk_n" data-fmt="0">—</span>곳에서 조건을 맞춰 비교하면 평균 차이가 보이지 않습니다(보정 조리 지연율 G4 <span data-draw="v" data-source="facts" data-field="value" data-where="key=sk_g4">—</span>% vs 땡겨요OD <span data-draw="v" data-source="facts" data-field="value" data-where="key=sk_dd">—</span>%·요기요OD <span data-draw="v" data-source="facts" data-field="value" data-where="key=sk_yo">—</span>%. 전체 G4 <span data-draw="v" data-source="zone_type" data-field="cook_pct" data-where="zone=5개 존 전체&amp;type=G4">—</span>%와는 기준이 다릅니다). 느린 G4 매장(조리 지연 상위 20곳 중 같은 주방 OD 오더가 있는 곳)은 같은 주방의 OD 오더도 느립니다(<span data-draw="v" data-source="facts" data-field="value" data-where="key=slow_g4">—</span>% vs <span data-draw="v" data-source="facts" data-field="value" data-where="key=slow_od">—</span>%).</li>
+    <li><b>POS 기본 15분</b>: 같은 주방의 땡겨요OD 오더는 요청 여유 중앙이 <span data-draw="v" data-source="facts" data-field="value" data-where="key=dd_lead_med" data-fmt="0">—</span>분입니다. 같은 G4 매장 안에서도 25분 이상으로 잡은 오더는 조리 지연이 <span data-draw="v" data-source="facts" data-field="value" data-where="key=lead15_cook">—</span>% → <span data-draw="v" data-source="facts" data-field="value" data-where="key=lead25_cook">—</span>%로 낮습니다(보정값, 관측 관계). 준비가 늦은 매장도 필요한 추가 시간은 중앙 <span data-draw="v" data-source="facts" data-field="value" data-where="key=prep_med">—</span>분, 최대 약 <span data-draw="v" data-source="facts" data-field="value" data-where="key=prep_max">—</span>분입니다.</li>
+    <li><b>조리완료를 일찍 누르나(문의 예시 가설 2)</b>: G4 조리완료 신호(상점 입력)의 <span data-draw="v" data-source="facts" data-field="value" data-where="key=rdy_before">—</span>%가 요청시각 전(중앙 <span data-draw="v" data-source="facts" data-field="value" data-where="key=rdy_med">—</span>분 전)이고, 접수 2분 안에 누른 신호도 <span data-draw="v" data-source="facts" data-field="value" data-where="key=rdy_accept2">—</span>%입니다. 그러나 이른 신호 뒤 도착한 기사는 2분 넘게 기다린 비율이 <span data-draw="v" data-source="facts" data-field="value" data-where="key=rdy_wait_sig">—</span>%(신호 없는 건 <span data-draw="v" data-source="facts" data-field="value" data-where="key=rdy_wait_nosig">—</span>%)라 신호는 대체로 실제 준비와 맞습니다. 조리 지연의 <span data-draw="v" data-source="facts" data-field="value" data-where="key=rdy_mis" data-fmt="0">—</span>%만 이른 신호 뒤에도 요청시각을 넘겼습니다(미리 누르기 후보).</li>
+    <li><b>신호가 키우는 체감</b>: 신호를 기준으로 보는 매장 눈에는 신호가 있는 적시 도착 건의 <b data-draw="v" data-source="facts" data-field="value" data-where="key=perc_late">—</b>%가 신호보다 2분 이상 늦게 온 것입니다. 지각 건에서 음식은 기사를 중앙 <span data-draw="v" data-source="facts" data-field="value" data-where="key=food_wait">—</span>분 기다렸습니다(최초 요청시각 기준 지각 중앙 <span data-draw="v" data-source="facts" data-field="value" data-where="key=off_late">—</span>분).</li>
+  </ul>
+</section>
+
+<section class="vz-sec" id="s-rider">
+  <h2 id="h-rider">기사 행동과 연쇄</h2>
+  <div class="vz-card">
+    <h3 id="h-adjust">프렌즈 기사의 픽업요청시각 '시간조정'</h3>
+    <p class="vz-note">5개 존 4주 합계. 벤더존 소속 기사(플러스앱)의 조정은 0건이라 프렌즈만 집계됩니다. 부풀림 = 시간조정 때문에 최초 기준으로는 미준수인데 최종 기준으로 준수가 된 오더 비중(G1은 버거킹 자동 조정분이 빠져 있어 위 차이 분해 표의 요청시각 변경 몫보다 작음)</p>
+    <div class="vz-tablebox">
+      <table class="vz-table" id="t-adjust" data-source="agent_adjust" data-row-key="type">
+        <thead><tr>
+          <th data-field="type">타입</th>
+          <th data-field="friends" class="is-num">프렌즈 수행</th>
+          <th data-field="adjusted" class="is-num">시간조정</th>
+          <th data-field="rate_fr" class="is-num">프렌즈 중(%)</th>
+          <th data-field="shift_med" class="is-num">첫 조정 늦춘 분(중앙)</th>
+          <th data-field="after_fr" class="is-num">요청시각 지난 뒤 첫 조정(%)</th>
+          <th data-field="late_orig" class="is-num">원래 요청보다 늦게 도착(%)</th>
+          <th data-field="inflate" class="is-num">시간조정 부풀림(%p)</th>
+        </tr></thead>
+        <tbody data-draw="t-adjust"></tbody>
+      </table>
+    </div>
+  </div>
+  <ul class="vz-finds">
+    <li><b>시간조정</b>: G4 프렌즈 오더의 <span data-draw="v" data-source="agent_adjust" data-field="rate_fr" data-where="type=G4">—</span>%에서 일어납니다. 조정 오더의 <span data-draw="v" data-source="agent_adjust" data-field="late_orig" data-where="type=G4">—</span>%는 원래 요청시각보다 늦게 도착했고, 첫 조정의 <span data-draw="v" data-source="agent_adjust" data-field="after_fr" data-where="type=G4">—</span>%는 요청시각이 이미 지난 뒤였습니다. 최종 요청시각을 쓰는 운영 지표에서 G4는 이만큼 <b data-draw="v" data-source="agent_adjust" data-field="inflate" data-where="type=G4" data-fmt="1">—</b>%p 좋아 보입니다.</li>
+    <li>조정 오더의 상점 지연 문의는 비조정 프렌즈 오더의 <span data-draw="v" data-source="facts" data-field="value" data-where="key=adj_cs_raw" data-fmt="0">—</span>배지만, 늦은 정도를 맞추면 <span data-draw="v" data-source="facts" data-field="value" data-where="key=adj_cs_match">—</span>배로 줄어 '많이 늦은 오더라서'로 대부분 설명됩니다.</li>
+    <li><b>연쇄</b>: G4 지각의 <span data-draw="v" data-source="facts" data-field="value" data-where="key=chain_share">—</span>%는 기사가 다른 매장에서 먼저 픽업한 뒤 생깁니다. 앞 매장이 늦게 내준 경우는 G4 지각의 <span data-draw="v" data-source="facts" data-field="value" data-where="key=chain_prior">—</span>%뿐이고, 앞 매장이 모두 제때 내줬다고 쳐도 G4 적시 도착은 최대 <span data-draw="v" data-source="facts" data-field="value" data-where="key=chain_cf" data-fmt="s1">—</span>%p 오릅니다. 다른 매장을 먼저 들른 뒤 생기는 지각은 G4만이 아니라 모든 타입에서 흔합니다.</li>
+    <li><b>지연 잦은 매장에 늦게 오나</b>: 같은 기사도 직전 2주 조리 지연율이 높은 매장에 더 늦게 옵니다(10%p당 적시 도착 <span data-draw="v" data-source="facts" data-field="value" data-where="key=pc_g4" data-fmt="s1">—</span>%p). 그러나 G1(<span data-draw="v" data-source="facts" data-field="value" data-where="key=pc_g1" data-fmt="s1">—</span>%p)에도 있는 매장 간 패턴이고, 동·업종을 맞추면 <span data-draw="v" data-source="facts" data-field="value" data-where="key=pc_fe" data-fmt="s1">—</span>%p로 줄며, 같은 매장의 시간 변화로는 확인되지 않습니다. '일부러 늦게 간다'고 볼 근거는 약합니다.</li>
+    <li><b>기사 시간 비용</b>: 요청시각 뒤 매장 대기는 5개 존 G4 합계 하루 <span data-draw="v" data-source="facts" data-field="value" data-where="key=wait_h">—</span> 기사-시간(GPS 보정 <span data-draw="v" data-source="facts" data-field="value" data-where="key=wait_h_gps">—</span>)이고, 정상 인계 시간을 빼면 <span data-draw="v" data-source="facts" data-field="value" data-where="key=wait_h_ex">—</span>시간입니다.</li>
+  </ul>
+</section>
+
+<section class="vz-sec" id="s-voice">
+  <h2 id="h-voice">운영 체감은 어디서 오나: 지표 정의·상점 문의·SOP</h2>
+  <div class="vz-grid2">
+    <div class="vz-card">
+      <h3 id="h-cs">도착 지각 구간별 상점 지연 문의(1천 건당)</h3>
+      <p class="vz-note">상점의 배차·픽업 지연 문의(CS hub). 같은 지각에서도 G4 상점이 훨씬 자주 문의합니다</p>
+      <div class="vz-chart" id="c-cs" data-draw="c-cs" data-source="cs_lateness"></div>
+    </div>
+    <div class="vz-card">
+      <h3 id="h-sal">운영이 접하는 지각은 G4에 쏠린다(%)</h3>
+      <p class="vz-note">오더 비중, 실제 10분+ 지각 중 비중, 운영이 접한(상점 문의·VCC 연락·VCC 배차) 10분+ 지각 중 비중</p>
+      <div class="vz-chart" id="c-sal" data-draw="c-sal" data-source="salience"></div>
+    </div>
+  </div>
+  <ul class="vz-finds">
+    <li><b>상점 문의</b>: 지각 구간·존·시간대를 맞춰도 G4 상점은 G1보다 <b data-draw="v" data-source="facts" data-field="value" data-where="key=cs_ratio">—</b>배 자주 문의합니다(승산비 <span data-draw="v" data-source="facts" data-field="value" data-where="key=cs_or">—</span>, 95% 구간 <span data-draw="v" data-source="facts" data-field="value" data-where="key=cs_or_lo">—</span>~<span data-draw="v" data-source="facts" data-field="value" data-where="key=cs_or_hi">—</span>). OD 음식점은 부릉 CS가 아니라 플랫폼에 문의해 상점 문의가 없습니다(요기요OD 플랫폼 경유 배송문의 1천 건당 <span data-draw="v" data-source="facts" data-field="value" data-where="key=yoex">—</span>건).</li>
+    <li><b>SOP</b>: VCC는 요청 5분 전까지 미배정인 위험 오더 중 사실상 G4에만 연락합니다(위험 G4 오더의 <span data-draw="v" data-source="facts" data-field="value" data-where="key=vcc_g4">—</span>%, 다른 타입은 <span data-draw="v" data-source="facts" data-field="value" data-where="key=vcc_oth">—</span>% 이하). 위험 오더 비율은 오히려 요기요OD <span data-draw="v" data-source="facts" data-field="value" data-where="key=risk_yo">—</span>%가 G4 <span data-draw="v" data-source="facts" data-field="value" data-where="key=risk_g4">—</span>%보다 높습니다. 그 결과 운영이 접한 10분+ 지각의 <b data-draw="v" data-source="salience" data-field="touched_share" data-where="type=G4">—</b>%가 G4지만, 실제 10분+ 지각에서 G4는 <span data-draw="v" data-source="salience" data-field="late10_share" data-where="type=G4">—</span>%이고 요기요OD가 <span data-draw="v" data-source="salience" data-field="late10_share" data-where="type=요기요OD">—</span>%로 더 많습니다.</li>
+    <li><b>문의는 실제 지각을 반영한다</b>: G4 상점 문의는 요청시각 뒤 중앙 <span data-draw="v" data-source="facts" data-field="value" data-where="key=inq_med">—</span>분에 들어오고, 배달 완료된 문의 오더 중 결국 적시 도착한 건은 <span data-draw="v" data-source="facts" data-field="value" data-where="key=inq_ontime">—</span>%입니다. 주간 G4 적시 도착률이 낮은 주에 문의가 늘어, 둘이 함께 움직입니다(9주 상관 <span data-draw="v" data-source="facts" data-field="value" data-where="key=week_r" data-fmt="2">—</span>).</li>
+    <li><b>일일 값</b>: 존별 하루 G4 오더 중앙이 서초1 <span data-draw="v" data-source="facts" data-field="value" data-where="key=day_n_seo" data-fmt="0">—</span>건, 사당이수1 <span data-draw="v" data-source="facts" data-field="value" data-where="key=day_n_sad" data-fmt="0">—</span>건이라 하루 값은 크게 흔들립니다. 그래도 네 타입이 모두 30건 이상인 <span data-draw="v" data-source="facts" data-field="value" data-where="key=low_days" data-fmt="0">—</span>개 존·일 중 G4가 그날 최저인 날이 운영 지표로 <span data-draw="v" data-source="facts" data-field="value" data-where="key=low_off" data-fmt="0">—</span>일, 적시 도착으로 <span data-draw="v" data-source="facts" data-field="value" data-where="key=low_arr" data-fmt="0">—</span>일이라 흔들림만의 문제는 아닙니다.</li>
+    <li><b>데이터 정정</b>: 기사 '픽업지연' 문의(CS_A_PICKUP)는 대부분 음식 미준비 신고가 아닙니다. G4는 <span data-draw="v" data-source="facts" data-field="value" data-where="key=ap_follow" data-fmt="0">—</span>%가 상점 항의 직후 CS가 늦은 기사에게 건 후속 통화로 보입니다.</li>
+  </ul>
+</section>
+
+<section class="vz-sec" id="s-hyp">
+  <h2 id="h-hyp">가설 판정</h2>
+  <ul class="vz-hyps">
+    <li class="vz-hyp">
+      <div class="vz-hyp-head"><h3>픽업요청시각 변경이 잦다</h3><span class="vz-chip">기각</span></div>
+      <p class="vz-who">문의 예시 가설 1</p>
+      <p>G4 변경 오더는 <b data-draw="v" data-source="facts" data-field="value" data-where="key=chg_g4">—</b>%로 G1(<span data-draw="v" data-source="facts" data-field="value" data-where="key=chg_g1">—</span>%, 버거킹 자동 조정)보다 적고, 상점이 바꾼 건 4주 <span data-draw="v" data-source="facts" data-field="value" data-where="key=chg_store_g4" data-fmt="0">—</span>건입니다. 나머지는 프렌즈 시간조정이라 최종 요청시각을 쓰는 운영 지표에서는 오히려 G4가 <span data-draw="v" data-source="facts" data-field="value" data-where="key=final_up_g4" data-fmt="1">—</span>%p 좋아 보입니다.</p>
+    </li>
+    <li class="vz-hyp">
+      <div class="vz-hyp-head"><h3>상점이 요청시각과 무관하게 조리완료를 일찍 누른다</h3><span class="vz-chip is-part">부분 지지</span></div>
+      <p class="vz-who">문의 예시 가설 2</p>
+      <p>일찍 누르는 현상은 있습니다(상점이 입력한 G4 조리완료 신호의 <b data-draw="v" data-source="facts" data-field="value" data-where="key=rdy_before">—</b>%가 요청시각 전). 그러나 신호는 대체로 실제 준비와 맞아 조리 지연과 관련이 작고, 대신 매장이 느끼는 '기사 지각'을 키웁니다(신호 있는 적시 건의 <span data-draw="v" data-source="facts" data-field="value" data-where="key=perc_late">—</span>%가 신호 2분+ 뒤 도착).</p>
+    </li>
+    <li class="vz-hyp">
+      <div class="vz-hyp-head"><h3>결제수단 선호 차이로 배차가 늦어진다</h3><span class="vz-chip is-part">부분 지지 · 기전(작동 방식) 다름</span></div>
+      <p class="vz-who">문의 예시 가설 3</p>
+      <p>기사가 후불을 꺼리지도, 배정이 늦지도 않습니다. 프렌즈 앱이 후불을 받지 못하는 구조라 이미 오더를 든 세트 기사에게 몰려 도착이 늦습니다(같은 상점·조건 <b data-draw="v" data-source="facts" data-field="value" data-where="key=pay_adj" data-fmt="s1">—</b>%p, 저녁 <span data-draw="v" data-source="facts" data-field="value" data-where="key=pay_peak" data-fmt="s1">—</span>%p).</p>
+    </li>
+    <li class="vz-hyp">
+      <div class="vz-hyp-head"><h3>배차(배정)가 늦어서 도착이 늦다</h3><span class="vz-chip">대체로 기각</span></div>
+      <p>요청시각 미배정은 G4 <span data-draw="v" data-source="facts" data-field="value" data-where="key=unasg_fr_g4">—</span>% vs G1 <span data-draw="v" data-source="facts" data-field="value" data-where="key=unasg_fr_g1">—</span>%입니다. 지각 초과 <span data-draw="v" data-source="facts" data-field="value" data-where="key=late_excess">—</span>%p 중 배정 시점 몫은 <span data-draw="v" data-source="facts" data-field="value" data-where="key=late_assign">—</span>%p이고 나머지는 배정 뒤 동선입니다.</p>
+    </li>
+    <li class="vz-hyp">
+      <div class="vz-hyp-head"><h3>존 구성(성북1·서초1 비중) 탓이다</h3><span class="vz-chip">기각</span></div>
+      <p>존 구성 몫은 <span data-draw="v" data-source="facts" data-field="value" data-where="key=zone_mix_lo">—</span>~<span data-draw="v" data-source="facts" data-field="value" data-where="key=zone_mix_hi">—</span>%p입니다. 저녁 집중(G4 <span data-draw="v" data-source="facts" data-field="value" data-where="key=eve_g4">—</span>% vs G1 <span data-draw="v" data-source="facts" data-field="value" data-where="key=eve_g1">—</span>%)과 존 밖 배달 같은 구성이 더 큽니다.</p>
+    </li>
+    <li class="vz-hyp">
+      <div class="vz-hyp-head"><h3>10/22 존·권역 개편이 G4를 나쁘게 했다</h3><span class="vz-chip">기각</span></div>
+      <p>G4만의 변화는 보이지 않습니다(G1과 비교한 전후 변화 <span data-draw="v" data-source="facts" data-field="value" data-where="key=v2_did">—</span>%p, 오차 범위 ±<span data-draw="v" data-source="facts" data-field="value" data-where="key=v2_ci">—</span>%p). 주차별 하락은 10/18 폭우와 11/1 올리브영 행사·우천이 있던 두 일요일에 몰려 있고, 그날은 모든 타입이 함께 떨어졌습니다.</p>
+    </li>
+    <li class="vz-hyp">
+      <div class="vz-hyp-head"><h3>버튼을 늦게 누르는 등 측정 착시다</h3><span class="vz-chip">기각</span></div>
+      <p>버튼은 GPS보다 중앙 <span data-draw="v" data-source="facts" data-field="value" data-where="key=btn_lag_s" data-fmt="0">—</span>초 늦지만 모든 타입에 공통이고, 정의 8개 모두에서 격차가 남습니다. GPS로 보정하면 G4 적시 도착 <span data-draw="v" data-source="facts" data-field="value" data-where="key=gps_on_g4">—</span>%, 조리 지연 <span data-draw="v" data-source="facts" data-field="value" data-where="key=gps_cook_g4">—</span>%입니다.</p>
+    </li>
+    <li class="vz-hyp">
+      <div class="vz-hyp-head"><h3>G4 주문 경로·업종 자체가 늦게 내준다</h3><span class="vz-chip">차이 보이지 않음</span></div>
+      <p>같은 주방 <span data-draw="v" data-source="facts" data-field="value" data-where="key=sk_n" data-fmt="0">—</span>곳에서 조건을 맞춘 OD 오더와 평균 차이가 보이지 않고(보정 조리 지연율 G4 <span data-draw="v" data-source="facts" data-field="value" data-where="key=sk_g4">—</span>% vs 땡겨요OD <span data-draw="v" data-source="facts" data-field="value" data-where="key=sk_dd">—</span>%·요기요OD <span data-draw="v" data-source="facts" data-field="value" data-where="key=sk_yo">—</span>%), 초과분은 상위 20곳에 몰려 있습니다.</p>
+    </li>
+    <li class="vz-hyp">
+      <div class="vz-hyp-head"><h3>기사가 조리 지연 매장을 학습해 일부러 늦게 간다</h3><span class="vz-chip is-hold">판단 보류</span></div>
+      <p>매장 간 패턴(<span data-draw="v" data-source="facts" data-field="value" data-where="key=pc_g4" data-fmt="s1">—</span>%p/10%p)은 있지만 G1에도 있고, 같은 매장의 시간 변화로는 보이지 않습니다. 10/29 요청시각 하한 교정 매장을 대조군과 비교하면 가릴 수 있습니다.</p>
+    </li>
+    <li class="vz-hyp">
+      <div class="vz-hyp-head"><h3>운영에 들어오는 지각 신호가 G4에 몰린다</h3><span class="vz-chip is-support">지지</span></div>
+      <p>운영 지표로는 G4−G1 격차가 적시 도착률(<span data-draw="v" data-source="g4_gap_by_metric" data-field="g4_minus_g1_ontime" data-where="zone=5개 존 전체" data-fmt="s1">—</span>%p)보다 넓은 <span data-draw="v" data-source="g4_gap_by_metric" data-field="g4_minus_g1_ops" data-where="zone=5개 존 전체" data-fmt="s1">—</span>%p로 보입니다. 같은 지각에도 G4 상점은 G1보다 <span data-draw="v" data-source="facts" data-field="value" data-where="key=cs_ratio">—</span>배 자주 문의하고, 운영이 접하는 10분+ 지각의 <span data-draw="v" data-source="salience" data-field="touched_share" data-where="type=G4">—</span>%가 G4입니다. 다만 G4 상점 문의는 실제 지각을 반영하고, G4가 실제로 낮다는 사실도 그대로입니다.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="vz-sec" id="s-act">
+  <h2 id="h-act">제안</h2>
+  <p>아래는 제안이고 담당은 후보입니다. 운영 의견을 받은 뒤 담당 후보 팀과 따로 정합니다.</p>
+  <ol class="vz-acts">
+    <li><b>지표를 둘로 나눠 보고한다.</b> 일일·주간 보고의 '픽업요청 준수율' 옆에 '적시 도착률(최초 요청 기준, 기사·배차 몫)'과 '도착 뒤 손실(매장·인계 몫)'을 함께 싣습니다. 지금 수치 하나로는 기사·배차 몫과 매장·인계 몫이 나뉘지 않습니다. 존별 일일 G4 값은 주간 이동평균과 함께, 우천·대형 행사일은 표시해서 공유합니다.<span class="vz-owner">담당 후보: 운영·데이터</span></li>
+    <li><b>배정 뒤 동선을 점검한다.</b> 지각 초과 중 <span data-draw="v" data-source="facts" data-field="value" data-where="key=late_after">—</span>%p가 배정 뒤에서 생깁니다. 이미 오더를 든 기사에게 15분 고정 G4 오더를 붙일 때의 도착 예측과 버퍼를 점검하고, 보유 2건+ 기사 제외 같은 배정 조건을 시험합니다.<span class="vz-owner">담당 후보: AI&amp;ML</span></li>
+    <li><b>후불 오더를 받을 기사 풀을 넓힌다.</b> 프렌즈 후불결제(11/6 사전 회의)의 근거로 후불 적시 도착 차이 <span data-draw="v" data-source="facts" data-field="value" data-where="key=pay_adj" data-fmt="s1">—</span>%p(저녁 <span data-draw="v" data-source="facts" data-field="value" data-where="key=pay_peak" data-fmt="s1">—</span>%p)를 씁니다. 도입 전에는 저녁 피크 세트 기사의 보유 건수 상한과 세트 증설을 봅니다.<span class="vz-owner">담당 후보: 라스트마일·운영</span></li>
+    <li><b>존 밖 배달 거절을 따로 추적한다.</b> G4 존 밖 비프렌즈 거절률(선불 <span data-draw="v" data-source="decline_dest" data-field="out_zone" data-where="label=G4 선불">—</span>%, 후불 <span data-draw="v" data-source="decline_dest" data-field="out_zone" data-where="label=G4 후불">—</span>%)과 10/22 뒤 권역 외 G4 거절률(프렌즈 포함 전체 노출 기준 <span data-draw="v" data-source="facts" data-field="value" data-where="key=outbound_dec">—</span>%)을 권역 외 할증·배송권역 구성안과 묶어 주간으로 봅니다.<span class="vz-owner">담당 후보: PO(존·권역)·운영</span></li>
+    <li><b>조리 지연 매장 20곳을 관리한다.</b> 상위 20곳에 매장별 담당을 정하고, 준비 시간이 더 필요한 매장부터 POS 기본 요청 여유(접수→요청 15분)를 늘리는 2주 시범을 합니다. 필요한 추가 시간은 중앙 <span data-draw="v" data-source="facts" data-field="value" data-where="key=prep_med">—</span>분, 최대 약 <span data-draw="v" data-source="facts" data-field="value" data-where="key=prep_max">—</span>분이라 조정 폭이 크지 않습니다. 조리 지연과 고객 도착 시간을 함께 잽니다. 10/12 목록은 조치 여부부터 확인합니다.<span class="vz-owner">담당 후보: 수요확장팀(G4 영업)</span></li>
+    <li><b>조리 지연 판정에 유예를 정한다.</b> 요청 직전 1분 안에 도착하면 정상 인계 시간만으로도 G1·G4·요기요OD·땡겨요OD 모두 40%대가 조리 지연으로 잡힙니다. 매장 리포트에는 '요청 + 1~2분을 넘긴 픽업' 기준을 함께 적습니다(2분 유예 G4 <span data-draw="v" data-source="grace" data-field="g4_pick" data-where="grace=2">—</span>%, 다른 4타입 <span data-draw="v" data-source="grace" data-field="oth_pick" data-where="grace=2">—</span>%).<span class="vz-owner">담당 후보: 데이터·수요확장팀</span></li>
+    <li><b>프렌즈 시간조정에 상한을 둔다.</b> '원래 요청시각 전에만, 1회, +10분 이내' 같은 상한이면 요청시각이 지난 뒤의 조정(<span data-draw="v" data-source="agent_adjust" data-field="after_fr" data-where="type=G4">—</span>%)과 운영 지표 부풀림(<span data-draw="v" data-source="agent_adjust" data-field="inflate" data-where="type=G4" data-fmt="s1">—</span>%p)을 줄일 수 있습니다. 전후 비교는 최초 요청 기준으로 합니다.<span class="vz-owner">담당 후보: 프렌즈 운영·PO</span></li>
+    <li><b>VCC 연락 시점을 앞당기고 공용 위험 지표를 둔다.</b> 지금 연락 기준(요청 5분 전 미배정)은 G4 배정→도착 중앙 <span data-draw="v" data-source="facts" data-field="value" data-where="key=a2arr_med">—</span>분보다 여유가 짧아, 이 기준에 걸린 G4 오더의 적시 도착은 <span data-draw="v" data-source="facts" data-field="value" data-where="key=vcc_trig_on">—</span>%입니다. 더 이른 시점 기준을 검토하고, '요청 5분 전 미배정 비율'을 모든 타입 공용 일일 지표로 둡니다(요기요OD <span data-draw="v" data-source="facts" data-field="value" data-where="key=risk_yo">—</span>%도 보이게).<span class="vz-owner">담당 후보: CX·VCC</span></li>
+    <li><b>상점 POS에 배정 상태를 보여 주는 방안을 검토한다.</b> 문의 순간 <span data-draw="v" data-source="facts" data-field="value" data-where="key=inq_nofr">—</span>%가 '요청시각이 지났는데 기사 미도착'입니다. 배정 여부와 기사 예상 도착시각을 POS에 보여 주면 문의 일부가 줄 수 있습니다(가설, 검증 필요).<span class="vz-owner">담당 후보: 상점 제품·PO</span></li>
+  </ol>
+</section>
+
+<section class="vz-sec" id="s-method">
+  <h2 id="h-method">방법·정의·한계</h2>
+  <dl class="vz-defs">
+    <dt>기간</dt><dd>접수 <span data-draw="v" data-source="facts" data-field="value" data-where="key=period" data-fmt="t">—</span>(4주, 휴일 10/5·10/9 포함). 주차 추이는 <span data-draw="v" data-source="facts" data-field="value" data-where="key=period9" data-fmt="t">—</span>.</dd>
+    <dt>모집단</dt><dd>배달 완료 오더 중 최초 요청·도착 버튼·픽업 시각이 모두 있고, 묶음 하위 오더를 뺀 것. 상점 타입은 G_CHANNEL 기준이고, 땡겨요OD 가상 상점과 올리브영은 따로 뗐습니다.</dd>
+    <dt>적시 도착률</dt><dd>상점 도착 버튼 첫 시각 ≤ 최초 픽업요청시각(접수 때 정해진 값).</dd>
+    <dt>조리 지연율</dt><dd>적시 도착 건 중 픽업 처리가 최초 요청시각 뒤인 비율. 요청 직전 도착이면 인계 시간만으로도 잡히는 한계가 있습니다(판정 유예 표).</dd>
+    <dt>운영 픽업 준수율</dt><dd>픽업 완료 ≤ 최종 요청시각. 매일 슬랙에 공유되는 '픽업요청 준수율', AI배차 모니터링·벤더 성공지표·공식 SLA 지표 4번(픽업 시간 준수율)과 같은 식. 이 페이지 값은 묶음 하위 오더를 뺐고, 슬랙 공유값은 묶음 하위 오더를 포함합니다.</dd>
+    <dt>S&amp;OP 카드</dt><dd>GPS 50m 도착 ≤ 최종 요청시각, GPS 판정 정상 오더만 분모. 존별 값이 카드 실행 결과와 일치했습니다.</dd>
+    <dt>분석 방법</dt><dd>로지스틱 보정(픽업 지점 군집 강건 표준오차, g-계산), 직접 표준화, 군집 부트스트랩. 다섯 갈래(측정·매장·배차·기사·체감)마다 독립 검증자가 원자료부터 다시 계산하고 Snowflake 직접 SQL로 핵심 숫자를 대조했으며, 검증에서 고친 수치를 이 페이지에 반영했습니다.</dd>
+    <dt>한계</dt><dd>관측 자료라 원인을 단정하지 않습니다. 도착은 버튼 기준입니다. 서초1·사당이수1 G4는 존 오픈보다 늦게 시작해 표본이 작습니다. 이 페이지는 고정 사본이라 자동으로 갱신되지 않습니다.</dd>
+    <dt>확인이 필요한 것</dt><dd>매일 공유되는 '픽업요청 준수율'을 뽑는 원천 대시보드, 10/12 상위 20곳에 실제 조치가 있었는지, OD 조리완료 신호가 음식점 입력인지 플랫폼 연동인지, VCC SOP 대상 존(문서와 실제가 달라 보임), 플러스앱 도착 위치검증 우회 조건, 버거킹 요청시각 자동 조정 규칙.</dd>
+  </dl>
+</section>
+
+</div>
+
+<script src="charts.js?v=73226e53b6"></script>
+<script>
+  dash.calc('weekly_gap', {
+    title: '주차별 G4−G1 격차',
+    description: '주차마다 G4 값에서 G1 값을 뺀 차(운영 픽업 준수율, 적시 도착률)',
+    inputs: ['weekly_metric'],
+    fn: (weekly_metric) => {
+      const out = [];
+      const weeks = Array.from(new Set(weekly_metric.map((r) => r.week))).sort();
+      for (const week of weeks) {
+        const g4 = weekly_metric.find((r) => r.week === week && r.type === 'G4');
+        const g1 = weekly_metric.find((r) => r.week === week && r.type === 'G1');
+        if (!g4 || !g1) continue;
+        out.push({ week, metric: '운영 픽업 준수율', gap: Math.round((Number(g4.ops_pickup_pct) - Number(g1.ops_pickup_pct)) * 10) / 10 });
+        out.push({ week, metric: '적시 도착률', gap: Math.round((Number(g4.ontime_pct) - Number(g1.ontime_pct)) * 10) / 10 });
+      }
+      return out;
+    },
+  });
+
+  const ZONES = ['동대문1', '성북1', '성동1', '서초1', '사당이수1', '5개 존 전체'];
+  const T4 = ['G1', 'G4', '요기요OD', '땡겨요OD'];
+  const MIN_N = 30; // 이보다 적은 칸은 비운다
+  const muted = 'var(--cds-chart-muted)';
+  const typeSeries = (fieldOf) => T4.map((t) => ({ field: fieldOf(t), name: t, color: VZ.typeColor(t) }));
+  const enc = (...p) => p.map((x) => encodeURIComponent(String(x))).join(',');
+  const pct = (v) => VZ.fmt(v, '1');
+  const sgn = (v) => VZ.fmt(v, 's1');
+  const int = (v) => VZ.fmt(v, '0');
+
+  dash.draw('v', VZ.cell);
+
+  // 존 × 타입
+  const heat = (field, label) => (el) => {
+    const d = VZ.ready(el, ['zone_type']);
+    if (!d) return;
+    VZ.heat(el, d[0], { rows: ZONES, cols: VZ.TYPES.concat(['전체']), rowKey: 'zone', colKey: 'type', value: field, n: 'orders', label, totalRow: '5개 존 전체', totalCol: '전체' });
+  };
+  dash.draw('c-heat-ontime', heat('ontime_pct', '적시 도착률'));
+  dash.draw('c-heat-cook', heat('cook_pct', '조리 지연율'));
+
+  // 운영 지표 vs 적시 도착
+  const metricSeries = () => [
+    { field: 'ops_pickup_pct', name: '운영 픽업 준수율', color: muted, label: true },
+    { field: 'snop_pickup_pct', name: 'S&OP 카드(GPS)', color: 'var(--color-fg-muted)', hollow: true },
+    { field: 'ontime_pct', name: '적시 도착률', color: VZ.accent(), label: true },
+  ];
+  dash.draw('c-metric-db', (el) => {
+    const d = VZ.ready(el, ['metric_bridge']);
+    if (!d) return;
+    VZ.dumbbell(el, d[0].filter((r) => r.zone === '5개 존 전체' && VZ.TYPES.includes(r.type)), { label: 'type', emph: 'G4', series: metricSeries() });
+  });
+  dash.draw('c-gap-db', (el) => {
+    const d = VZ.ready(el, ['g4_gap_by_metric']);
+    if (!d) return;
+    VZ.dumbbell(el, d[0], { label: 'zone', emph: '5개 존 전체', unit: '%p', signed: true, series: [
+      { field: 'g4_minus_g1_ops', name: '운영 픽업 준수율', color: muted, label: true },
+      { field: 'g4_minus_g1_snop', name: 'S&OP 카드(GPS)', color: 'var(--color-fg-muted)', hollow: true },
+      { field: 'g4_minus_g1_ontime', name: '적시 도착률', color: VZ.accent(), label: true },
+    ] });
+  });
+  dash.draw('t-bridge', (tb) => {
+    const s = dash.data('metric_bridge');
+    if (s.status !== 'ok') { tb.replaceChildren(); return; }
+    VZ.tbody(tb, s.data.filter((r) => r.zone === '5개 존 전체'), [
+      { field: 'type' }, { field: 'ops_pickup_pct', num: true, fmt: pct }, { field: 'part_cooking', num: true, fmt: sgn },
+      { field: 'part_reqchange', num: true, fmt: sgn }, { field: 'ontime_pct', num: true, fmt: pct }, { field: 'gap_ops_minus_ontime', num: true, fmt: sgn },
+    ], (r) => enc(r.zone, r.type));
+  });
+  dash.draw('c-weekly-gap', (el) => {
+    const d = VZ.ready(el, ['weekly_gap']);
+    if (!d) return;
+    VZ.lines(el, d[0], { seriesKey: 'metric', x: 'week', y: 'gap', unit: '%p', signed: true, height: 250, series: [
+      { key: '운영 픽업 준수율', name: '운영 지표', color: muted },
+      { key: '적시 도착률', name: '적시 도착', color: VZ.accent(), emph: true },
+    ] });
+  });
+  dash.draw('t-posted', (tb) => {
+    const s = dash.data('posted_match');
+    if (s.status !== 'ok') { tb.replaceChildren(); return; }
+    VZ.tbody(tb, s.data, [
+      { field: 'label' }, { field: 'posted_rate', num: true, fmt: pct }, { field: 'rate_pct', num: true, fmt: pct },
+      { field: 'posted_sla', num: true, fmt: pct }, { field: 'sla_pct', num: true, fmt: pct },
+      { field: 'posted_n', num: true, fmt: int }, { field: 'orders', num: true, fmt: int }, { field: 'ontime_pct', num: true, fmt: pct },
+    ], (r) => enc(r.post));
+  });
+
+  // 여유시간·단계 보정
+  const LEADS = ['10분 미만', '10~14분', '15분', '16~19분', '20~24분', '25분+'];
+  const leadWide = (rows, field) => LEADS.map((b) => {
+    const o = { lead: b };
+    T4.forEach((t) => {
+      const r = rows.find((x) => x.type === t && x.lead === b);
+      o[t] = r ? r[field] : '';
+      o['n_' + t] = r ? Number(r.orders) : 0;
+    });
+    return o;
+  });
+  dash.draw('c-lead-share', (el) => {
+    const d = VZ.ready(el, ['lead_strata']);
+    if (!d) return;
+    VZ.columns(el, leadWide(d[0], 'share_pct'), { x: 'lead', cats: LEADS, height: 220, series: typeSeries((t) => t),
+      extra: (r) => T4.map((t) => [null, t + ' 오더', int(r['n_' + t]) + '건']) });
+  });
+  dash.draw('c-lead-on', (el) => {
+    const d = VZ.ready(el, ['lead_strata']);
+    if (!d) return;
+    VZ.columns(el, leadWide(d[0], 'ontime_pct'), { x: 'lead', cats: LEADS, height: 220, series: typeSeries((t) => t),
+      skip: (r, s) => r['n_' + s.field] < MIN_N, extra: (r) => T4.map((t) => [null, t + ' 오더', int(r['n_' + t]) + '건']) });
+  });
+  dash.draw('c-steps', (el) => {
+    const d = VZ.ready(el, ['adjust_steps']);
+    if (!d) return;
+    const rows = d[0].map((r) => ({ ...r, disp: `${r.step}. ${r.label}` }));
+    VZ.hbars(el, rows, { label: 'disp', value: 'g4_g1', ci: 'g4_g1_ci', unit: '%p', signed: true, name: 'G4−G1', color: () => VZ.typeColor('G4'),
+      extra: (r) => [[null, 'G4−요기요OD', `${sgn(r.g4_yo)}%p (±${pct(r.g4_yo_ci)})`]] });
+  });
+
+  // 도착
+  dash.draw('c-late', (el) => {
+    const d = VZ.ready(el, ['late_class']);
+    if (!d) return;
+    VZ.stack(el, d[0], { label: 'label', emph: 'G4', unit: '%', totalName: '지각 합계', parts: [
+      { field: 'fr_after', name: '요청시각 뒤 배정', color: muted, opacity: 1 },
+      { field: 'reassign', name: '재배정', color: muted, opacity: 0.7 },
+      { field: 'short_slack', name: '배정 때 남은 시간 5분 미만', color: muted, opacity: 0.42 },
+      { field: 'detour', name: '경유(다른 픽업·배달 먼저)', color: VZ.accent() },
+      { field: 'direct', name: '직행인데 늦음', color: 'var(--color-fg)', opacity: 0.55 },
+    ] });
+  });
+  dash.draw('c-decline', (el) => {
+    const d = VZ.ready(el, ['decline_dest']);
+    if (!d) return;
+    VZ.columns(el, d[0], { x: 'label', cats: d[0].map((r) => r.label), height: 210, labels: true, series: [
+      { field: 'in_zone', name: '도착지 존 안', color: muted },
+      { field: 'out_zone', name: '도착지 존 밖', color: VZ.accent() },
+    ], extra: (r) => [[null, '도착지 존 밖 비중', pct(r.out_share) + '%']] });
+  });
+  dash.draw('t-pay', (tb) => {
+    const s = dash.data('pay_g4');
+    if (s.status !== 'ok') { tb.replaceChildren(); return; }
+    VZ.tbody(tb, s.data, [
+      { field: 'metric' }, { field: 'prepay', num: true, fmt: pct }, { field: 'postpay', num: true, fmt: pct },
+      { field: 'adj_diff', num: true, fmt: sgn }, { field: 'adj_ci', num: true, fmt: (v) => (v === '' || v === null || v === undefined ? '—' : pct(v)) },
+    ], (r) => enc(r.metric));
+  });
+  dash.draw('c-zone', (el) => {
+    const d = VZ.ready(el, ['zone_adj']);
+    if (!d) return;
+    VZ.hbars(el, d[0], { label: 'zone', value: 'g4_g1', ci: 'g4_g1_ci', unit: '%p', signed: true, name: '존 안 G4−G1', color: () => VZ.typeColor('G4'),
+      extra: (r) => [[null, '보정 존 효과(동대문1 대비)', sgn(r.zone_eff) + '%p'], [null, '거절률(노출 대비)', pct(r.decline) + '%'], [null, '요청 5분 전 미배정', pct(r.unasg5) + '%'], [null, '프렌즈 수행', pct(r.friends) + '%']] });
+  });
+  dash.draw('c-daily', (el) => {
+    const d = VZ.ready(el, ['daily']);
+    if (!d) return;
+    const long = d[0].flatMap((r) => [['g4_on', 'G4'], ['g1_on', 'G1'], ['od_on', 'OD']].map(([f, s]) => ({ date: r.date, s, v: r[f] })));
+    VZ.lines(el, long, { seriesKey: 's', x: 'date', y: 'v', height: 260,
+      series: [{ key: 'G1', name: 'G1', color: VZ.typeColor('G1') }, { key: 'OD', name: 'OD', color: muted }, { key: 'G4', name: 'G4', color: VZ.typeColor('G4'), emph: true }],
+      bands: [{ at: '2026-10-18', label: '폭우' }, { at: '2026-11-01', label: '행사·우천' }],
+      headFmt: (dd) => d3.utcFormat('%-m/%-d')(new Date(+dd + 9 * 3600e3)) });
+  });
+
+  // 조리 지연
+  dash.draw('c-cook-slack', (el) => {
+    const d = VZ.ready(el, ['cook_slack']);
+    if (!d) return;
+    VZ.columns(el, d[0], { x: 'slack', cats: d[0].map((r) => r.slack), height: 220, headPrefix: '도착 여유 ', series: [
+      { field: 'g1', name: 'G1', color: VZ.typeColor('G1') }, { field: 'g4', name: 'G4', color: VZ.typeColor('G4') },
+      { field: 'yogiyo', name: '요기요OD', color: VZ.typeColor('요기요OD') }, { field: 'ddangyo', name: '땡겨요OD', color: muted },
+    ], extra: (r) => [[null, 'G4 적시 도착 건', int(r.n_g4) + '건']] });
+  });
+  dash.draw('t-grace', (tb) => {
+    const s = dash.data('grace');
+    if (s.status !== 'ok') { tb.replaceChildren(); return; }
+    const x2 = (v) => VZ.fmt(v, '2');
+    VZ.tbody(tb, s.data, [
+      { field: 'grace', num: true }, { field: 'g4_pick', num: true, fmt: pct }, { field: 'oth_pick', num: true, fmt: pct }, { field: 'ratio_pick', num: true, fmt: x2 },
+      { field: 'g4_both', num: true, fmt: pct }, { field: 'oth_both', num: true, fmt: pct }, { field: 'ratio_both', num: true, fmt: x2 },
+    ], (r) => enc(r.grace));
+  });
+  dash.draw('c-conc', (el) => {
+    const d = VZ.ready(el, ['conc_curve']);
+    if (!d) return;
+    VZ.xlines(el, d[0], { seriesKey: 'type', x: 'rank', y: 'cum_cook', yMax: 100, xMin: 1, height: 250, xTitle: '매장 수(조리 지연 건수 순)',
+      refX: [{ x: 20, label: '상위 20곳' }], headFmt: (v) => `상위 ${v}곳`, series: [
+        { key: '땡겨요OD', name: '땡겨요OD', color: muted },
+        { key: '요기요OD', name: '요기요OD', color: VZ.typeColor('요기요OD') },
+        { key: 'G1', name: 'G1', color: VZ.typeColor('G1') },
+        { key: 'G4', field: 'cum_orders', name: 'G4 오더 몫', color: VZ.typeColor('G4'), dash: '4 3' },
+        { key: 'G4', name: 'G4 조리 지연', color: VZ.typeColor('G4'), emph: true },
+      ] });
+  });
+  dash.draw('c-ready', (el) => {
+    const d = VZ.ready(el, ['ready_dist']);
+    if (!d) return;
+    VZ.columns(el, d[0], { x: 'bin', cats: d[0].map((r) => r.bin), height: 220, series: [
+      { field: 'g4', name: 'G4', color: VZ.typeColor('G4') }, { field: 'yogiyo', name: '요기요OD', color: VZ.typeColor('요기요OD') }, { field: 'ddangyo', name: '땡겨요OD', color: muted },
+    ] });
+  });
+  dash.draw('t-top', (tb) => {
+    const s = dash.data('top_stores');
+    if (s.status !== 'ok') { tb.replaceChildren(); return; }
+    VZ.tbody(tb, s.data, [
+      { field: 'rank', num: true }, { field: 'store' }, { field: 'zone' }, { field: 'cat' }, { field: 'orders', num: true, fmt: int },
+      { field: 'cook_n', num: true, fmt: int }, { field: 'cook_pct', num: true, fmt: pct }, { field: 'late_med', num: true, fmt: pct },
+      { field: 'lead_med', num: true, fmt: pct }, { field: 'prev_list', fmt: (v) => (v ? v : '') },
+    ], (r) => enc(r.rank));
+  });
+
+  // 기사
+  dash.draw('t-adjust', (tb) => {
+    const s = dash.data('agent_adjust');
+    if (s.status !== 'ok') { tb.replaceChildren(); return; }
+    VZ.tbody(tb, s.data, [
+      { field: 'type' }, { field: 'friends', num: true, fmt: int }, { field: 'adjusted', num: true, fmt: int }, { field: 'rate_fr', num: true, fmt: pct },
+      { field: 'shift_med', num: true, fmt: pct }, { field: 'after_fr', num: true, fmt: pct }, { field: 'late_orig', num: true, fmt: pct }, { field: 'inflate', num: true, fmt: sgn },
+    ], (r) => enc(r.type));
+  });
+
+  // 체감
+  dash.draw('c-cs', (el) => {
+    const d = VZ.ready(el, ['cs_lateness']);
+    if (!d) return;
+    VZ.columns(el, d[0], { x: 'bin', cats: d[0].map((r) => r.bin), height: 220, unit: '', labels: true, series: [
+      { field: 'g1', name: 'G1', color: VZ.typeColor('G1') }, { field: 'g4', name: 'G4', color: VZ.typeColor('G4') },
+    ], extra: (r) => [[null, 'G1 오더', int(r.n_g1) + '건'], [null, 'G4 오더', int(r.n_g4) + '건']] });
+  });
+  dash.draw('c-sal', (el) => {
+    const d = VZ.ready(el, ['salience']);
+    if (!d) return;
+    VZ.columns(el, d[0], { x: 'type', cats: d[0].map((r) => r.type), height: 220, labels: (r, s) => s.field === 'touched_share', series: [
+      { field: 'orders_share', name: '오더 비중', color: muted, opacity: 0.45 },
+      { field: 'late10_share', name: '10분+ 지각 중', color: muted },
+      { field: 'touched_share', name: '운영이 접한 10분+ 지각 중', color: VZ.accent() },
+    ], extra: (r) => [[null, '10분+ 지각', int(r.late10_n) + '건']] });
+  });
+
+  // 목차 링크
+  document.querySelectorAll('.vz-nav a[href^="#"]').forEach((a) => a.addEventListener('click', (ev) => {
+    const t = document.getElementById(a.getAttribute('href').slice(1));
+    if (!t) return;
+    ev.preventDefault();
+    t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    dash.setLink(t.id);
+  }));
+  const named = location.hash ? document.getElementById(location.hash.slice(1)) : null;
+  if (named) requestAnimationFrame(() => named.scrollIntoView());
+</script>
+</div>
+</body>
+</html>
